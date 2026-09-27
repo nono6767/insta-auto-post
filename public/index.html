@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>キャプションメーカー</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>キャプションメーカー</h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab is-active" role="tab" data-view="create" aria-selected="true">作成</button>
+      <button class="tab" role="tab" data-view="saved" aria-selected="false">保存済み <span id="saved-count" class="badge" hidden></span></button>
+    </nav>
+  </header>
+
+  <main>
+    <p id="mock-notice" class="notice" hidden>APIキーが未設定のため「お試しモード」です。表示される案はダミーです。</p>
+
+    <section id="view-create" class="view">
+      <form id="theme-form" class="card">
+        <label for="theme" class="step"><span class="step-num">1</span>今日の投稿テーマ・素材メモ</label>
+        <textarea id="theme" rows="5" required
+          placeholder="例：新作のいちごタルトが今日から販売開始。サクサク生地と甘酸っぱいいちご。数量限定。"></textarea>
+        <button type="submit" id="generate-btn" class="btn-primary">キャプションを3案つくる</button>
+      </form>
+
+      <p id="error" class="error" role="alert" hidden></p>
+
+      <div id="results" hidden>
+        <h2 class="step"><span class="step-num">2</span>気に入った案を選んで保存</h2>
+        <p class="hint">本文はそのまま編集できます。</p>
+        <div id="caption-list"></div>
+      </div>
+    </section>
+
+    <section id="view-saved" class="view" hidden>
+      <div id="saved-list"></div>
+      <p id="saved-empty" class="empty">まだ保存した投稿文はありません。</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <template id="caption-tpl">
+    <article class="card caption">
+      <div class="caption-head"><span class="caption-label"></span><span class="caption-style"></span></div>
+      <textarea class="caption-text" rows="7"></textarea>
+      <p class="caption-tags"></p>
+      <button type="button" class="btn-primary save-btn">この案を保存</button>
+    </article>
+  </template>
+
+  <template id="saved-tpl">
+    <article class="card saved">
+      <div class="saved-meta"><span class="saved-date"></span><span class="caption-style"></span></div>
+      <p class="saved-theme"></p>
+      <p class="saved-text"></p>
+      <p class="caption-tags"></p>
+      <div class="saved-actions">
+        <button type="button" class="btn-secondary copy-btn">コピー</button>
+        <button type="button" class="btn-ghost delete-btn">削除</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="/app.js"></script>
+</body>
+</html>

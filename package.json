@@ -1,0 +1,27 @@
+{
+  "name": "insta-auto-post",
+  "version": "1.0.0",
+  "description": "Instagramキャプション案をAIで3種類生成する試作アプリ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nono6767/insta-auto-post.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nono6767/insta-auto-post/issues"
+  },
+  "homepage": "https://github.com/nono6767/insta-auto-post#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "zod": "^4.6.5"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "private": true
+}
