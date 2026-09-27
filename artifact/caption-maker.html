@@ -1,0 +1,461 @@
+<title>キャプションメーカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f3;
+    --surface: #ffffff;
+    --ink: #1d2724;
+    --muted: #66726d;
+    --line: #dde3df;
+    --accent: #2f6b5e;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3efeb;
+    --deep: #5b4a7a;
+    --deep-soft: #ece7f4;
+    --tag: #2f6b5e;
+    --danger: #b3261e;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #121715;
+      --surface: #1b2220;
+      --ink: #e7ece9;
+      --muted: #9aa6a1;
+      --line: #2b3431;
+      --accent: #6fb5a3;
+      --accent-ink: #0f1a17;
+      --accent-soft: #1f302b;
+      --deep: #b9a6dc;
+      --deep-soft: #2a2436;
+      --tag: #8fcbbb;
+      --danger: #f2877e;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121715;
+    --surface: #1b2220;
+    --ink: #e7ece9;
+    --muted: #9aa6a1;
+    --line: #2b3431;
+    --accent: #6fb5a3;
+    --accent-ink: #0f1a17;
+    --accent-soft: #1f302b;
+    --deep: #b9a6dc;
+    --deep-soft: #2a2436;
+    --tag: #8fcbbb;
+    --danger: #f2877e;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px 0;
+  }
+  header h1 { margin: 0; font-size: 17px; text-align: center; letter-spacing: 0.04em; }
+  .tabs { display: flex; max-width: 600px; margin: 6px auto 0; }
+  .tab {
+    flex: 1; padding: 10px 0 12px; background: none; border: 0;
+    border-bottom: 2px solid transparent; color: var(--muted);
+    font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .count {
+    display: inline-block; min-width: 20px; margin-left: 4px; padding: 0 6px;
+    border-radius: 10px; background: var(--accent); color: var(--accent-ink);
+    font-size: 12px; line-height: 20px; font-variant-numeric: tabular-nums;
+  }
+
+  main { max-width: 600px; margin: 0 auto; padding: 16px 16px 40px; display: grid; gap: 16px; }
+  .view { display: grid; gap: 16px; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  .step { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 16px; font-weight: 700; text-wrap: balance; }
+  .num {
+    display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none;
+    border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 13px;
+  }
+  .sub { margin: -4px 0 0; color: var(--muted); font-size: 14px; }
+
+  textarea {
+    width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.7; resize: vertical;
+  }
+  textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .btn {
+    display: block; width: 100%; min-height: 48px; margin-top: 12px; border: 0; border-radius: 12px;
+    background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .btn.done { background: var(--accent-soft); color: var(--accent); }
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-line {
+    flex: 1; min-height: 44px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .btn-del { min-height: 44px; padding: 0 14px; border: 0; background: none; color: var(--danger); font: inherit; font-weight: 700; cursor: pointer; }
+  .btn-del.armed { background: var(--danger); color: #fff; border-radius: 12px; }
+
+  .results-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .sample-note { font-size: 13px; color: var(--muted); }
+
+  .cap { display: grid; gap: 10px; }
+  .cap-head { display: flex; align-items: center; gap: 8px; }
+  .cap-no { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chip { padding: 1px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--accent-soft); color: var(--accent); }
+  .cap.deep { border-color: var(--deep); }
+  .cap.deep .chip { background: var(--deep-soft); color: var(--deep); }
+  .cap.deep .btn { background: var(--deep); color: var(--surface); }
+  .cap.deep .btn.done { background: var(--deep-soft); color: var(--deep); }
+  .tags { margin: 0; color: var(--tag); font-size: 14px; word-break: break-word; }
+
+  .status { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); font-size: 14px; }
+  .status.err { background: transparent; border: 1px solid var(--danger); color: var(--danger); font-weight: 700; }
+
+  .saved-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .saved-theme { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+  .saved-text { margin: 8px 0 0; white-space: pre-wrap; word-break: break-word; }
+  .empty { text-align: center; color: var(--muted); padding: 32px 0; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translateX(-50%);
+    padding: 10px 18px; border-radius: 999px; background: var(--ink); color: var(--bg);
+    font-size: 14px; font-weight: 700; z-index: 10;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cap { animation: rise 0.25s ease-out both; }
+    @keyframes rise { from { transform: translateY(6px); } to { transform: none; } }
+  }
+</style>
+
+<header>
+  <h1>キャプションメーカー</h1>
+  <nav class="tabs" role="tablist">
+    <button class="tab" id="tab-create" role="tab" aria-selected="true" data-view="create">作成</button>
+    <button class="tab" id="tab-saved" role="tab" aria-selected="false" data-view="saved">保存済み<span class="count" id="count" hidden></span></button>
+  </nav>
+</header>
+
+<main>
+  <section class="view" id="view-create">
+    <form class="panel" id="form">
+      <label class="step" for="theme"><span class="num">1</span>今日の投稿テーマ・素材メモ</label>
+      <textarea id="theme" rows="4" required placeholder="例：デスクワークで肩が上がりっぱなし。呼吸が浅い人が多い。">デスクワークで肩が上がりっぱなし。呼吸が浅い人が多い。</textarea>
+      <button class="btn" id="gen" type="submit">キャプションを3案つくる</button>
+    </form>
+
+    <p class="status" id="status" hidden></p>
+
+    <div class="view" id="results">
+      <div class="results-head">
+        <h2 class="step"><span class="num">2</span>今日の気分で選んで保存</h2>
+        <span class="sample-note" id="sample-note">下は見本です</span>
+      </div>
+      <p class="sub">案1は深めトーン、案2・3は軽めトーン。本文はそのまま直せます。</p>
+      <div class="view" id="caps"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-saved" hidden>
+    <div class="view" id="saved"></div>
+    <p class="empty" id="saved-empty">まだ保存した投稿文はありません。</p>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+const STYLE_GUIDE = `あなたはピラティスインストラクターのInstagramアカウントの投稿文を書く、日本語のコピーライターです。
+下の「今日の投稿テーマ・素材メモ」をもとに、Instagram投稿用のキャプション案を3つ作ります。
+その日の気分で選べるよう、deep に「深めトーン」の案を1つ、light に軽めトーンの案を2つ入れてください。
+
+## deep：深めトーン（以下のスタイルガイドに沿う）
+
+### 書き方の型（この順番で構成する）
+1. 日常のあるある（スマホ、姿勢、生活習慣など、読者が身に覚えのある場面）
+2. それによって体で実際に起きていること（専門知識に基づく、でも難しい専門用語は使わない）
+3. ピラティス的な視点の転換（「実はこう捉えると変わる」という一言）
+4. 具体的な身体感覚の描写（「〜な感じ」という、実際にやってみたくなる表現）
+5. 短い呼びかけで締める（断定せず、読者に委ねる終わり方）
+
+### トーンのルール
+- 「〜が大切です」「〜しましょう」のような教える口調・当たり前を言う口調は使わない
+- 「〜なんです」より「〜だなって思った」のような、気づきベースの語り口にする
+- 抽象的な話だけで終わらせず、必ず具体的な身体感覚とセットにする
+- 全体は短め（3〜5文程度）でもよく、5要素を全部無理に入れなくてよい
+- 絵文字は使わないか、ごく控えめにする
+
+## light：軽めトーン（2案）
+- 2案はそれぞれトーンを変える（例：親しみやすい／情報しっかり／短くエモーショナル）
+- 改行や絵文字を適度に使い、気軽に読めるようにする
+
+## 3案共通
+- style にはその案のトーンを10文字程度で書く
+- text は本文のみ（ハッシュタグは含めない）。スマホで読みやすいよう適度に改行する
+- hashtags には「#」付きのハッシュタグを5〜10個入れる
+- メモに無い事実（価格・日付・店名など）は作らない
+
+## 出力形式
+次の形のJSONだけを返してください。
+{"deep":{"style":"深めトーン","text":"...","hashtags":["#..."]},"light":[{"style":"...","text":"...","hashtags":["#..."]},{"style":"...","text":"...","hashtags":["#..."]}]}`;
+
+const DEEP = "深めトーン";
+
+const EXAMPLE = [
+  { style: DEEP, deep: true,
+    text: "パソコンに向かってると、気づいたら肩が耳に近づいてる。\n肩が上がると肋骨も固まって、息が胸の上のほうでしか入らなくなるんだなって思った。\n肩を「下げる」より、背中の肋骨を横にふくらませるつもりで吸ってみると、肩が勝手にすとんと落ちる感じがある。\n今日のどこかで、一回だけ試してみる？",
+    hashtags: ["#ピラティス", "#呼吸", "#肩こり", "#デスクワーク", "#からだの使い方"] },
+  { style: "親しみやすい",
+    text: "デスクワーク中、肩上がってませんか？🙋‍♀️\n私もさっき気づいて、そっと下ろしました笑\nひと呼吸ついでに、肩の力ぬいていきましょ〜☕️",
+    hashtags: ["#デスクワーク", "#肩こり", "#ピラティス", "#ゆるストレッチ", "#在宅ワーク"] },
+  { style: "情報しっかり",
+    text: "【呼吸が浅い人のサイン】\n✔️ 気づくと肩が上がっている\n✔️ 夕方になると首や肩が重い\n✔️ ため息がよく出る\n\nひとつでも当てはまったら、保存して明日のレッスン前に見返してね📌",
+    hashtags: ["#呼吸", "#姿勢改善", "#ピラティス", "#肩こり解消", "#保存推奨"] },
+];
+
+const state = { theme: "", sample: null, db: null, saved: [] };
+let genCtl = null;
+
+// ---------- helpers ----------
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (t.hidden = true), 1800);
+}
+function status(msg, isErr) {
+  const s = $("status");
+  s.textContent = msg || "";
+  s.className = "status" + (isErr ? " err" : "");
+  s.hidden = !msg;
+}
+function setCount(n) {
+  $("count").textContent = n;
+  $("count").hidden = n === 0;
+}
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function cleanTags(tags) {
+  return (Array.isArray(tags) ? tags : []).map((t) => String(t).trim()).filter(Boolean)
+    .map((t) => (t.startsWith("#") ? t : "#" + t));
+}
+
+// ---------- tabs ----------
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const v = tab.dataset.view;
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+    $("view-create").hidden = v !== "create";
+    $("view-saved").hidden = v !== "saved";
+  });
+});
+
+// ---------- ② render drafts ----------
+function renderCaps(caps, isExample) {
+  const box = $("caps");
+  box.replaceChildren();
+  $("sample-note").hidden = !isExample;
+
+  caps.forEach((c, i) => {
+    const card = el("article", "panel cap" + (c.deep ? " deep" : ""));
+    const head = el("div", "cap-head");
+    head.append(el("span", "cap-no", "案" + (i + 1)), el("span", "chip", c.style));
+    const ta = el("textarea");
+    ta.id = "cap-text-" + i;
+    ta.rows = c.deep ? 9 : 6;
+    ta.value = c.text;
+    const tags = el("p", "tags", c.hashtags.join(" "));
+    const btn = el("button", "btn", isExample ? "見本のため保存できません" : "この案を保存");
+    btn.type = "button";
+    btn.disabled = isExample;
+    btn.addEventListener("click", () => saveCaption(c, ta.value, btn));
+    card.append(head, ta, tags, btn);
+    box.append(card);
+  });
+}
+
+// ---------- ① → ② generate ----------
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const theme = $("theme").value.trim();
+  if (!theme) return;
+  if (!state.sample) {
+    status("この表示ではAIを呼び出せません。claude.ai にログインした状態で開いてください。", true);
+    return;
+  }
+
+  const btn = $("gen");
+  btn.disabled = true;
+  btn.textContent = "AIが考え中…（30秒ほど）";
+  status("");
+  genCtl = new AbortController();
+
+  try {
+    const out = await state.sample.json(STYLE_GUIDE + "\n\n## 今日の投稿テーマ・素材メモ\n" + theme, {
+      cache: false,
+      signal: genCtl.signal,
+    });
+    const deep = out && out.deep;
+    const light = out && Array.isArray(out.light) ? out.light : [];
+    if (!deep || !deep.text || light.length < 2) throw { code: "invalid_json" };
+    const caps = [
+      { style: DEEP, deep: true, text: String(deep.text), hashtags: cleanTags(deep.hashtags) },
+      ...light.slice(0, 2).map((c) => ({ style: String(c.style || "軽めトーン"), text: String(c.text || ""), hashtags: cleanTags(c.hashtags) })),
+    ];
+    state.theme = theme;
+    renderCaps(caps, false);
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    status(errorText(err && err.code), true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "キャプションを3案つくる";
+  }
+});
+
+function errorText(code) {
+  switch (code) {
+    case "cancelled": return "";
+    case "not_granted": return "AIの利用が許可されませんでした。ページを開き直して「許可」を選ぶと使えます。";
+    case "sampling_disabled": return "このアカウントではAIを呼び出せません。";
+    case "rate_limited": return "利用が集中しています。少し時間をおいてからもう一度押してください。";
+    case "session_expired": return "ログインが切れています。claude.ai にログインし直してください。";
+    case "refused": return "この内容では案を作れませんでした。テーマを少し変えてみてください。";
+    case "invalid_json":
+    case "empty_completion": return "うまく3案を受け取れませんでした。もう一度押してください。";
+    default: return "AIの呼び出しに失敗しました。もう一度押してください。";
+  }
+}
+
+// ---------- ③ save ----------
+async function saveCaption(c, text, btn) {
+  if (!state.db) { toast("この表示では保存できません"); return; }
+  btn.disabled = true;
+  try {
+    await state.db.collection("captions").add({
+      theme: state.theme,
+      style: c.style,
+      deep: !!c.deep,
+      text,
+      hashtags: c.hashtags,
+      savedAt: new Date().toISOString(),
+    });
+    btn.textContent = "保存しました ✓";
+    btn.classList.add("done");
+    toast("保存しました");
+  } catch (err) {
+    btn.disabled = false;
+    toast(err && err.code === "quota_exceeded" ? "保存数の上限です。古いものを削除してください" : "保存できませんでした");
+  }
+}
+
+// ---------- saved list ----------
+function renderSaved() {
+  const box = $("saved");
+  box.replaceChildren();
+  setCount(state.saved.length);
+  $("saved-empty").hidden = state.saved.length > 0;
+
+  state.saved.forEach((snap) => {
+    const d = snap.data();
+    const card = el("article", "panel");
+    const meta = el("div", "saved-meta");
+    const when = d.savedAt ? new Date(d.savedAt).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+    const chip = el("span", "chip", d.style || "");
+    if (d.deep) { chip.style.background = "var(--deep-soft)"; chip.style.color = "var(--deep)"; }
+    meta.append(el("span", null, when));
+    if (d.style) meta.append(chip);
+    card.append(meta);
+    if (d.theme) card.append(el("p", "saved-theme", "テーマ：" + d.theme));
+    const body = el("p", "saved-text", d.text || "");
+    const tags = el("p", "tags", (d.hashtags || []).join(" "));
+    tags.style.marginTop = "8px";
+    card.append(body, tags);
+
+    const row = el("div", "row");
+    const copy = el("button", "btn-line", "コピー");
+    copy.type = "button";
+    copy.addEventListener("click", async () => {
+      const full = [d.text, (d.hashtags || []).join(" ")].filter(Boolean).join("\n\n");
+      try {
+        await navigator.clipboard.writeText(full);
+        toast("コピーしました");
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(body);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        toast("本文を選択しました。長押しでコピーしてください");
+      }
+    });
+    const del = el("button", "btn-del", "削除");
+    del.type = "button";
+    del.addEventListener("click", async () => {
+      if (!del.classList.contains("armed")) {
+        del.classList.add("armed");
+        del.textContent = "本当に削除";
+        setTimeout(() => { del.classList.remove("armed"); del.textContent = "削除"; }, 3000);
+        return;
+      }
+      del.disabled = true;
+      try {
+        await state.db.doc("captions/" + snap.id).delete();
+        toast("削除しました");
+      } catch {
+        del.disabled = false;
+        toast("削除できませんでした");
+      }
+    });
+    row.append(copy, del);
+    card.append(row);
+    box.append(card);
+  });
+}
+
+// ---------- boot ----------
+renderCaps(EXAMPLE, true);
+
+(async () => {
+  const [sample, db] = await Promise.all([
+    window.claude ? claude.use("sample") : null,
+    window.claude ? claude.use("db") : null,
+  ]);
+  state.sample = sample;
+  state.db = db;
+  if (!sample) status("この表示ではAIを呼び出せません。claude.ai にログインした状態で開いてください。", true);
+  if (db) {
+    db.collection("captions").orderBy("savedAt", "desc").onSnapshot(
+      (snap) => { state.saved = snap.docs; renderSaved(); },
+      () => { $("saved-empty").textContent = "保存済みを読み込めませんでした。"; }
+    );
+  } else {
+    $("saved-empty").textContent = "この表示では保存済みを読み込めません。";
+  }
+})();
+</script>
