@@ -17,26 +17,49 @@ const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5";
 // APIキーが無い場合はダミーの案を返す「お試しモード」で動かす
 const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
 
-const CaptionsSchema = z.object({
-  captions: z
-    .array(
-      z.object({
-        style: z.string(),
-        text: z.string(),
-        hashtags: z.array(z.string()),
-      })
-    )
-    .length(3),
+const CaptionSchema = z.object({
+  style: z.string(),
+  text: z.string(),
+  hashtags: z.array(z.string()),
 });
 
-const SYSTEM_PROMPT = `あなたはInstagram運用に詳しい日本語のコピーライターです。
-ユーザーが入力した「今日の投稿テーマ・素材メモ」をもとに、Instagram投稿用のキャプション案を3つ作ってください。
+// 深めトーン1案＋軽めトーン2案を構造で固定し、深めトーンが必ず含まれるようにする
+const CaptionsSchema = z.object({
+  deep: CaptionSchema,
+  light: z.array(CaptionSchema).length(2),
+});
 
-- 3案はそれぞれトーンを変えてください（例：親しみやすい／情報しっかり／短くエモーショナル）。
-- style にはその案のトーンを10文字程度で書いてください。
-- text は本文のみ（ハッシュタグは含めない）。改行や絵文字を適度に使い、スマホで読みやすくしてください。
-- hashtags には「#」付きのハッシュタグを5〜10個入れてください。
-- メモに無い事実（価格・日付・店名など）は作らないでください。`;
+const DEEP_STYLE_LABEL = "深めトーン";
+
+const SYSTEM_PROMPT = `あなたはピラティスインストラクターのInstagramアカウントの投稿文を書く、日本語のコピーライターです。
+ユーザーが入力した「今日の投稿テーマ・素材メモ」をもとに、Instagram投稿用のキャプション案を3つ作ります。
+その日の気分で選べるよう、deep に「深めトーン」の案を1つ、light に軽めトーンの案を2つ入れてください。
+
+## deep：深めトーン（以下のスタイルガイドに沿う）
+
+### 書き方の型（この順番で構成する）
+1. 日常のあるある（スマホ、姿勢、生活習慣など、読者が身に覚えのある場面）
+2. それによって体で実際に起きていること（専門知識に基づく、でも難しい専門用語は使わない）
+3. ピラティス的な視点の転換（「実はこう捉えると変わる」という一言）
+4. 具体的な身体感覚の描写（「〜な感じ」という、実際にやってみたくなる表現）
+5. 短い呼びかけで締める（断定せず、読者に委ねる終わり方）
+
+### トーンのルール
+- 「〜が大切です」「〜しましょう」のような教える口調・当たり前を言う口調は使わない
+- 「〜なんです」より「〜だなって思った」のような、気づきベースの語り口にする
+- 抽象的な話だけで終わらせず、必ず具体的な身体感覚とセットにする
+- 全体は短め（3〜5文程度）でもよく、5要素を全部無理に入れなくてよい
+- 絵文字は使わないか、ごく控えめにする
+
+## light：軽めトーン（2案）
+- 2案はそれぞれトーンを変える（例：親しみやすい／情報しっかり／短くエモーショナル）
+- 改行や絵文字を適度に使い、気軽に読めるようにする
+
+## 3案共通
+- style にはその案のトーンを10文字程度で書く（deep の style は「${DEEP_STYLE_LABEL}」とする）
+- text は本文のみ（ハッシュタグは含めない）。スマホで読みやすいよう適度に改行する
+- hashtags には「#」付きのハッシュタグを5〜10個入れる
+- メモに無い事実（価格・日付・店名など）は作らない`;
 
 async function generateCaptions(theme) {
   if (!client) return mockCaptions(theme);
@@ -55,12 +78,18 @@ async function generateCaptions(theme) {
   if (!response.parsed_output) {
     throw new HttpError(502, "AIの応答を読み取れませんでした。もう一度お試しください。");
   }
-  return response.parsed_output.captions;
+  const { deep, light } = response.parsed_output;
+  return [{ ...deep, style: DEEP_STYLE_LABEL }, ...light];
 }
 
 function mockCaptions(theme) {
   const short = theme.split("\n")[0].slice(0, 40);
   return [
+    {
+      style: DEEP_STYLE_LABEL,
+      text: `スマホを見てると、気づいたら首が前に出てる。\n頭の重さを首の後ろだけで支えてるから、夕方には肩までガチガチになるんだなって思った。\n首を「伸ばす」より、頭のてっぺんが糸でふわっと吊られる感じにすると、肩がすっと下りていく。\n「${short}」の日、ちょっと試してみる？`,
+      hashtags: ["#ピラティス", "#姿勢改善", "#スマホ首", "#からだの使い方"],
+    },
     {
       style: "親しみやすい",
       text: `今日は「${short}」の話☺️\nちょっとした発見があったのでシェアします！\nみなさんはどう思いますか？コメントで教えてね👇`,
@@ -70,11 +99,6 @@ function mockCaptions(theme) {
       style: "情報しっかり",
       text: `【${short}】\n\n✔️ ポイント1\n✔️ ポイント2\n✔️ ポイント3\n\n保存してあとで見返してください📌`,
       hashtags: ["#まとめ", "#保存推奨", "#暮らしのヒント"],
-    },
-    {
-      style: "短くエモい",
-      text: `${short}。\nそれだけで、いい一日。`,
-      hashtags: ["#なんでもない日", "#エモい", "#photooftheday"],
     },
   ];
 }
