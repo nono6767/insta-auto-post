@@ -119,7 +119,9 @@ async function renderSavingsJar() {
   }
   lastCoinCount = deps.length;
   const mask = `url(bottles/${bottle.id}-mask.webp)`;
-  $("savings-jar").innerHTML = `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="貯金瓶（コイン${deps.length}枚）">
+  // 幅もピクセルで指定しておく（iPhone の Safari で幅が0になって瓶が見えなくなるのを防ぐ）
+  const jarWidth = ((270 * bottle.w) / bottle.h).toFixed(1);
+  $("savings-jar").innerHTML = `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h};width:${jarWidth}px" role="img" aria-label="貯金瓶（コイン${deps.length}枚）">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${coins}</div>
     <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
   </div>`;

@@ -623,6 +623,7 @@ main {
 
 /* ---------- 貯金瓶 ---------- */
 .savings-hero { display: grid; justify-items: center; gap: 6px; padding: 18px 16px 14px; }
+.savings-jar { justify-self: stretch; width: 100%; } /* 幅をはっきり決める（iPhoneで瓶の幅が0になるのを防ぐ） */
 .savings-jar .bottle { height: 270px; margin: 0 auto; }
 .savings-left { margin: 0; font-size: 15px; color: var(--muted); }
 .savings-left strong { font-size: 28px; color: var(--ink); font-variant-numeric: tabular-nums; margin: 0 2px; }
