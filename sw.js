@@ -1,7 +1,7 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
 importScripts("js/bottles.js");
-const CACHE = "n-app-cache-v11";
+const CACHE = "n-app-cache-v12";
 const FILES = [
   "./",
   "index.html",
@@ -11,6 +11,7 @@ const FILES = [
   "js/meals.js",
   "js/body.js",
   "js/clothes.js",
+  "js/savings.js",
   "js/backup.js",
   "img/n.webp",
   "manifest.webmanifest",

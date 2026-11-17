@@ -180,6 +180,7 @@ $("restore-input").addEventListener("change", async () => {
     `ごはん ${Object.keys(d.meals || {}).length}日分`,
     `からだ ${Object.keys(d.body || {}).length}日分・生理 ${(d.periods || []).length}回`,
     `服 ${(d.clothes || []).length}着・写真 ${(obj.photos || []).length}枚`,
+    `貯金 ${((d.savings && d.savings.deposits) || []).length}回分`,
   ];
   $("restore-summary").textContent = parts.join("／");
   $("settings-modal").hidden = true;

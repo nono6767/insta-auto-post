@@ -120,6 +120,32 @@
       <input type="file" id="photo-input" accept="image/*" hidden>
     </section>
 
+    <!-- 貯金瓶 -->
+    <section id="page-savings" class="page" hidden>
+      <h2 class="section-title">貯金瓶</h2>
+      <div class="card savings-hero">
+        <div class="savings-jar" id="savings-jar"></div>
+        <p class="savings-left" id="savings-left"></p>
+      </div>
+
+      <div id="savings-actions">
+        <button class="primary-btn wide coin-btn" type="button" id="savings-weekly">今週の分を入れた</button>
+        <button class="text-btn small" type="button" id="savings-weekly-undo" hidden>今週の分を取り消す</button>
+        <button class="choice-btn wide-choice" type="button" id="savings-extra">＋ 追加で入れる</button>
+      </div>
+
+      <div class="card savings-setup" id="savings-setup" hidden>
+        <div class="modal-n" id="savings-setup-n"></div>
+        <p>まずは、毎週いくら入れるかと、目標を決めよう。</p>
+        <button class="primary-btn" type="button" id="savings-setup-btn">貯金瓶の設定をする</button>
+      </div>
+
+      <div class="card meal-card" id="savings-history-card" hidden>
+        <h3 class="meal-title">入れた記録</h3>
+        <ul class="period-list" id="savings-history"></ul>
+      </div>
+    </section>
+
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
@@ -145,6 +171,10 @@
     <button class="tabbar-btn" type="button" data-page="clothes">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2m-2 2v1.5L3.5 15a1.4 1.4 0 0 0 .9 2.5h15.2a1.4 1.4 0 0 0 .9-2.5L12 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       服
+    </button>
+    <button class="tabbar-btn" type="button" data-page="savings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 8.5 12 12l2.5-3.5M9 12.5h6M9 15h6M12 12v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      貯金
     </button>
     <button class="tabbar-btn" type="button" data-page="shelf">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M3 13h18M6 13V8h4v5M14 13V6h4v7M7 20v-4h3v4M14 20v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -205,6 +235,10 @@
           <span class="settings-label">体重を変える</span>
           <span class="settings-sub">消費カロリーの計算に使うよ</span>
         </button>
+        <button class="settings-item" type="button" id="settings-savings">
+          <span class="settings-label">貯金瓶の設定</span>
+          <span class="settings-sub" id="settings-savings-sub">毎週の金額・目標金額・期限</span>
+        </button>
         <button class="settings-item" type="button" id="backup-save">
           <span class="settings-label">バックアップを保存</span>
           <span class="settings-sub" id="backup-last"></span>
@@ -220,6 +254,39 @@
       </div>
       <input type="file" id="restore-input" accept=".json,application/json" hidden>
     </div>
+  </div>
+
+  <!-- 貯金瓶の設定 -->
+  <div class="modal-backdrop" id="savings-modal" hidden>
+    <form class="modal card" id="savings-form">
+      <h3>貯金瓶の設定</h3>
+      <label class="text-field"><span>毎週の金額</span>
+        <span class="yen-input"><input type="number" id="savings-weekly-amount" inputmode="numeric" min="1" step="1" required placeholder="例：1000"><span>円</span></span></label>
+      <label class="text-field"><span>目標金額</span>
+        <span class="yen-input"><input type="number" id="savings-goal" inputmode="numeric" min="1" step="1" required placeholder="例：50000"><span>円</span></span></label>
+      <label class="text-field"><span>期限（なくてもOK）</span><input type="date" id="savings-deadline"></label>
+      <p class="hint">毎週の金額を変えても、これまでに入れた分はそのまま残るよ。</p>
+      <p class="field-error" id="savings-error" hidden></p>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="savings-cancel">やめる</button>
+        <button class="primary-btn" type="submit">保存</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 追加で入れる -->
+  <div class="modal-backdrop" id="extra-modal" hidden>
+    <form class="modal card" id="extra-form">
+      <h3>追加で入れる</h3>
+      <p>キラッとした特別なコインが入るよ</p>
+      <label class="text-field"><span>金額</span>
+        <span class="yen-input"><input type="number" id="extra-amount" inputmode="numeric" min="1" step="1" required placeholder="例：500"><span>円</span></span></label>
+      <p class="field-error" id="extra-error" hidden></p>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="extra-cancel">やめる</button>
+        <button class="primary-btn" type="submit">入れる</button>
+      </div>
+    </form>
   </div>
 
   <!-- バックアップから戻す前の確認 -->
@@ -318,6 +385,7 @@
   <script src="js/meals.js"></script>
   <script src="js/body.js"></script>
   <script src="js/clothes.js"></script>
+  <script src="js/savings.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>
