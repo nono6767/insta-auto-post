@@ -146,6 +146,17 @@ main {
   opacity: .92;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / .45);
 }
+.bottle .flower {
+  position: absolute;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  animation: bob 3.2s ease-in-out infinite;
+}
+.bottle .flower .flower-svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 0 rgb(255 255 255 / .8)); }
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-6%) rotate(8deg); }
+}
 .bottle .glass {
   position: relative;
   display: block;

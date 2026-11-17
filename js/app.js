@@ -114,8 +114,29 @@ function bottleForWeek(start) {
 }
 let newBottleThisVisit = null;
 
-// 瓶の絵：色の層（瓶の形で切り抜き）の上に、瓶の画像を重ねる
-function bottleHtml(logs, bottle) {
+// 花まるの絵（ごはんタブのカレンダーと、瓶に浮かぶお花で使う）
+function hanamaruSvg(cls = "hanamaru") {
+  const inBottle = cls === "flower-svg"; // 瓶の中では白いふちどりで目立たせる
+  const petals = [0, 72, 144, 216, 288]
+    .map((deg) => `<ellipse cx="12" cy="6.2" rx="3.6" ry="4.6" transform="rotate(${deg} 12 12)"/>`)
+    .join("");
+  const outline = inBottle ? `<g fill="#fff" stroke="#fff" stroke-width="2.4">${petals}</g>` : "";
+  return `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${outline}<g fill="${inBottle ? "#ff8fb3" : "#f6a5bd"}">${petals}</g><circle cx="12" cy="12" r="3.2" fill="#f2b544"/></svg>`;
+}
+
+// その週の「おやつ・つまみ食いをしなかった日」の数（＝瓶に浮かぶお花の数）
+function weekFlowerCount(start) {
+  let n = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = parseKey(start);
+    d.setDate(d.getDate() + i);
+    if (data.meals && data.meals[dateKey(d)] && data.meals[dateKey(d)].snack === "none") n++;
+  }
+  return n;
+}
+
+// 瓶の絵：色の層（瓶の形で切り抜き）とお花の上に、瓶の画像を重ねる
+function bottleHtml(logs, bottle, flowerCount = 0) {
   const range = bottle.bottom - bottle.top;
   let used = 0;
   let layers = "";
@@ -129,8 +150,14 @@ function bottleHtml(logs, bottle) {
     layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${sport ? sport.color : "#ddd"}"></span>`;
   }
   const mask = `url(bottles/${bottle.id}-mask.png)`;
-  return `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${bottle.name}">
-    <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}</div>
+  const spots = (bottle.flowers || []).slice(0, Math.min(flowerCount, 7));
+  const size = ((11 * bottle.h) / bottle.w).toFixed(1); // お花の大きさ：瓶の高さの11%
+  const flowers = spots
+    .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
+    .join("");
+  const label = flowerCount > 0 ? `${bottle.name}（お花${spots.length}つ）` : bottle.name;
+  return `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
+    <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="bottles/${bottle.id}.png" alt="" width="${bottle.w}" height="${bottle.h}">
   </div>`;
 }
@@ -163,7 +190,7 @@ function renderHome() {
   $("n-figure").innerHTML = nCharacterHtml(quotaDone || full ? "happy" : "normal");
   $("n-bubble").textContent = pickMessage(full ? "full" : quotaDone ? "quota" : todayMin > 0 ? "some" : "zero");
   const bottle = bottleForWeek(weekStartKey(dateKey()));
-  $("jar").innerHTML = bottleHtml(week, bottle);
+  $("jar").innerHTML = bottleHtml(week, bottle, weekFlowerCount(weekStartKey(dateKey())));
   $("jar-caption").textContent = full ? `${bottle.name}（いっぱい！）` : `今週は${bottle.name}`;
 
   $("today-min").textContent = todayMin;
@@ -247,7 +274,7 @@ function renderShelf() {
     end.setDate(end.getDate() + 6);
     const fig = document.createElement("figure");
     fig.className = "shelf-item" + (start === thisWeek ? " this-week" : "");
-    fig.innerHTML = bottleHtml([...logs].sort((a, b) => a.ts - b.ts), bottleForWeek(start));
+    fig.innerHTML = bottleHtml([...logs].sort((a, b) => a.ts - b.ts), bottleForWeek(start), weekFlowerCount(start));
     const cap = document.createElement("figcaption");
     cap.textContent = start === thisWeek ? "今週" : `${shortDate(start)}〜${shortDate(dateKey(end))}`;
     fig.append(cap);
@@ -274,6 +301,7 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
     });
     window.scrollTo(0, 0);
     document.dispatchEvent(new CustomEvent("pagechange", { detail: page }));
+    if (page === "home" || page === "shelf") renderAll(); // ごはんの花まるなどを反映
   });
 });
 

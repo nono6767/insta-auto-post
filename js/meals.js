@@ -42,14 +42,6 @@ function setMeal(key, path, value) {
   saveData();
 }
 
-// 花まるの絵
-function hanamaruSvg() {
-  const petals = [0, 72, 144, 216, 288]
-    .map((deg) => `<ellipse cx="12" cy="6.2" rx="3.6" ry="4.6" transform="rotate(${deg} 12 12)"/>`)
-    .join("");
-  return `<svg viewBox="0 0 24 24" class="hanamaru" aria-label="花まる"><g fill="#f6a5bd">${petals}</g><circle cx="12" cy="12" r="3.2" fill="#f2b544"/></svg>`;
-}
-
 function choiceRow(options, current, onPick, color) {
   const row = document.createElement("div");
   row.className = "choice-row";
