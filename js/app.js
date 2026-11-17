@@ -18,7 +18,7 @@ const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
 const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 
 const STORAGE_KEY = "n-undou-bin.v1";
-const APP_VERSION = "11/17-9"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/17-10"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -150,7 +150,7 @@ function bottleHtml(logs, bottle, flowerCount = 0) {
     const sport = sportById(log.type);
     layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${sport ? sport.color : "#ddd"}"></span>`;
   }
-  const mask = `url(bottles/${bottle.id}-mask.png)`;
+  const mask = `url(bottles/${bottle.id}-mask.webp)`;
   const spots = (bottle.flowers || []).slice(0, Math.min(flowerCount, 7));
   const size = ((11 * bottle.h) / bottle.w).toFixed(1); // お花の大きさ：瓶の高さの11%
   const flowers = spots
@@ -159,7 +159,7 @@ function bottleHtml(logs, bottle, flowerCount = 0) {
   const label = flowerCount > 0 ? `${bottle.name}（お花${spots.length}つ）` : bottle.name;
   return `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
-    <img class="glass" src="bottles/${bottle.id}.png" alt="" width="${bottle.w}" height="${bottle.h}">
+    <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
   </div>`;
 }
 

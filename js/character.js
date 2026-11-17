@@ -1,5 +1,5 @@
 // キャラクター「N」の表示。mood: "normal"（ふつう）/ "happy"（よろこび）
-// 絵は img/n.png。よろこんでいるときはハートを出して、ぴょんと跳ねます。
+// 絵は img/n.webp。よろこんでいるときはハートを出して、ぴょんと跳ねます。
 function nCharacterHtml(mood = "normal") {
   const happy = mood === "happy";
   const hearts = happy
@@ -8,7 +8,7 @@ function nCharacterHtml(mood = "normal") {
        <span class="n-heart h3" aria-hidden="true">♥</span>`
     : "";
   return `<div class="n-char${happy ? " happy" : ""}">
-    <img src="img/n.png" alt="${happy ? "よろこぶN" : "N"}" width="522" height="900">
+    <img src="img/n.webp" alt="${happy ? "よろこぶN" : "N"}" width="410" height="707">
     ${hearts}
   </div>`;
 }
