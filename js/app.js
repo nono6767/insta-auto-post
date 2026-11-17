@@ -31,7 +31,7 @@ function loadData() {
   } catch (e) {
     console.warn("データを読み込めませんでした", e);
   }
-  return { weight: null, logs: [] };
+  return { weight: null, logs: [], weekBottles: {} };
 }
 
 function saveData() {
@@ -88,40 +88,51 @@ function burnText(kcal) {
   return `約${Math.round(kcal)}kcal・脂肪 約${fatOf(kcal).toFixed(1)}g`;
 }
 
-// ---------- 瓶の絵 ----------
+// ---------- 瓶 ----------
 
-let jarSeq = 0;
-function jarSvg(logs) {
-  const id = "jar-clip-" + jarSeq++;
-  const bottom = 242;
-  const fillTop = 48;
-  const fullH = bottom - fillTop;
+const bottleById = (id) => BOTTLES.find((b) => b.id === id) || BOTTLES[0];
 
-  let y = bottom;
-  let layers = "";
+// その週の瓶。まだ決まっていなければランダムに選んで覚えておく（前後の週とそっくりな瓶は選ばない）
+function bottleForWeek(start) {
+  if (!data.weekBottles) data.weekBottles = {};
+  const saved = data.weekBottles[start];
+  if (saved && BOTTLES.some((b) => b.id === saved)) return bottleById(saved);
+
+  const neighbor = (days) => {
+    const d = parseKey(start);
+    d.setDate(d.getDate() + days);
+    return data.weekBottles[dateKey(d)];
+  };
+  const groupOf = (id) => (id ? bottleById(id).group || id : null);
+  const avoid = [groupOf(neighbor(-7)), groupOf(neighbor(7))];
+  const choices = BOTTLES.filter((b) => !avoid.includes(b.group || b.id));
+  const pick = choices[Math.floor(Math.random() * choices.length)];
+  data.weekBottles[start] = pick.id;
+  saveData();
+  if (start === weekStartKey(dateKey())) newBottleThisVisit = pick;
+  return pick;
+}
+let newBottleThisVisit = null;
+
+// 瓶の絵：色の層（瓶の形で切り抜き）の上に、瓶の画像を重ねる
+function bottleHtml(logs, bottle) {
+  const range = bottle.bottom - bottle.top;
   let used = 0;
+  let layers = "";
   for (const log of logs) {
     if (used >= WEEK_GOAL_MIN) break;
     const min = Math.min(log.min, WEEK_GOAL_MIN - used);
+    const from = 100 - bottle.bottom + (used / WEEK_GOAL_MIN) * range;
+    const h = (min / WEEK_GOAL_MIN) * range;
     used += min;
-    const h = (min / WEEK_GOAL_MIN) * fullH;
-    y -= h;
     const sport = sportById(log.type);
-    layers += `<rect x="30" y="${y.toFixed(2)}" width="140" height="${(h + 0.6).toFixed(2)}" fill="${sport ? sport.color : "#ddd"}"/>`;
-    layers += `<rect x="30" y="${y.toFixed(2)}" width="140" height="1.4" fill="#fff" opacity=".45"/>`;
+    layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${sport ? sport.color : "#ddd"}"></span>`;
   }
-
-  const body = "M68 46 C68 58 36 62 36 92 L36 214 C36 232 50 242 68 242 L132 242 C150 242 164 232 164 214 L164 92 C164 62 132 58 132 46 Z";
-  return `<svg viewBox="0 0 200 250" role="img" aria-label="運動の瓶" xmlns="http://www.w3.org/2000/svg">
-    <defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>
-    <path d="${body}" fill="#ffffff" opacity=".7"/>
-    <g clip-path="url(#${id})">${layers}</g>
-    <path d="${body}" fill="none" stroke="#efd3dc" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M50 100 C50 84 58 76 66 72 M48 116 L48 196" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".75"/>
-    <rect x="66" y="30" width="68" height="18" rx="5" fill="#fbe9ef" stroke="#efd3dc" stroke-width="3"/>
-    <rect x="58" y="8" width="84" height="24" rx="8" fill="#f6b6c8"/>
-    <rect x="58" y="22" width="84" height="10" rx="4" fill="#ee9fb5"/>
-  </svg>`;
+  const mask = `url(bottles/${bottle.id}-mask.png)`;
+  return `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${bottle.name}">
+    <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}</div>
+    <img class="glass" src="bottles/${bottle.id}.png" alt="" width="${bottle.w}" height="${bottle.h}">
+  </div>`;
 }
 
 // ---------- 画面の描画 ----------
@@ -151,8 +162,9 @@ function renderHome() {
 
   $("n-figure").innerHTML = nCharacterHtml(quotaDone || full ? "happy" : "normal");
   $("n-bubble").textContent = pickMessage(full ? "full" : quotaDone ? "quota" : todayMin > 0 ? "some" : "zero");
-  $("jar").innerHTML = jarSvg(week);
-  $("jar-caption").textContent = full ? "今週の瓶（いっぱい！）" : "今週の瓶";
+  const bottle = bottleForWeek(weekStartKey(dateKey()));
+  $("jar").innerHTML = bottleHtml(week, bottle);
+  $("jar-caption").textContent = full ? `${bottle.name}（いっぱい！）` : `今週は${bottle.name}`;
 
   $("today-min").textContent = todayMin;
   $("today-kcal").textContent = Math.round(todayKcal);
@@ -219,7 +231,7 @@ function renderShelf() {
     end.setDate(end.getDate() + 6);
     const fig = document.createElement("figure");
     fig.className = "shelf-item" + (start === thisWeek ? " this-week" : "");
-    fig.innerHTML = jarSvg([...logs].sort((a, b) => a.ts - b.ts));
+    fig.innerHTML = bottleHtml([...logs].sort((a, b) => a.ts - b.ts), bottleForWeek(start));
     const cap = document.createElement("figcaption");
     cap.textContent = start === thisWeek ? "今週" : `${shortDate(start)}〜${shortDate(dateKey(end))}`;
     fig.append(cap);
@@ -394,6 +406,7 @@ $("weight-form").addEventListener("submit", (ev) => {
   $("weight-modal").hidden = true;
   renderAll();
   showToast(first ? "準備できたよ！" : "体重を変更したよ");
+  if (first) setTimeout(announceBottle, 2200);
 });
 $("weight-cancel").addEventListener("click", () => {
   $("weight-modal").hidden = true;
@@ -412,13 +425,24 @@ function showToast(msg) {
 
 // ---------- 起動 ----------
 
+// 新しい週の瓶が決まったらお知らせ
+function announceBottle() {
+  if (!newBottleThisVisit || !data.weight) return;
+  showToast(`今週の瓶は「${newBottleThisVisit.name}」だよ！`);
+  newBottleThisVisit = null;
+}
+
 buildSportButtons();
 renderAll();
 if (!data.weight) openWeightModal(true);
+else announceBottle();
 
 // 日付が変わってから開き直したときに表示を更新
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) renderAll();
+  if (!document.hidden) {
+    renderAll();
+    announceBottle();
+  }
 });
 
 // データが勝手に消されにくくするお願い（対応しているブラウザのみ）

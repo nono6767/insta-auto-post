@@ -1,6 +1,7 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
-const CACHE = "n-undou-bin-v2";
+importScripts("js/bottles.js");
+const CACHE = "n-undou-bin-v3";
 const FILES = [
   "./",
   "index.html",
@@ -12,6 +13,8 @@ const FILES = [
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
+  "js/bottles.js",
+  ...BOTTLES.flatMap((b) => [`bottles/${b.id}.png`, `bottles/${b.id}-mask.png`]),
 ];
 
 self.addEventListener("install", (event) => {
