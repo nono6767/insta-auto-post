@@ -1,7 +1,7 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
 importScripts("js/bottles.js");
-const CACHE = "n-undou-bin-v7";
+const CACHE = "n-undou-bin-v8";
 const FILES = [
   "./",
   "index.html",
@@ -9,6 +9,7 @@ const FILES = [
   "js/character.js",
   "js/app.js",
   "js/meals.js",
+  "js/body.js",
   "img/n.png",
   "manifest.webmanifest",
   "icons/icon-192.png",

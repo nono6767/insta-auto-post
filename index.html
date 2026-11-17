@@ -79,6 +79,36 @@
       </div>
     </section>
 
+    <!-- からだ（体調・気分・生理） -->
+    <section id="page-body" class="page" hidden>
+      <div class="day-nav">
+        <button class="icon-btn nav-arrow" type="button" id="body-prev" aria-label="前の日">‹</button>
+        <h2 class="day-nav-title" id="body-day-title">今日</h2>
+        <button class="icon-btn nav-arrow" type="button" id="body-next" aria-label="次の日">›</button>
+      </div>
+
+      <div class="week-strip card" id="body-week" aria-label="今週のからだ"></div>
+
+      <div class="card meal-card">
+        <h3 class="meal-title">体調</h3>
+        <div class="choice-row" id="condition-row"></div>
+        <h3 class="meal-title mt">気分</h3>
+        <div class="choice-row" id="mood-row"></div>
+      </div>
+
+      <div class="card meal-card">
+        <h3 class="meal-title">生理</h3>
+        <p class="period-status" id="period-status"></p>
+        <button class="period-btn" type="button" id="period-btn"></button>
+        <p class="soft-note" id="period-note" hidden></p>
+      </div>
+
+      <div class="card meal-card" id="period-history-card" hidden>
+        <h3 class="meal-title">これまでの生理</h3>
+        <ul class="period-list" id="period-list"></ul>
+      </div>
+    </section>
+
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
@@ -96,6 +126,10 @@
     <button class="tabbar-btn" type="button" data-page="meals">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16a8 8 0 0 1-16 0Zm3-3c0-2 2-2 2-4m3 4c0-2 2-2 2-4m3 4c0-2 2-2 2-4M8 20h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       ごはん
+    </button>
+    <button class="tabbar-btn" type="button" data-page="body">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      からだ
     </button>
     <button class="tabbar-btn" type="button" data-page="shelf">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M3 13h18M6 13V8h4v5M14 13V6h4v7M7 20v-4h3v4M14 20v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -159,11 +193,27 @@
     </div>
   </div>
 
+  <!-- 生理の日付を直す -->
+  <div class="modal-backdrop" id="period-modal" hidden>
+    <form class="modal card" id="period-form">
+      <h3>生理の日付を直す</h3>
+      <label class="date-field"><span>始まった日</span><input type="date" id="period-start" required></label>
+      <label class="date-field"><span>終わった日</span><input type="date" id="period-end"></label>
+      <p class="field-error" id="period-error" hidden></p>
+      <div class="modal-actions">
+        <button class="text-btn danger" type="button" id="period-delete">この記録を消す</button>
+        <button class="primary-btn" type="submit">保存</button>
+      </div>
+      <button class="text-btn" type="button" id="period-cancel">やめる</button>
+    </form>
+  </div>
+
   <div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button class="toast-action" type="button" id="toast-action" hidden></button></div>
 
   <script src="js/character.js"></script>
   <script src="js/bottles.js"></script>
   <script src="js/app.js"></script>
   <script src="js/meals.js"></script>
+  <script src="js/body.js"></script>
 </body>
 </html>

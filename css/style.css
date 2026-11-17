@@ -488,3 +488,43 @@ main {
 .choice-btn.on { border-color: var(--on); background: var(--on); color: #fff; }
 
 .modal .app-version { margin-top: 14px; font-size: 11px; color: var(--muted); opacity: .8; }
+
+/* ---------- からだ ---------- */
+.meal-title.mt { margin-top: 10px; }
+.gb-dots { display: flex; gap: 3px; height: 8px; }
+.gb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.gb-dot.good { background: #5fc39b; }
+.gb-dot.bad { background: #9a8fb5; }
+.gb-dot.none { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.drop-icon { width: 20px; height: 20px; flex: none; }
+.period-status { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; color: var(--muted); }
+.period-btn {
+  min-height: 52px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.period-btn.start { background: #fde2e2; color: #c95b5b; }
+.period-btn.end { background: var(--rose); color: #fff; }
+.period-btn.plain { background: var(--surface); border: 2px solid var(--line); color: var(--ink); }
+.soft-note { margin: 4px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--rose-soft); font-size: 13px; line-height: 1.6; }
+.period-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.period-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.period-item:last-child { border-bottom: 0; }
+.period-range { font-weight: 700; font-variant-numeric: tabular-nums; }
+.period-meta { flex: 1; font-size: 12px; color: var(--muted); }
+.date-field { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-weight: 700; font-size: 14px; }
+.date-field input {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+#period-form .modal-actions { justify-content: space-between; }
+#period-cancel { display: block; margin: 4px auto 0; }

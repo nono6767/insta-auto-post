@@ -18,7 +18,7 @@ const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
 const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 
 const STORAGE_KEY = "n-undou-bin.v1";
-const APP_VERSION = "11/17-7"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/17-8"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -32,7 +32,7 @@ function loadData() {
   } catch (e) {
     console.warn("データを読み込めませんでした", e);
   }
-  return { weight: null, logs: [], weekBottles: {}, meals: {} };
+  return { weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [] };
 }
 
 function saveData() {
@@ -189,7 +189,10 @@ function renderHome() {
   const full = weekMin >= WEEK_GOAL_MIN;
 
   $("n-figure").innerHTML = nCharacterHtml(quotaDone || full ? "happy" : "normal");
-  $("n-bubble").textContent = pickMessage(full ? "full" : quotaDone ? "quota" : todayMin > 0 ? "some" : "zero");
+  // からだのひとこと（生理中・前回から間が空いたとき）は、お祝いがないときにさりげなく
+  const bodyNote = typeof bodyBubble === "function" ? bodyBubble() : null;
+  $("n-bubble").textContent =
+    full ? pickMessage("full") : quotaDone ? pickMessage("quota") : bodyNote || pickMessage(todayMin > 0 ? "some" : "zero");
   const bottle = bottleForWeek(weekStartKey(dateKey()));
   $("jar").innerHTML = bottleHtml(week, bottle, weekFlowerCount(weekStartKey(dateKey())));
   $("jar-caption").textContent = full ? `${bottle.name}（いっぱい！）` : `今週は${bottle.name}`;
