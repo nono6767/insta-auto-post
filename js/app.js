@@ -20,7 +20,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/17-14"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/17-15"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -206,7 +206,10 @@ function renderHome() {
   const quotaDone = todayMin >= DAILY_QUOTA_MIN;
   const full = weekMin >= WEEK_GOAL_MIN;
 
-  $("n-figure").innerHTML = nCharacterHtml(quotaDone || full ? "happy" : "normal");
+  // 場面に合わせて N のポーズを変える
+  const bodyCare = typeof bodyBubble === "function" && !!bodyBubble();
+  const pose = full ? "full" : quotaDone ? "quota" : bodyCare ? "relax" : todayMin > 0 ? "workout" : "cheer";
+  $("n-figure").innerHTML = nCharacterHtml(pose);
   // からだのひとこと（生理中・前回から間が空いたとき）は、お祝いがないときにさりげなく
   const bodyNote = typeof bodyBubble === "function" ? bodyBubble() : null;
   const clothesNote = typeof clothesBubble === "function" ? clothesBubble() : null;
@@ -498,7 +501,7 @@ function celebrate(before) {
   const todayMin = sumMin(todayLogs());
   const weekMin = sumMin(weekLogs());
   if (before.week < WEEK_GOAL_MIN && weekMin >= WEEK_GOAL_MIN) {
-    $("full-n").innerHTML = nCharacterHtml("happy");
+    $("full-n").innerHTML = nCharacterHtml("full");
     $("full-modal").hidden = false;
   } else if (before.today < DAILY_QUOTA_MIN && todayMin >= DAILY_QUOTA_MIN) {
     const n = $("n-figure");
@@ -525,7 +528,7 @@ function openWeightModal(first) {
   $("weight-form").querySelector(".primary-btn").textContent = first ? "はじめる" : "変更する";
   $("weight-input").value = "";
   $("weight-error").hidden = true;
-  $("weight-n").innerHTML = nCharacterHtml("normal");
+  $("weight-n").innerHTML = nCharacterHtml("wave");
   $("weight-modal").hidden = false;
 }
 

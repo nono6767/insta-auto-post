@@ -134,9 +134,12 @@ function renderSavings() {
   const ready = savingsReady();
   $("savings-setup").hidden = ready;
   $("savings-actions").hidden = !ready;
-  if (!ready) $("savings-setup-n").innerHTML = nCharacterHtml("normal");
+  if (!ready) $("savings-setup-n").innerHTML = nCharacterHtml("wave");
 
   const left = ready ? timesLeft() : null;
+  const goalN = $("savings-goal-n");
+  goalN.hidden = left !== 0;
+  if (left === 0) goalN.innerHTML = nCharacterHtml("love");
   $("savings-left").innerHTML = !ready
     ? ""
     : left === 0

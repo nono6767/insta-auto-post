@@ -84,24 +84,11 @@ main {
   align-items: end;
   gap: 8px;
 }
-.n-char { position: relative; }
-.n-char img { display: block; width: 100%; height: auto; }
-.n-char.happy img { animation: hop .7s ease-out 1; }
+/* ポーズごとに絵の形がちがうので、いつも同じ枠（ふだんのNと同じ縦長）におさめて下にそろえる */
+.n-char { position: relative; aspect-ratio: 410 / 707; }
+.n-char img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+.n-char.hop img { animation: hop .7s ease-out 1; }
 .n-wrap.bounce img { animation: hop .6s ease-out 2; }
-.n-heart {
-  position: absolute;
-  color: var(--rose);
-  font-size: 22px;
-  line-height: 1;
-  animation: float 2.4s ease-in-out infinite;
-}
-.n-heart.h1 { top: 4%; right: 2%; }
-.n-heart.h2 { top: 20%; left: 0; font-size: 16px; animation-delay: .8s; }
-.n-heart.h3 { top: 36%; right: -2%; font-size: 14px; animation-delay: 1.5s; }
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); opacity: .9; }
-  50% { transform: translateY(-8px) scale(1.12); opacity: 1; }
-}
 @keyframes hop {
   0%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10px); }

@@ -384,7 +384,7 @@ function maybeShowMonthlyCheck() {
   $("check-text").textContent = clothes().length
     ? "お気に入りの服を着て、写真を撮ってみよう。前回とくらべられるよ。"
     : "お気に入りの服を登録して、着た写真を撮ってみよう。来月くらべられるよ。";
-  $("check-n").innerHTML = nCharacterHtml("happy");
+  $("check-n").innerHTML = nCharacterHtml("love");
   $("check-modal").hidden = false;
 }
 $("check-later").addEventListener("click", () => {
