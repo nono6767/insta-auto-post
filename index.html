@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nのうんどう瓶</title>
+  <meta name="theme-color" content="#fff5f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nのうんどう瓶">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Nのうんどう瓶</h1>
+    <button class="icon-btn" id="settings-btn" type="button" aria-label="設定">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.6 4.6-1.9 1.1.2 2.2-2.1 1.2-1.8-1.3-2 .8-.6 2.1h-2.4l-.6-2.1-2-.8-1.8 1.3-2.1-1.2.2-2.2-1.9-1.1V10.9l1.9-1.1-.2-2.2 2.1-1.2 1.8 1.3 2-.8.6-2.1h2.4l.6 2.1 2 .8 1.8-1.3 2.1 1.2-.2 2.2 1.9 1.1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- ホーム -->
+    <section id="page-home" class="page">
+      <div class="hero">
+        <div class="n-wrap" id="n-figure"></div>
+        <div class="hero-side">
+          <p class="bubble" id="n-bubble">今日もいっしょにがんばろ〜</p>
+          <div class="jar-wrap">
+            <div id="jar"></div>
+            <p class="jar-caption" id="jar-caption">今週の瓶</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="today card">
+        <div class="today-head">
+          <h2>今日の運動</h2>
+          <span class="stamp" id="quota-stamp" hidden>ノルマクリア</span>
+        </div>
+        <div class="today-stats">
+          <div><span class="big" id="today-min">0</span><span class="unit">分</span></div>
+          <div><span class="big" id="today-kcal">0</span><span class="unit">kcal</span></div>
+          <div><span class="big" id="today-fat">0</span><span class="unit">g の脂肪</span></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">どの運動をした？</h2>
+      <div class="sports" id="sports"></div>
+
+      <h2 class="section-title">今日の記録</h2>
+      <ul class="log-list" id="log-list"></ul>
+      <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
+    </section>
+
+    <!-- 瓶の棚 -->
+    <section id="page-shelf" class="page" hidden>
+      <h2 class="section-title">瓶の棚</h2>
+      <p class="lead">いっぱいになった週の瓶がここに並ぶよ。</p>
+      <div class="shelf" id="shelf"></div>
+      <p class="empty" id="shelf-empty">まだ並んでいる瓶はないよ。今週の瓶をいっぱいにしよう！</p>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tabbar-btn" type="button" data-page="home" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      ホーム
+    </button>
+    <button class="tabbar-btn" type="button" data-page="shelf">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M3 13h18M6 13V8h4v5M14 13V6h4v7M7 20v-4h3v4M14 20v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      瓶の棚
+    </button>
+  </nav>
+
+  <!-- 運動の時間を選ぶシート -->
+  <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-handle"></div>
+    <div id="sheet-pick">
+      <h3 id="sheet-title" class="sheet-title"></h3>
+      <p class="sheet-sub">時間をタップすると記録されるよ</p>
+      <div class="preset-row" id="preset-row"></div>
+    </div>
+    <div id="sheet-done" hidden>
+      <p class="done-title" id="done-title"></p>
+      <p class="done-burn" id="done-burn"></p>
+      <div class="adjust-row">
+        <button class="adjust-btn" type="button" data-add="5">+5分</button>
+        <button class="adjust-btn" type="button" data-add="10">+10分</button>
+      </div>
+      <div class="sheet-actions">
+        <button class="text-btn" type="button" id="undo-btn">取り消す</button>
+        <button class="primary-btn" type="button" id="done-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 最初の設定・設定変更 -->
+  <div class="modal-backdrop" id="weight-modal" hidden>
+    <form class="modal card" id="weight-form">
+      <div class="modal-n" id="weight-n"></div>
+      <h3 id="weight-title">はじめまして！</h3>
+      <p id="weight-text">消費カロリーを計算するために、体重を1回だけ教えてね。画面には表示しないよ。</p>
+      <label class="field">
+        <span>体重</span>
+        <input id="weight-input" type="number" inputmode="decimal" min="25" max="200" step="0.1" required placeholder="例：52">
+        <span>kg</span>
+      </label>
+      <p class="field-error" id="weight-error" hidden>25〜200 の数字で入れてね</p>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="weight-cancel" hidden>やめる</button>
+        <button class="primary-btn" type="submit">はじめる</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 瓶がいっぱいになったお祝い -->
+  <div class="modal-backdrop" id="full-modal" hidden>
+    <div class="modal card">
+      <div class="modal-n" id="full-n"></div>
+      <h3>瓶がいっぱいになったよ！</h3>
+      <p>今週の瓶は「瓶の棚」に並べておくね。すごい！</p>
+      <div class="modal-actions">
+        <button class="primary-btn" type="button" id="full-ok">やったー</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="js/character.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
