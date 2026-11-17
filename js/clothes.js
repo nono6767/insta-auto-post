@@ -5,8 +5,11 @@
 // 写真はスマホの中（IndexedDB）にだけ保存。服のリストは localStorage。
 // =========================================================
 
-const PHOTO_MAX_PX = 1200;    // 写真の長い辺をこの大きさまで小さくして保存
-const PHOTO_QUALITY = 0.82;   // JPEG の画質
+// 写真は見くらべ画面でも縦320pxくらいでしか出ないので、その2倍くらいの大きさで保存する
+const PHOTO_MAX_PX = 800;         // 写真の長い辺をこの大きさまで小さくして保存
+const PHOTO_JPEG_QUALITY = 0.72;  // JPEG の画質（iPhone はこちら）
+const PHOTO_WEBP_QUALITY = 0.7;   // WebP の画質（WebP で保存できるスマホはこちら。さらに軽い）
+const PHOTO_SIZE_VERSION = 2;     // 前の設定で保存した写真を小さくし直したかの目印
 
 // ---------- 写真の保存場所（IndexedDB） ----------
 
@@ -81,19 +84,16 @@ async function deletePhotosOf(clothId) {
   for (const p of await photosOf(clothId)) await deletePhoto(p.id);
 }
 
-// 写真を小さくして JPEG にする（向きはブラウザが自動で直してくれる）
-function shrinkPhoto(file) {
+const canvasToBlob = (canvas, type, q) => new Promise((res) => canvas.toBlob(res, type, q));
+
+// 写真（ファイルや保存ずみの画像）を読み込む。向きはブラウザが自動で直してくれる
+function loadImage(blob) {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => {
-      const scale = Math.min(1, PHOTO_MAX_PX / Math.max(img.naturalWidth, img.naturalHeight));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(img.naturalWidth * scale);
-      canvas.height = Math.round(img.naturalHeight * scale);
-      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))), "image/jpeg", PHOTO_QUALITY);
+      resolve(img);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -102,6 +102,46 @@ function shrinkPhoto(file) {
     img.src = url;
   });
 }
+
+// 写真を小さくして、いちばん軽い形式で保存できるようにする
+async function shrinkPhoto(blob) {
+  const img = await loadImage(blob);
+  const scale = Math.min(1, PHOTO_MAX_PX / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+  const jpeg = await canvasToBlob(canvas, "image/jpeg", PHOTO_JPEG_QUALITY);
+  // WebP で保存できるスマホなら WebP も作って、軽いほうを使う（iPhone はたいてい JPEG になる）
+  const webp = await canvasToBlob(canvas, "image/webp", PHOTO_WEBP_QUALITY);
+  const best = webp && webp.type === "image/webp" && (!jpeg || webp.size < jpeg.size) ? webp : jpeg;
+  if (!best) throw new Error("写真を作れませんでした");
+  return best;
+}
+
+// 前の設定（長い辺1200px）で保存した写真を、今の設定で小さくし直す（1回だけ）
+async function reshrinkOldPhotos() {
+  if ((data.photoSizeVersion || 1) >= PHOTO_SIZE_VERSION) return 0;
+  let changed = 0;
+  for (const p of await allPhotos()) {
+    try {
+      const img = await loadImage(p.blob);
+      if (Math.max(img.naturalWidth, img.naturalHeight) <= PHOTO_MAX_PX + 8) continue;
+      const smaller = await shrinkPhoto(p.blob);
+      if (smaller.size < p.blob.size) {
+        await addPhoto({ ...p, blob: smaller });
+        changed++;
+      }
+    } catch (e) {
+      console.warn("写真を小さくし直せませんでした", e);
+    }
+  }
+  data.photoSizeVersion = PHOTO_SIZE_VERSION;
+  saveData();
+  return changed;
+}
+
+const kb = (bytes) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)}MB` : `${Math.max(1, Math.round(bytes / 1024))}KB`);
 
 // 表示用のURL（作り直すたびに前のものを片付ける）
 let photoUrls = [];
@@ -146,6 +186,12 @@ async function renderClothes() {
   const list = $("clothes-list");
   const items = clothes();
   $("clothes-empty").hidden = items.length > 0;
+
+  // 写真がスマホの中でどれくらい場所を使っているか
+  const all = await allPhotos();
+  const usage = $("photo-usage");
+  usage.hidden = all.length === 0;
+  usage.textContent = `写真 ${all.length}枚・合計 ${kb(all.reduce((t, p) => t + p.blob.size, 0))}（1枚あたり約${kb(all.reduce((t, p) => t + p.blob.size, 0) / Math.max(1, all.length))}）`;
 
   const cards = [];
   for (const c of items) {
@@ -355,7 +401,13 @@ document.addEventListener("pagechange", (e) => {
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) renderClothes().then(() => { renderAll(); maybeShowMonthlyCheck(); });
 });
-renderClothes().then(() => {
+renderClothes().then(async () => {
   renderAll(); // ホームのNの吹き出しに服チェックを反映
   maybeShowMonthlyCheck();
+  // 前に撮った写真を軽くし直す（終わったら表示を更新）
+  const changed = await reshrinkOldPhotos();
+  if (changed > 0) {
+    await renderClothes();
+    showToast(`前に撮った写真${changed}枚を軽くしたよ`);
+  }
 });

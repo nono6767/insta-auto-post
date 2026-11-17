@@ -677,3 +677,5 @@ main {
   to { translate: -50% -50%; }
 }
 .coin.mini { position: relative; display: inline-block; flex: none; width: 18px; translate: none; rotate: none; }
+
+.photo-usage { text-align: center; }
