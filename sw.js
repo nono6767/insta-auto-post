@@ -1,7 +1,7 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
 importScripts("js/bottles.js");
-const CACHE = "n-undou-bin-v10";
+const CACHE = "n-app-cache-v11";
 const FILES = [
   "./",
   "index.html",
@@ -11,6 +11,7 @@ const FILES = [
   "js/meals.js",
   "js/body.js",
   "js/clothes.js",
+  "js/backup.js",
   "img/n.webp",
   "manifest.webmanifest",
   "icons/icon-192.png",
@@ -28,7 +29,14 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    // 同じサイトのほかのアプリのキャッシュは消さない（このアプリの古い版だけ消す）
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((k) => k !== CACHE && (k.startsWith("n-app-cache-") || k.startsWith("n-undou-bin-")))
+          .map((k) => caches.delete(k))
+      )
+    )
   );
   self.clients.claim();
 });

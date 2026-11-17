@@ -10,20 +10,56 @@ const PHOTO_QUALITY = 0.82;   // JPEG の画質
 
 // ---------- 写真の保存場所（IndexedDB） ----------
 
+const PHOTO_DB_NAME = "n-app-photos";
+const LEGACY_PHOTO_DB_NAME = "n-undou-bin-photos"; // 前の保存名（自動で引っ越す）
+
 let photoDbPromise = null;
 function photoDb() {
   if (!photoDbPromise) {
     photoDbPromise = new Promise((resolve, reject) => {
-      const req = indexedDB.open("n-undou-bin-photos", 1);
+      const req = indexedDB.open(PHOTO_DB_NAME, 1);
       req.onupgradeneeded = () => {
         const store = req.result.createObjectStore("photos", { keyPath: "id" });
         store.createIndex("clothId", "clothId");
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
+    }).then(async (db) => {
+      await migrateLegacyPhotos(db).catch((e) => console.warn("写真の引っ越しに失敗", e));
+      return db;
     });
   }
   return photoDbPromise;
+}
+
+// 前の保存名の写真を、新しい保存名へコピーしてから前のほうを消す
+function migrateLegacyPhotos(db) {
+  return new Promise((resolve) => {
+    const req = indexedDB.open(LEGACY_PHOTO_DB_NAME);
+    req.onupgradeneeded = () => req.transaction.abort(); // 前の保存場所がない＝引っ越し不要（作らない）
+    req.onerror = () => resolve();
+    req.onsuccess = () => {
+      const old = req.result;
+      if (!old.objectStoreNames.contains("photos")) {
+        old.close();
+        indexedDB.deleteDatabase(LEGACY_PHOTO_DB_NAME);
+        return resolve();
+      }
+      const get = old.transaction("photos").objectStore("photos").getAll();
+      get.onsuccess = () => {
+        const photos = get.result || [];
+        const tx = db.transaction("photos", "readwrite");
+        photos.forEach((p) => tx.objectStore("photos").put(p));
+        tx.oncomplete = () => {
+          old.close();
+          indexedDB.deleteDatabase(LEGACY_PHOTO_DB_NAME);
+          resolve();
+        };
+        tx.onerror = () => { old.close(); resolve(); };
+      };
+      get.onerror = () => { old.close(); resolve(); };
+    };
+  });
 }
 async function photoTx(mode, fn) {
   const db = await photoDb();
@@ -39,6 +75,8 @@ const addPhoto = (photo) => photoTx("readwrite", (s) => s.put(photo));
 const deletePhoto = (id) => photoTx("readwrite", (s) => s.delete(id));
 const photosOf = async (clothId) =>
   ((await photoTx("readonly", (s) => s.index("clothId").getAll(clothId))) || []).sort((a, b) => b.ts - a.ts);
+const allPhotos = async () => (await photoTx("readonly", (s) => s.getAll())) || [];
+const clearPhotos = () => photoTx("readwrite", (s) => s.clear());
 async function deletePhotosOf(clothId) {
   for (const p of await photosOf(clothId)) await deletePhoto(p.id);
 }

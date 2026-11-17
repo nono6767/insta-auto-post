@@ -192,8 +192,47 @@
         <button class="text-btn" type="button" id="weight-cancel" hidden>やめる</button>
         <button class="primary-btn" type="submit">はじめる</button>
       </div>
-      <p class="app-version" id="app-version"></p>
+      <button class="text-btn" type="button" id="weight-restore" hidden>機種変更した人：バックアップから戻す</button>
     </form>
+  </div>
+
+  <!-- 設定 -->
+  <div class="modal-backdrop" id="settings-modal" hidden>
+    <div class="modal card settings">
+      <h3>設定</h3>
+      <div class="settings-list">
+        <button class="settings-item" type="button" id="settings-weight">
+          <span class="settings-label">体重を変える</span>
+          <span class="settings-sub">消費カロリーの計算に使うよ</span>
+        </button>
+        <button class="settings-item" type="button" id="backup-save">
+          <span class="settings-label">バックアップを保存</span>
+          <span class="settings-sub" id="backup-last"></span>
+        </button>
+        <button class="settings-item" type="button" id="backup-restore">
+          <span class="settings-label">バックアップから戻す</span>
+          <span class="settings-sub">保存したファイルを選ぶと、記録が元に戻るよ</span>
+        </button>
+      </div>
+      <p class="app-version" id="app-version"></p>
+      <div class="modal-actions">
+        <button class="primary-btn" type="button" id="settings-close">閉じる</button>
+      </div>
+      <input type="file" id="restore-input" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <!-- バックアップから戻す前の確認 -->
+  <div class="modal-backdrop" id="restore-modal" hidden>
+    <div class="modal card">
+      <h3>このバックアップに戻す？</h3>
+      <p id="restore-summary"></p>
+      <p class="soft-note">今スマホに入っている記録は、このバックアップの中身に置きかわるよ。</p>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="restore-cancel">やめる</button>
+        <button class="primary-btn" type="button" id="restore-go">戻す</button>
+      </div>
+    </div>
   </div>
 
   <!-- 瓶がいっぱいになったお祝い -->
@@ -279,5 +318,6 @@
   <script src="js/meals.js"></script>
   <script src="js/body.js"></script>
   <script src="js/clothes.js"></script>
+  <script src="js/backup.js"></script>
 </body>
 </html>

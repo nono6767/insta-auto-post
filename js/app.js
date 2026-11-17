@@ -17,22 +17,39 @@ const WEEK_GOAL_MIN = 250;   // 瓶が満タンになる分数（画面には出
 const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
 const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 
-const STORAGE_KEY = "n-undou-bin.v1";
-const APP_VERSION = "11/17-10"; // 更新するたびに変える（設定画面に表示）
+// 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
+const STORAGE_KEY = "n-app-data";
+const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
+const APP_VERSION = "11/17-11"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
+const emptyData = () => ({
+  weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [],
+  createdAt: Date.now(), lastBackupAt: null,
+});
+
 function loadData() {
   try {
+    // 前の保存名に記録があれば、新しい保存名へ引っ越す
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy && !localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, legacy);
+    }
+    if (legacy && localStorage.getItem(STORAGE_KEY)) localStorage.removeItem(LEGACY_STORAGE_KEY);
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const d = JSON.parse(raw);
-      if (d && Array.isArray(d.logs)) return d;
+      if (d && Array.isArray(d.logs)) {
+        if (!d.createdAt) d.createdAt = Date.now(); // バックアップのお知らせを数え始める日
+        return d;
+      }
     }
   } catch (e) {
     console.warn("データを読み込めませんでした", e);
   }
-  return { weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [] };
+  return emptyData();
 }
 
 function saveData() {
@@ -192,11 +209,13 @@ function renderHome() {
   // からだのひとこと（生理中・前回から間が空いたとき）は、お祝いがないときにさりげなく
   const bodyNote = typeof bodyBubble === "function" ? bodyBubble() : null;
   const clothesNote = typeof clothesBubble === "function" ? clothesBubble() : null;
+  const backupNote = typeof backupBubble === "function" ? backupBubble() : null;
+  $("settings-btn").classList.toggle("has-dot", !!backupNote);
   $("n-bubble").textContent = full
     ? pickMessage("full")
     : quotaDone
       ? pickMessage("quota")
-      : bodyNote || clothesNote || pickMessage(todayMin > 0 ? "some" : "zero");
+      : bodyNote || clothesNote || backupNote || pickMessage(todayMin > 0 ? "some" : "zero");
   const bottle = bottleForWeek(weekStartKey(dateKey()));
   $("jar").innerHTML = bottleHtml(week, bottle, weekFlowerCount(weekStartKey(dateKey())));
   $("jar-caption").textContent = full ? `${bottle.name}（いっぱい！）` : `今週は${bottle.name}`;
@@ -501,11 +520,11 @@ function openWeightModal(first) {
     ? "消費カロリーを計算するために、体重を1回だけ教えてね。画面には表示しないよ。"
     : "新しい体重を入れてね。画面には表示しないよ。";
   $("weight-cancel").hidden = first;
+  $("weight-restore").hidden = !first; // 機種変更のときは、最初の画面からバックアップを戻せる
   $("weight-form").querySelector(".primary-btn").textContent = first ? "はじめる" : "変更する";
   $("weight-input").value = "";
   $("weight-error").hidden = true;
   $("weight-n").innerHTML = nCharacterHtml("normal");
-  $("app-version").textContent = `アプリの版：${APP_VERSION}`;
   $("weight-modal").hidden = false;
 }
 
@@ -527,7 +546,6 @@ $("weight-form").addEventListener("submit", (ev) => {
 $("weight-cancel").addEventListener("click", () => {
   $("weight-modal").hidden = true;
 });
-$("settings-btn").addEventListener("click", () => openWeightModal(false));
 
 // ---------- トースト ----------
 
