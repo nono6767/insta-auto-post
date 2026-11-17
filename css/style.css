@@ -84,8 +84,24 @@ main {
   align-items: end;
   gap: 8px;
 }
-.n-wrap svg { display: block; width: 100%; height: auto; }
-.n-wrap.bounce svg { animation: hop .6s ease-out 2; }
+.n-char { position: relative; }
+.n-char img { display: block; width: 100%; height: auto; }
+.n-char.happy img { animation: hop .7s ease-out 1; }
+.n-wrap.bounce img { animation: hop .6s ease-out 2; }
+.n-heart {
+  position: absolute;
+  color: var(--rose);
+  font-size: 22px;
+  line-height: 1;
+  animation: float 2.4s ease-in-out infinite;
+}
+.n-heart.h1 { top: 4%; right: 2%; }
+.n-heart.h2 { top: 20%; left: 0; font-size: 16px; animation-delay: .8s; }
+.n-heart.h3 { top: 36%; right: -2%; font-size: 14px; animation-delay: 1.5s; }
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: .9; }
+  50% { transform: translateY(-8px) scale(1.12); opacity: 1; }
+}
 @keyframes hop {
   0%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10px); }
@@ -307,8 +323,7 @@ main {
 .modal { width: 100%; max-width: 360px; text-align: center; }
 .modal h3 { margin: 4px 0 6px; font-size: 19px; }
 .modal p { margin: 0; font-size: 14px; color: var(--muted); }
-.modal-n { width: 96px; margin: 0 auto; }
-.modal-n svg { display: block; width: 100%; height: auto; }
+.modal-n { width: 92px; margin: 0 auto; }
 .modal .modal-actions { justify-content: center; }
 .field {
   display: flex;

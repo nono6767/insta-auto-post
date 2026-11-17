@@ -149,7 +149,7 @@ function renderHome() {
   const quotaDone = todayMin >= DAILY_QUOTA_MIN;
   const full = weekMin >= WEEK_GOAL_MIN;
 
-  $("n-figure").innerHTML = nCharacterSvg(quotaDone || full ? "happy" : "normal");
+  $("n-figure").innerHTML = nCharacterHtml(quotaDone || full ? "happy" : "normal");
   $("n-bubble").textContent = pickMessage(full ? "full" : quotaDone ? "quota" : todayMin > 0 ? "some" : "zero");
   $("jar").innerHTML = jarSvg(week);
   $("jar-caption").textContent = full ? "今週の瓶（いっぱい！）" : "今週の瓶";
@@ -352,7 +352,7 @@ function celebrate(before) {
   const todayMin = sumMin(todayLogs());
   const weekMin = sumMin(weekLogs());
   if (before.week < WEEK_GOAL_MIN && weekMin >= WEEK_GOAL_MIN) {
-    $("full-n").innerHTML = nCharacterSvg("happy");
+    $("full-n").innerHTML = nCharacterHtml("happy");
     $("full-modal").hidden = false;
   } else if (before.today < DAILY_QUOTA_MIN && todayMin >= DAILY_QUOTA_MIN) {
     const n = $("n-figure");
@@ -377,7 +377,7 @@ function openWeightModal(first) {
   $("weight-form").querySelector(".primary-btn").textContent = first ? "はじめる" : "変更する";
   $("weight-input").value = "";
   $("weight-error").hidden = true;
-  $("weight-n").innerHTML = nCharacterSvg("normal");
+  $("weight-n").innerHTML = nCharacterHtml("normal");
   $("weight-modal").hidden = false;
 }
 

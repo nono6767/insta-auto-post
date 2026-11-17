@@ -1,12 +1,13 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
-const CACHE = "n-undou-bin-v1";
+const CACHE = "n-undou-bin-v2";
 const FILES = [
   "./",
   "index.html",
   "css/style.css",
   "js/character.js",
   "js/app.js",
+  "img/n.png",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",
