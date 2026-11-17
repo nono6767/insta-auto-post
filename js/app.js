@@ -31,7 +31,7 @@ function loadData() {
   } catch (e) {
     console.warn("データを読み込めませんでした", e);
   }
-  return { weight: null, logs: [], weekBottles: {} };
+  return { weight: null, logs: [], weekBottles: {}, meals: {} };
 }
 
 function saveData() {
@@ -269,9 +269,11 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
       if (b === btn) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
-    $("page-home").hidden = page !== "home";
-    $("page-shelf").hidden = page !== "shelf";
+    document.querySelectorAll(".page").forEach((sec) => {
+      sec.hidden = sec.id !== "page-" + page;
+    });
     window.scrollTo(0, 0);
+    document.dispatchEvent(new CustomEvent("pagechange", { detail: page }));
   });
 });
 

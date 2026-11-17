@@ -410,3 +410,68 @@ main {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- ごはん ---------- */
+.day-nav {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 46px);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 6px 16px;
+  background: var(--bg);
+}
+#meal-cards { display: grid; gap: 12px; }
+.day-nav-title { margin: 0; font-size: 18px; }
+.icon-btn.nav-arrow {
+  position: static;
+  width: 44px;
+  height: 44px;
+  background: var(--surface);
+  box-shadow: 0 2px 0 var(--line);
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+}
+.icon-btn.nav-arrow:disabled { opacity: .3; }
+
+.week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px 8px; }
+.week-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 70px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+}
+.week-cell:disabled { opacity: .35; }
+.week-cell .wd { font-size: 11px; color: var(--muted); }
+.week-cell .dn { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.week-cell.today .dn { color: var(--rose); }
+.week-cell.current { background: var(--rose-soft); }
+.week-cell .mark { display: grid; place-items: center; width: 24px; height: 24px; }
+.hanamaru { width: 24px; height: 24px; }
+.mark-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+
+.meal-card { display: grid; gap: 6px; }
+.meal-title { margin: 0; font-size: 16px; }
+.meal-q { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.hint { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.choice-row { display: flex; gap: 8px; }
+.choice-btn {
+  flex: 1;
+  min-height: 46px;
+  padding: 0 6px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+.choice-btn.on { border-color: var(--on); background: var(--on); color: #fff; }

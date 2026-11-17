@@ -60,6 +60,25 @@
       <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
     </section>
 
+    <!-- ごはん -->
+    <section id="page-meals" class="page" hidden>
+      <div class="day-nav">
+        <button class="icon-btn nav-arrow" type="button" id="meal-prev" aria-label="前の日">‹</button>
+        <h2 class="day-nav-title" id="meal-day-title">今日</h2>
+        <button class="icon-btn nav-arrow" type="button" id="meal-next" aria-label="次の日">›</button>
+      </div>
+
+      <div class="week-strip card" id="meal-week" aria-label="今週の花まる"></div>
+
+      <div id="meal-cards"></div>
+
+      <div class="card meal-card">
+        <h3 class="meal-title">おやつ・つまみ食い</h3>
+        <div class="choice-row" id="snack-row"></div>
+        <p class="hint">しなかった日には花まるがつくよ</p>
+      </div>
+    </section>
+
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
@@ -73,6 +92,10 @@
     <button class="tabbar-btn" type="button" data-page="home" aria-current="page">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       ホーム
+    </button>
+    <button class="tabbar-btn" type="button" data-page="meals">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16a8 8 0 0 1-16 0Zm3-3c0-2 2-2 2-4m3 4c0-2 2-2 2-4m3 4c0-2 2-2 2-4M8 20h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ごはん
     </button>
     <button class="tabbar-btn" type="button" data-page="shelf">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M3 13h18M6 13V8h4v5M14 13V6h4v7M7 20v-4h3v4M14 20v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -140,5 +163,6 @@
   <script src="js/character.js"></script>
   <script src="js/bottles.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/meals.js"></script>
 </body>
 </html>
