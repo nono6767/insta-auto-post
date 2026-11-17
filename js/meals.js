@@ -139,6 +139,7 @@ function renderMeals() {
       choiceRow(SNACK_CHOICES, day.snack, (v) => {
         setMeal(mealDay, ["snack"], v);
         renderMeals();
+        renderAll(); // ホームと棚の瓶に浮かぶお花の数もすぐ更新
         if (v) nice(v === "none" ? "snack_none" : "snack_ate");
       }, "var(--rose)"),
       { id: "snack-row" }

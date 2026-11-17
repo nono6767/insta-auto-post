@@ -1,7 +1,7 @@
 // オフラインでも開けるようにするしくみ（サービスワーカー）
 // ネットにつながっているときは最新版を取りに行き、つながらないときは保存しておいた版を使います。
 importScripts("js/bottles.js");
-const CACHE = "n-undou-bin-v6";
+const CACHE = "n-undou-bin-v7";
 const FILES = [
   "./",
   "index.html",
@@ -19,7 +19,8 @@ const FILES = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
+  // ブラウザに残っている古いファイルを使わず、必ず最新をダウンロードして保存する
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))));
   self.skipWaiting();
 });
 
@@ -33,8 +34,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  // 「no-cache」：毎回サーバーに最新か確認する（新旧のファイルが混ざらないように）
+  const fresh = new Request(req.url, { cache: "no-cache", credentials: "same-origin" });
   event.respondWith(
-    fetch(req)
+    fetch(fresh)
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(req, copy));

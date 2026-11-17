@@ -18,6 +18,7 @@ const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
 const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 
 const STORAGE_KEY = "n-undou-bin.v1";
+const APP_VERSION = "11/17-7"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -497,6 +498,7 @@ function openWeightModal(first) {
   $("weight-input").value = "";
   $("weight-error").hidden = true;
   $("weight-n").innerHTML = nCharacterHtml("normal");
+  $("app-version").textContent = `アプリの版：${APP_VERSION}`;
   $("weight-modal").hidden = false;
 }
 
@@ -568,8 +570,25 @@ if (navigator.storage && navigator.storage.persist) {
 }
 
 // オフラインでも開けるようにする（PWA）
+// 新しい版が届いたら、自動で1回だけ読み込み直して最新の版に切りかえる
 if ("serviceWorker" in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController && !reloaded) {
+      reloaded = true;
+      location.reload();
+    }
+  });
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker
+      .register("sw.js", { updateViaCache: "none" })
+      .then((reg) => {
+        // アプリに戻ってきたときにも新しい版がないか確認する
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden) reg.update().catch(() => {});
+        });
+      })
+      .catch(() => {});
   });
 }

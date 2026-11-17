@@ -486,3 +486,5 @@ main {
   font-weight: 700;
 }
 .choice-btn.on { border-color: var(--on); background: var(--on); color: #fff; }
+
+.modal .app-version { margin-top: 14px; font-size: 11px; color: var(--muted); opacity: .8; }
