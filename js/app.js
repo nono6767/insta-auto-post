@@ -171,41 +171,57 @@ function renderHome() {
   $("today-fat").textContent = fatOf(todayKcal).toFixed(1);
   $("quota-stamp").hidden = !quotaDone;
 
-  const list = $("log-list");
-  list.replaceChildren();
-  $("log-empty").hidden = today.length > 0;
-  for (const log of [...today].sort((a, b) => b.ts - a.ts)) {
-    const sport = sportById(log.type);
-    const li = document.createElement("li");
-    li.className = "log-item";
-    li.innerHTML = `
-      <span class="dot" style="--c:${sport.color}"></span>
-      <div class="log-main">
-        <div class="log-name"></div>
-        <div class="log-burn"></div>
-      </div>
-      <span class="log-min"></span>
-      <button class="del-btn" type="button">消す</button>`;
-    li.querySelector(".log-name").textContent = sport.name;
-    li.querySelector(".log-burn").textContent = burnText(kcalOf(log));
-    li.querySelector(".log-min").textContent = `${log.min}分`;
-    const del = li.querySelector(".del-btn");
-    del.addEventListener("click", () => {
-      if (!del.classList.contains("armed")) {
-        del.classList.add("armed");
-        del.textContent = "本当に？";
-        setTimeout(() => {
-          del.classList.remove("armed");
-          del.textContent = "消す";
-        }, 3000);
-        return;
-      }
-      data.logs = data.logs.filter((l) => l.id !== log.id);
-      saveData();
-      renderAll();
-      showToast("記録を消したよ");
-    });
-    list.append(li);
+  renderLogList(week);
+}
+
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+function dayLabel(key) {
+  if (key === dateKey()) return "今日";
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  if (key === dateKey(y)) return "きのう";
+  return `${shortDate(key)}（${WEEKDAYS[parseKey(key).getDay()]}）`;
+}
+
+function renderLogList(week) {
+  const box = $("log-list");
+  box.replaceChildren();
+  $("log-empty").hidden = week.length > 0;
+
+  const byDay = new Map();
+  for (const log of [...week].sort((a, b) => b.ts - a.ts)) {
+    if (!byDay.has(log.date)) byDay.set(log.date, []);
+    byDay.get(log.date).push(log);
+  }
+  const days = [...byDay.keys()].sort().reverse();
+
+  for (const day of days) {
+    const group = document.createElement("section");
+    const label = document.createElement("h3");
+    label.className = "day-label";
+    label.textContent = dayLabel(day);
+    const ul = document.createElement("ul");
+    ul.className = "log-list";
+    for (const log of byDay.get(day)) {
+      const sport = sportById(log.type);
+      const li = document.createElement("li");
+      li.className = "log-item";
+      li.innerHTML = `
+        <span class="dot" style="--c:${sport.color}"></span>
+        <div class="log-main">
+          <div class="log-name"></div>
+          <div class="log-burn"></div>
+        </div>
+        <span class="log-min"></span>
+        <button class="fix-btn" type="button">直す</button>`;
+      li.querySelector(".log-name").textContent = sport.name;
+      li.querySelector(".log-burn").textContent = burnText(kcalOf(log));
+      li.querySelector(".log-min").textContent = `${log.min}分`;
+      li.addEventListener("click", () => openEditSheet(log));
+      ul.append(li);
+    }
+    group.append(label, ul);
+    box.append(group);
   }
 }
 
@@ -261,7 +277,8 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
 
 // ---------- 種目ボタンと記録シート ----------
 
-const sheet = { sport: null, entryId: null, before: null };
+// mode: "new"（いま記録した）/ "edit"（あとから直す）
+const sheet = { sport: null, entryId: null, before: null, mode: "new" };
 
 function buildSportButtons() {
   const box = $("sports");
@@ -276,9 +293,15 @@ function buildSportButtons() {
   }
 }
 
+function showSheet() {
+  $("sheet").hidden = false;
+  $("sheet-backdrop").hidden = false;
+}
+
 function openSheet(sport) {
   sheet.sport = sport;
   sheet.entryId = null;
+  sheet.mode = "new";
   sheet.before = { today: sumMin(todayLogs()), week: sumMin(weekLogs()) };
 
   $("sheet-title").innerHTML = `<span class="dot" style="--c:${sport.color}"></span><span></span>`;
@@ -298,8 +321,18 @@ function openSheet(sport) {
 
   $("sheet-pick").hidden = false;
   $("sheet-done").hidden = true;
-  $("sheet").hidden = false;
-  $("sheet-backdrop").hidden = false;
+  showSheet();
+}
+
+function openEditSheet(log) {
+  sheet.sport = sportById(log.type);
+  sheet.entryId = log.id;
+  sheet.mode = "edit";
+  sheet.before = { today: sumMin(todayLogs()), week: sumMin(weekLogs()) };
+  $("sheet-pick").hidden = true;
+  $("sheet-done").hidden = false;
+  updateDone();
+  showSheet();
 }
 
 function record(min) {
@@ -323,43 +356,86 @@ function currentEntry() {
   return data.logs.find((l) => l.id === sheet.entryId);
 }
 
+function resetDeleteButton() {
+  const del = $("undo-btn");
+  del.classList.remove("armed");
+  del.textContent = sheet.mode === "new" ? "取り消す" : "この記録を消す";
+}
+
 function updateDone() {
   const e = currentEntry();
   if (!e) return;
-  $("done-title").textContent = `${sheet.sport.name} ${e.min}分 記録したよ！`;
+  $("done-title").textContent =
+    sheet.mode === "new"
+      ? `${sheet.sport.name} ${e.min}分 記録したよ！`
+      : `${dayLabel(e.date)}の${sheet.sport.name} ${e.min}分`;
   $("done-burn").textContent = burnText(kcalOf(e));
+  document.querySelector('.adjust-btn[data-add="-5"]').disabled = e.min <= 5;
+  resetDeleteButton();
 }
 
 document.querySelectorAll(".adjust-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const e = currentEntry();
     if (!e) return;
-    e.min += Number(btn.dataset.add);
+    e.min = Math.max(5, e.min + Number(btn.dataset.add));
     saveData();
     updateDone();
     renderAll();
   });
 });
 
+// 記録を消す（あとから直すときは、うっかり防止に2回タップ）
 $("undo-btn").addEventListener("click", () => {
+  const del = $("undo-btn");
+  if (sheet.mode === "edit" && !del.classList.contains("armed")) {
+    del.classList.add("armed");
+    del.textContent = "本当に消す";
+    clearTimeout(resetDeleteButton.timer);
+    resetDeleteButton.timer = setTimeout(resetDeleteButton, 3000);
+    return;
+  }
+  const removed = currentEntry();
   data.logs = data.logs.filter((l) => l.id !== sheet.entryId);
   saveData();
   sheet.entryId = null;
+  sheet.before = null;
   closeSheet();
-  showToast("取り消したよ");
+  if (removed) showToast(sheet.mode === "new" ? "取り消したよ" : "記録を消したよ", { label: "もとに戻す", run: () => restore(removed) });
 });
 
+function restore(log) {
+  data.logs.push(log);
+  saveData();
+  renderAll();
+  showToast("もとに戻したよ");
+}
+
 function closeSheet() {
+  const justRecorded = sheet.mode === "new" ? currentEntry() : null;
   $("sheet").hidden = true;
   $("sheet-backdrop").hidden = true;
   renderAll();
-  if (sheet.before) celebrate(sheet.before);
+  const cheer = sheet.before ? celebrate(sheet.before) : null;
   sheet.before = null;
+  // 記録した直後は、しばらく「取り消す」を出しておく
+  if (justRecorded) {
+    showToast(cheer || `${sheet.sport.name} ${justRecorded.min}分 記録したよ`, {
+      label: "取り消す",
+      run: () => {
+        data.logs = data.logs.filter((l) => l.id !== justRecorded.id);
+        saveData();
+        renderAll();
+        showToast("取り消したよ");
+      },
+    });
+  }
+  sheet.entryId = null;
 }
 $("done-btn").addEventListener("click", closeSheet);
 $("sheet-backdrop").addEventListener("click", closeSheet);
 
-// ノルマクリア・瓶いっぱいになった瞬間にお祝い
+// ノルマクリア・瓶いっぱいになった瞬間にお祝い（トーストに出す言葉を返す）
 function celebrate(before) {
   const todayMin = sumMin(todayLogs());
   const weekMin = sumMin(weekLogs());
@@ -371,8 +447,9 @@ function celebrate(before) {
     n.classList.remove("bounce");
     void n.offsetWidth;
     n.classList.add("bounce");
-    showToast("ノルマクリア！Nがよろこんでるよ");
+    return "ノルマクリア！Nがよろこんでるよ";
   }
+  return null;
 }
 $("full-ok").addEventListener("click", () => {
   $("full-modal").hidden = true;
@@ -415,12 +492,22 @@ $("settings-btn").addEventListener("click", () => openWeightModal(false));
 
 // ---------- トースト ----------
 
-function showToast(msg) {
+// action を渡すと、トーストにボタン（「取り消す」など）がつく
+function showToast(msg, action) {
   const t = $("toast");
-  t.textContent = msg;
+  const btn = $("toast-action");
+  $("toast-text").textContent = msg;
+  btn.hidden = !action;
+  btn.onclick = action
+    ? () => {
+        t.hidden = true;
+        action.run();
+      }
+    : null;
+  if (action) btn.textContent = action.label;
   t.hidden = false;
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => (t.hidden = true), 2000);
+  showToast.timer = setTimeout(() => (t.hidden = true), action ? 6000 : 2000);
 }
 
 // ---------- 起動 ----------

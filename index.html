@@ -54,8 +54,9 @@
       <h2 class="section-title">どの運動をした？</h2>
       <div class="sports" id="sports"></div>
 
-      <h2 class="section-title">今日の記録</h2>
-      <ul class="log-list" id="log-list"></ul>
+      <h2 class="section-title">今週の記録</h2>
+      <p class="lead">まちがえたときは「直す」から時間を変えたり消したりできるよ。</p>
+      <div class="log-days" id="log-list"></div>
       <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
     </section>
 
@@ -92,11 +93,12 @@
       <p class="done-title" id="done-title"></p>
       <p class="done-burn" id="done-burn"></p>
       <div class="adjust-row">
+        <button class="adjust-btn" type="button" data-add="-5">−5分</button>
         <button class="adjust-btn" type="button" data-add="5">+5分</button>
         <button class="adjust-btn" type="button" data-add="10">+10分</button>
       </div>
       <div class="sheet-actions">
-        <button class="text-btn" type="button" id="undo-btn">取り消す</button>
+        <button class="text-btn danger" type="button" id="undo-btn">取り消す</button>
         <button class="primary-btn" type="button" id="done-btn">OK</button>
       </div>
     </div>
@@ -133,7 +135,7 @@
     </div>
   </div>
 
-  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button class="toast-action" type="button" id="toast-action" hidden></button></div>
 
   <script src="js/character.js"></script>
   <script src="js/bottles.js"></script>

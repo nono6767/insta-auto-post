@@ -206,7 +206,20 @@ main {
   box-shadow: inset 0 -4px 0 rgb(0 0 0 / .08);
 }
 
-/* ---------- 今日の記録 ---------- */
+/* ---------- 今週の記録 ---------- */
+.log-days { display: grid; gap: 14px; }
+.day-label { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.fix-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--rose);
+  font-size: 13px;
+  font-weight: 700;
+}
+.log-item { cursor: pointer; }
 .log-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .log-item {
   display: flex;
@@ -222,16 +235,6 @@ main {
 .log-name { font-weight: 700; }
 .log-burn { font-size: 13px; color: var(--muted); }
 .log-min { font-weight: 700; font-variant-numeric: tabular-nums; }
-.del-btn {
-  min-width: 44px;
-  min-height: 36px;
-  border: 0;
-  border-radius: 12px;
-  background: none;
-  color: var(--muted);
-  font-size: 13px;
-}
-.del-btn.armed { background: var(--rose); color: #fff; }
 
 /* ---------- 瓶の棚 ---------- */
 .shelf {
@@ -321,6 +324,7 @@ main {
 .preset-btn small { font-size: 14px; }
 .done-title { margin: 0; font-size: 20px; font-weight: 700; }
 .done-burn { margin: 2px 0 14px; color: var(--muted); }
+.adjust-btn:disabled { opacity: .35; }
 .adjust-btn {
   flex: 1;
   min-height: 52px;
@@ -342,6 +346,9 @@ main {
   font-weight: 700;
 }
 .text-btn { min-height: 48px; padding: 0 12px; border: 0; background: none; color: var(--muted); font-weight: 700; }
+.text-btn.danger { color: var(--rose); }
+.text-btn.danger.armed { padding: 0 16px; border-radius: 999px; background: var(--rose); color: #fff; }
+.sheet-actions { justify-content: space-between; }
 
 /* ---------- モーダル ---------- */
 .modal-backdrop { display: grid; place-items: center; padding: 16px; }
@@ -385,6 +392,19 @@ main {
   color: #fff;
   font-size: 14px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toast-action {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rose);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {
