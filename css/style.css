@@ -878,3 +878,121 @@ main {
   pointer-events: none;
 }
 .small-bottle.overflow { filter: drop-shadow(0 0 6px rgb(255 232 170 / .75)); }
+
+/* ---------- シェイク ---------- */
+#jar.tappable { cursor: pointer; }
+.jar-color { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; color: var(--ink); font-weight: 700; }
+.mini-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08); }
+.day-end-btn {
+  margin-top: 6px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+/* 「今日はおしまい」を押したあと：シェイクしてね、と光る */
+.day-end-btn.ready {
+  border-color: transparent;
+  background: linear-gradient(110deg, #e86a8f 0%, #f5a3bd 40%, #ffe08a 50%, #f5a3bd 60%, #e86a8f 100%);
+  background-size: 260% 100%;
+  color: #fff;
+  animation: merge-shine 2.2s linear infinite;
+}
+/* シェイクした小瓶：まざった1色 */
+.small-bottle.mixed .layer-stack { opacity: .8; }
+.small-bottle.just-mixed { animation: mixed-pop .6s ease-out; }
+@keyframes mixed-pop { 0% { transform: scale(.92); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+.shake-backdrop { z-index: 30; }
+.shake-card { overflow: hidden; }
+.shake-stage {
+  position: relative;
+  display: block;
+  height: 220px;
+  margin: 14px auto 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.shake-stage:disabled { cursor: default; }
+.shake-stage .bottle { width: 100%; height: 100%; max-width: none; }
+.shake-stage:not(:disabled) .bottle { animation: wiggle-hint 2.4s ease-in-out infinite; }
+@keyframes wiggle-hint {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  76% { transform: rotate(-6deg); }
+  82% { transform: rotate(5deg); }
+  88% { transform: rotate(-3deg); }
+}
+.shake-bubble { position: absolute; aspect-ratio: 1; border-radius: 50%; background: rgb(255 255 255 / .85); pointer-events: none; }
+.shake-spark {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #ffe9a8;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  filter: drop-shadow(0 0 3px rgb(255 214 120 / .9));
+  pointer-events: none;
+}
+.shake-result { display: grid; gap: 4px; justify-items: center; }
+.new-color {
+  display: inline-block;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #ffd36e, #ff9fbf, #b9a3e3);
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgb(120 60 80 / .35);
+  animation: new-color-pop .7s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes new-color-pop { from { transform: scale(0) rotate(-12deg); } }
+.color-name { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0 0 !important; }
+.color-name strong { color: var(--ink); font-size: 22px; letter-spacing: .04em; }
+.swatch { display: inline-block; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08), 0 1px 2px rgb(120 60 80 / .15); }
+.color-count { font-size: 13px !important; }
+.motion-btn { width: 100%; margin-top: 10px; min-height: 44px; }
+
+/* 小瓶の中身 */
+.day-card .color-name strong { font-size: 18px; }
+.day-bottles { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0 6px; }
+.day-bottle { margin: 0; }
+.day-bottle-img { height: 150px; margin: 0 auto; }
+.day-bottle-img .bottle { width: 100%; height: 100%; max-width: none; }
+.day-bottle figcaption { margin-top: 2px; color: var(--muted); font-size: 12px; }
+.day-arrow { color: var(--muted); font-size: 22px; font-weight: 700; }
+.day-mins { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; text-align: left; }
+.day-mins li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: #fdf6f8; font-size: 14px; }
+.day-mins .dot { width: 12px; height: 12px; }
+.day-mins .day-sport { flex: 1; }
+.day-mins .day-min { font-weight: 700; font-variant-numeric: tabular-nums; }
+.day-mins .day-total { background: none; color: var(--muted); }
+#day-note { margin-top: 10px; text-align: left; }
+
+/* 小瓶の棚：ボタンにした小瓶と、色つきの札 */
+.small-slot { padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.shelf-plate.colored {
+  display: grid;
+  border-color: rgb(120 90 100 / .35);
+  color: #5a4650;
+  text-shadow: none;
+  line-height: 1.25;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 0 1px 1px rgb(90 50 30 / .3);
+}
+.shelf-plate.colored.bonus { border: 2px solid #e2ac3f; }
+.shelf-plate .plate-color { font-size: clamp(6.5px, 1.8vw, 9px); font-weight: 700; letter-spacing: -.02em; }
+
+/* 色図鑑 */
+.book-card { display: grid; gap: 4px; justify-items: center; text-align: center; }
+.book-line { margin: 0; color: var(--muted); font-size: 15px; }
+.book-line strong { color: var(--ink); font-size: 26px; font-variant-numeric: tabular-nums; margin-right: 1px; }
+.color-book { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.book-item { display: grid; justify-items: center; gap: 2px; padding: 10px 4px 8px; border-radius: 16px; background: var(--surface); box-shadow: 0 2px 0 var(--line); }
+.book-swatch { width: 52px; height: 52px; border-radius: 50%; box-shadow: inset 0 -6px 10px rgb(255 255 255 / .55), inset 0 0 0 1px rgb(0 0 0 / .06), 0 2px 4px rgb(120 60 80 / .12); }
+.book-name { font-size: 12px; font-weight: 700; color: var(--ink); text-align: center; line-height: 1.3; }
+.book-date { font-size: 10.5px; color: var(--muted); }

@@ -90,8 +90,10 @@ function bigBottleHtml(b) {
     const from = 100 - bottle.bottom + (used / total) * range * BIG_FILL;
     const h = (l.min / total) * range * BIG_FILL;
     used += l.min;
+    // 新しい大瓶は、その日の色の層（l.color）。前の版の大瓶は、種目の色の層
     const sport = sportById(l.type);
-    layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${pastel(sport ? sport.color : "#dddddd")}"></span>`;
+    const color = l.color ? liquidColor(l.color) : pastel(sport ? sport.color : "#dddddd");
+    layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${color}"></span>`;
   }
   const size = ((10 * bottle.h) / bottle.w).toFixed(1);
   const flowers = bottle.flowers
@@ -152,6 +154,7 @@ function drawShelf() {
   $("shelf-prev").disabled = shelfPage === 0;
   $("shelf-next").disabled = shelfPage >= pages - 1;
   drawSmallShelf();
+  if (typeof drawColorBook === "function") drawColorBook();
 }
 
 $("shelf-prev").addEventListener("click", () => {
@@ -194,21 +197,33 @@ function drawSmallShelf() {
     const row = Math.floor(i / SMALL_COLS);
     const col = i % SMALL_COLS;
     const shape = smallBottleShape(sb.day);
-    const slot = document.createElement("div");
+    const shaken = dayShake(sb.day);
+    const slot = document.createElement("button");
+    slot.type = "button";
     slot.className = "small-slot";
     // 幅と高さをはっきり指定する（iPhone の Safari で幅が0にならないように）
     slot.style.left = `${(SMALL_COL_X[col] / SHELF_BOARD.w) * 100}%`;
     slot.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
     slot.style.height = `${(SMALL_H / SHELF_BOARD.h) * 100}%`;
     slot.style.width = `${((SMALL_H * shape.w) / shape.h / SHELF_BOARD.w) * 100}%`;
-    slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN);
-    slot.firstElementChild.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.bonus ? "・おまけ" : ""}）`);
+    slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex);
+    slot.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.bonus ? "・おまけ" : ""}${shaken ? "・" + shaken.name : ""}）`);
+    slot.addEventListener("click", () => openDayBottle(sb.day));
 
     const plate = document.createElement("span");
     plate.className = "shelf-plate small" + (sb.bonus ? " bonus" : sb.day === today ? " this-week" : ""); // おまけは金色の札
     plate.style.left = slot.style.left;
     plate.style.top = `${(SHELF_PLATE_Y[row] / SHELF_BOARD.h) * 100}%`;
     plate.textContent = sb.day === today ? "今日" : shortDate(sb.day);
+    // シェイクした日は、札がその日の色になって、色の名前も出る
+    if (shaken) {
+      plate.classList.add("colored");
+      plate.style.background = shaken.hex;
+      const name = document.createElement("span");
+      name.className = "plate-color";
+      name.textContent = shaken.name;
+      plate.append(name);
+    }
     board.append(slot, plate);
   });
 
@@ -234,6 +249,7 @@ function showShelfView(view) {
   document.querySelectorAll(".shelf-switch-btn").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.shelf === view)));
   $("small-view").hidden = view !== "small";
   $("big-view").hidden = view !== "big";
+  $("color-view").hidden = view !== "color";
 }
 document.querySelectorAll(".shelf-switch-btn").forEach((b) =>
   b.addEventListener("click", () => {
@@ -261,11 +277,15 @@ function mergeSmallBottles() {
     for (const l of sb.layers) {
       if (need <= 0) break;
       const take = Math.min(l.min, need);
-      layers.push({ type: l.type, min: take });
       data.usedByLog[l.id] = (data.usedByLog[l.id] || 0) + take; // その記録のうち、大瓶にした分
       uses.push({ logId: l.id, min: take });
       need -= take;
       tookFromDay += take;
+    }
+    // 大瓶の中身は、その日の色の層（シェイクしていない日も、その日の色を計算して使う）
+    if (tookFromDay > 0) {
+      const c = dayShake(sb.day) || dayColorOf(sb.day);
+      layers.push({ day: sb.day, min: tookFromDay, color: c.hex, name: c.name });
     }
     used.push({ ...sb, took: tookFromDay });
   }
@@ -356,7 +376,8 @@ function playEvolution(big, used) {
     el.style.width = `${(56 * shape.w) / shape.h}px`;
     el.style.left = cx + Math.cos(a) * R + "px";
     el.style.top = cy + Math.sin(a) * R + "px";
-    el.innerHTML = bottleHtml(u.layers, shape, 0, SMALL_FULL_MIN);
+    const shaken = dayShake(u.day);
+    el.innerHTML = bottleHtml(u.layers, shape, 0, SMALL_FULL_MIN, shaken && shaken.hex);
     stage.append(el);
     el.animate(
       [{ transform: "translate(-50%,-50%) scale(0)", opacity: 0 }, { transform: "translate(-50%,-50%) scale(1.15)", opacity: 1, offset: 0.7 }, { transform: "translate(-50%,-50%) scale(1)", opacity: 1 }],

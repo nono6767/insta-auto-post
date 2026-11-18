@@ -22,7 +22,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/19-3"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/19-4"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -30,6 +30,7 @@ const emptyData = () => ({
   weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [],
   savings: { weekly: null, goal: null, deadline: null, deposits: [] },
   usedByLog: {}, bigBottles: [], bottleSystem: 4,
+  shakes: {}, closed: {}, colorBook: {},
   createdAt: Date.now(), lastBackupAt: null,
 });
 
@@ -170,10 +171,11 @@ function pastel(hex, mix = 0.3) {
 // ・満タンをこえた日は、その日の全部の運動の割合で層を分け直して、瓶のまわりがキラキラする
 // ・どんなに短い運動でも、細い層として必ず見える
 // ・層の境目はやわらかくぼかす
+// ・mix に色を渡すと、シェイクしたあとの「まざった1色」で描く
 const SMALL_MIN_LAYER = 7;   // いちばん細い層の厚さ（瓶の中身が入る高さの%）
 const SMALL_BLUR = 1.6;      // 境目のぼかしの幅（同じく%）
 const SMALL_FULL_LEVEL = 92; // 満タンの高さ（中身が入る高さの%）。首の飾りに、いちばん上の層がかくれないように
-function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
+function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix = null) {
   const range = bottle.bottom - bottle.top; // 中身が入る高さ（瓶の画像の%）
   // 同じ運動が続いたら1つの層にまとめる
   const bands = [];
@@ -186,6 +188,7 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
   }
   const total = bands.reduce((t, b) => t + b.min, 0);
   const overflow = total > capacity;
+  if (mix && total > 0) bands.splice(0, bands.length, { color: liquidColor(mix), min: total });
 
   let layers = "";
   if (total > 0) {
@@ -227,8 +230,8 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
         .map(([x, y], i) => `<span class="bottle-spark" style="left:${x}%;top:${y}%;animation-delay:${(i * 0.37).toFixed(2)}s"></span>`)
         .join("")
     : "";
-  const label = `${bottle.name}${overflow ? "（満タン！）" : ""}${flowerCount > 0 ? `（お花${spots.length}つ）` : ""}`;
-  return `<div class="bottle small-bottle${overflow ? " overflow" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
+  const label = `${bottle.name}${mix ? "（シェイクずみ）" : ""}${overflow ? "（満タン！）" : ""}${flowerCount > 0 ? `（お花${spots.length}つ）` : ""}`;
+  return `<div class="bottle small-bottle${overflow ? " overflow" : ""}${mix ? " mixed" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
     <img class="glass-shine" src="bottles/${bottle.id}-shine.webp" alt="" width="${bottle.w}" height="${bottle.h}">
@@ -245,6 +248,9 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
 function ensureBottleData() {
   if (!data.usedByLog) data.usedByLog = {};
   if (!Array.isArray(data.bigBottles)) data.bigBottles = [];
+  if (!data.shakes) data.shakes = {};   // シェイクした日の色 { 日付: {name, hex, sig} }
+  if (!data.closed) data.closed = {};   // 「今日はおしまい」を押した日 { 日付: true }
+  if (!data.colorBook) data.colorBook = {}; // 色図鑑 { 色の名前: はじめて出た日 }
 }
 
 // その日の、まだ大瓶にしていない分（種目ごとの層）
@@ -469,10 +475,19 @@ function renderHome() {
   // 今日の小瓶（36分くらいで満タン）
   const todayKey = dateKey();
   const bottle = smallBottleShape(todayKey);
-  $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN);
+  const shaken = dayShake(todayKey);
+  $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex);
+  $("jar").classList.toggle("tappable", today.length > 0);
+  const colorLine = shaken ? `<span class="jar-color"><span class="mini-swatch" style="background:${shaken.hex}"></span>${shaken.name}</span>` : "";
   $("jar-caption").innerHTML = full
-    ? `今日の小瓶<br><strong>合成できるよ！</strong>`
-    : `今日の小瓶<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
+    ? `今日の小瓶${colorLine}<br><strong>合成できるよ！</strong>`
+    : `今日の小瓶${colorLine}<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
+  // 「今日はおしまい」→ シェイク。シェイクしたあとに運動を足したら、もう一度シェイクできる
+  const endBtn = $("day-end-btn");
+  endBtn.hidden = today.length === 0 || !!shaken;
+  const closed = !!data.closed[todayKey];
+  endBtn.textContent = closed ? "小瓶をシェイクする" : "今日はおしまい";
+  endBtn.classList.toggle("ready", closed);
 
   $("today-min").textContent = todayMin;
   $("today-kcal").textContent = Math.round(todayKcal);

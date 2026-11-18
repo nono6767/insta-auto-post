@@ -33,8 +33,9 @@
         <div class="hero-side">
           <p class="bubble" id="n-bubble">今日もいっしょにがんばろ〜</p>
           <div class="jar-wrap">
-            <div id="jar"></div>
-            <p class="jar-caption" id="jar-caption">今週の瓶</p>
+            <div id="jar" role="button" tabindex="0" aria-label="今日の小瓶"></div>
+            <p class="jar-caption" id="jar-caption">今日の小瓶</p>
+            <button class="day-end-btn" type="button" id="day-end-btn" hidden>今日はおしまい</button>
           </div>
         </div>
       </div>
@@ -155,6 +156,7 @@
       <div class="shelf-switch" role="tablist">
         <button class="shelf-switch-btn" type="button" role="tab" data-shelf="small" aria-selected="true">小瓶の棚</button>
         <button class="shelf-switch-btn" type="button" role="tab" data-shelf="big" aria-selected="false">大瓶の棚</button>
+        <button class="shelf-switch-btn" type="button" role="tab" data-shelf="color" aria-selected="false">色図鑑</button>
       </div>
 
       <!-- 小瓶の棚：まだ合成していない小瓶 -->
@@ -184,6 +186,16 @@
           <button class="icon-btn nav-arrow" type="button" id="shelf-next" aria-label="次の棚">›</button>
         </div>
         <p class="empty" id="shelf-empty">まだ大瓶はないよ。小瓶を250分ぶん集めて合成しよう！</p>
+      </div>
+
+      <!-- 色図鑑：シェイクして出た色 -->
+      <div class="shelf-view" id="color-view" hidden>
+        <div class="card book-card">
+          <p class="book-line"><strong id="book-count">0</strong>色 / <span id="book-total">50</span>色</p>
+          <p class="pool-left">小瓶をシェイクして出た色が集まるよ</p>
+        </div>
+        <div class="color-book" id="color-book"></div>
+        <p class="empty" id="book-empty">まだ色がないよ。夜に「今日はおしまい」を押して、小瓶をシェイクしてみよう！</p>
       </div>
     </section>
   </main>
@@ -460,10 +472,45 @@
     </div>
   </div>
 
+  <!-- 小瓶をシェイク -->
+  <div class="modal-backdrop shake-backdrop" id="shake-modal" hidden>
+    <div class="modal card shake-card" role="dialog" aria-modal="true" aria-labelledby="shake-title">
+      <h3 id="shake-title">小瓶をシェイク</h3>
+      <p id="shake-sub"></p>
+      <button class="shake-stage" type="button" id="shake-stage" aria-label="小瓶をタップしてシェイク"></button>
+      <div class="shake-result" id="shake-result" hidden>
+        <p class="new-color" id="shake-new" hidden>新しい色！</p>
+        <p class="color-name"><span class="swatch" id="shake-swatch"></span><strong id="shake-name"></strong></p>
+        <p class="color-count" id="shake-count"></p>
+      </div>
+      <button class="choice-btn motion-btn" type="button" id="motion-btn" hidden>iPhoneを振ってシェイク</button>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="shake-later">あとで</button>
+        <button class="primary-btn" type="button" id="shake-ok" hidden>やったね！</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 小瓶の中身（もとの層と、種目ごとの分数） -->
+  <div class="modal-backdrop" id="day-modal" hidden>
+    <div class="modal card day-card" role="dialog" aria-modal="true" aria-labelledby="day-title">
+      <h3 id="day-title">小瓶</h3>
+      <p class="color-name" id="day-color" hidden><span class="swatch" id="day-swatch"></span><strong id="day-color-name"></strong></p>
+      <div class="day-bottles" id="day-bottles"></div>
+      <ul class="day-mins" id="day-mins"></ul>
+      <p class="soft-note" id="day-note" hidden></p>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="day-close">とじる</button>
+        <button class="primary-btn" type="button" id="day-shake" hidden>シェイクする</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button class="toast-action" type="button" id="toast-action" hidden></button></div>
 
   <script src="js/character.js"></script>
   <script src="js/bottles.js"></script>
+  <script src="js/colors.js"></script>
   <script src="js/app.js"></script>
   <script src="js/meals.js"></script>
   <script src="js/body.js"></script>
@@ -471,6 +518,7 @@
   <script src="js/savings.js"></script>
   <script src="js/bigbottles.js"></script>
   <script src="js/shelf.js"></script>
+  <script src="js/shake.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>
