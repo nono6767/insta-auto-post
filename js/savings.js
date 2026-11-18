@@ -127,6 +127,55 @@ async function renderSavingsJar() {
   </div>`;
 }
 
+// ---------- 瓶をタップすると、コインがポンポン跳ねる ----------
+
+const reduceMotion = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function bounceCoins() {
+  const jar = $("savings-jar");
+  const bottle = jar.querySelector(".bottle");
+  if (!bottle || reduceMotion()) return;
+
+  // 瓶がぷるんと揺れる（下を支点に）
+  bottle.animate(
+    [
+      { transform: "scale(1, 1)" },
+      { transform: "scale(1.04, 0.95)", offset: 0.22 },
+      { transform: "scale(0.98, 1.03)", offset: 0.5 },
+      { transform: "scale(1.01, 0.99)", offset: 0.75 },
+      { transform: "scale(1, 1)" },
+    ],
+    { duration: 520, easing: "ease-out" }
+  );
+
+  // コインが1枚ずつ、ちょっとずつずれて「ポンッ・ポン」と2回跳ねる
+  jar.querySelectorAll(".liquid .coin").forEach((coin) => {
+    const size = coin.getBoundingClientRect().width || 16;
+    const h = size * (0.9 + Math.random() * 1.1);       // 跳ねる高さ（コインの大きさの0.9〜2倍）
+    const turn = (Math.random() - 0.5) * 50;            // 跳ねながら少し回る
+    const sway = (Math.random() - 0.5) * size * 0.4;    // 少し左右にずれる
+    const up = "cubic-bezier(.2,.75,.4,1)";            // 上がるときは減速
+    const down = "cubic-bezier(.6,0,.85,.45)";          // 落ちるときは加速
+    coin.animate(
+      [
+        { transform: "translate(0, 0) rotate(0deg)", easing: up },
+        { transform: `translate(${sway}px, ${-h}px) rotate(${turn}deg)`, offset: 0.36, easing: down },
+        { transform: "translate(0, 0) rotate(0deg)", offset: 0.68, easing: up },
+        { transform: `translate(${sway * 0.3}px, ${-h * 0.3}px) rotate(${turn * 0.3}deg)`, offset: 0.84, easing: down },
+        { transform: "translate(0, 0) rotate(0deg)" },
+      ],
+      { duration: 700 + Math.random() * 160, delay: Math.random() * 170 }
+    );
+  });
+}
+$("savings-jar").addEventListener("click", bounceCoins);
+$("savings-jar").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    bounceCoins();
+  }
+});
+
 // ---------- 画面 ----------
 
 function renderSavings() {
@@ -137,6 +186,7 @@ function renderSavings() {
   if (!ready) $("savings-setup-n").innerHTML = nCharacterHtml("wave");
 
   const left = ready ? timesLeft() : null;
+  $("savings-tap-hint").hidden = savings().deposits.length === 0 || reduceMotion();
   const goalN = $("savings-goal-n");
   goalN.hidden = left !== 0;
   if (left === 0) goalN.innerHTML = nCharacterHtml("love");
