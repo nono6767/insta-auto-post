@@ -207,61 +207,52 @@ function shelfBottleSvg(shapeName, logs, flowerCount, accessory = "star") {
   </svg>`;
 }
 
-// ---------- 棚を描く ----------
+// ---------- 大瓶の棚 ----------
 
-function fullWeeksOldestFirst() {
-  const byWeek = new Map();
-  for (const log of data.logs) {
-    const w = weekStartKey(log.date);
-    if (!byWeek.has(w)) byWeek.set(w, []);
-    byWeek.get(w).push(log);
-  }
-  return [...byWeek.entries()]
-    .filter(([, logs]) => sumMin(logs) >= WEEK_GOAL_MIN)
-    .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+const bigBottlesOldestFirst = () =>
+  [...(data.bigBottles || [])].sort((a, b) => (a.date === b.date ? (a.ts || 0) - (b.ts || 0) : a.date < b.date ? -1 : 1));
+
+function bigBottleSvg(b) {
+  const shape = SHELF_SHAPE_OF[b.bottle] || "round";
+  // 飾り（星・タグ・羽根）は、その大瓶ごとに決まる（開くたびに変わらないように）
+  const seed = (b.id + b.date).split("").reduce((t, c) => (t * 31 + c.charCodeAt(0)) % 100003, 7);
+  return shelfBottleSvg(shape, b.layers, b.flowers || 0, SHELF_ACCESSORIES[seed % SHELF_ACCESSORIES.length]);
 }
 
 function drawShelf() {
-  const weeks = fullWeeksOldestFirst();
-  const pages = Math.max(1, Math.ceil(weeks.length / SHELF_PER_PAGE));
+  const bigs = bigBottlesOldestFirst();
+  const pages = Math.max(1, Math.ceil(bigs.length / SHELF_PER_PAGE));
   if (shelfPage === null || shelfPage >= pages) shelfPage = pages - 1; // はじめは、いちばん新しい棚
-  const thisWeek = weekStartKey(dateKey());
+  const today = dateKey();
 
   const board = $("shelf");
   board.replaceChildren();
-  weeks.slice(shelfPage * SHELF_PER_PAGE, (shelfPage + 1) * SHELF_PER_PAGE).forEach(([start, logs], i) => {
+  bigs.slice(shelfPage * SHELF_PER_PAGE, (shelfPage + 1) * SHELF_PER_PAGE).forEach((b, i) => {
     const row = Math.floor(i / SHELF_COLS);
     const col = i % SHELF_COLS;
-    const bottle = bottleForWeek(start);
-    const shape = SHELF_SHAPE_OF[bottle.id] || "round";
-    const end = parseKey(start);
-    end.setDate(end.getDate() + 6);
-
     const item = document.createElement("div");
-    item.className = "shelf-bottle";
+    item.className = "shelf-bottle" + (b.id === justEvolvedId ? " just-evolved" : "");
     item.style.left = `${(SHELF_COL_X[col] / SHELF_BOARD.w) * 100}%`;
     item.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
     item.setAttribute("role", "img");
-    item.setAttribute("aria-label", `${shortDate(start)}〜${shortDate(dateKey(end))}の${bottle.name}`);
-    // 飾り（星・タグ・羽根）は、その週の日付で決める（開くたびに変わらないように）
-    const seed = start.split("-").reduce((t, v) => t * 31 + Number(v), 7);
-    const accessory = SHELF_ACCESSORIES[seed % SHELF_ACCESSORIES.length];
-    item.innerHTML = shelfBottleSvg(shape, [...logs].sort((a, b) => a.ts - b.ts), weekFlowerCount(start), accessory);
+    item.setAttribute("aria-label", `${shortDate(b.date)}に進化した大瓶`);
+    item.innerHTML = bigBottleSvg(b);
 
+    // 札：大瓶に進化した日
     const plate = document.createElement("span");
-    plate.className = "shelf-plate" + (start === thisWeek ? " this-week" : "");
+    plate.className = "shelf-plate" + (b.date === today ? " this-week" : "");
     plate.style.left = item.style.left;
     plate.style.top = `${(SHELF_PLATE_Y[row] / SHELF_BOARD.h) * 100}%`;
-    plate.textContent = start === thisWeek ? "今週" : `${shortDate(start)}〜`;
-
+    plate.textContent = b.date === today ? "今日" : shortDate(b.date);
     board.append(item, plate);
   });
 
-  $("shelf-empty").hidden = weeks.length > 0;
+  $("shelf-empty").hidden = bigs.length > 0;
   $("shelf-nav").hidden = pages <= 1;
   $("shelf-page").textContent = `${shelfPage + 1} / ${pages}`;
   $("shelf-prev").disabled = shelfPage === 0;
   $("shelf-next").disabled = shelfPage >= pages - 1;
+  drawSmallShelf();
 }
 
 $("shelf-prev").addEventListener("click", () => {
@@ -272,9 +263,271 @@ $("shelf-next").addEventListener("click", () => {
   shelfPage++;
   drawShelf();
 });
+
+// ---------- 小瓶の棚（まだ合成していない小瓶。週でリセットしない） ----------
+
+const SMALL_PER_PAGE = 20;
+const SMALL_COLS = 5;
+const SMALL_COL_X = [160, 304, 448, 592, 736]; // 側板の内側を5等分したまん中
+const SMALL_H = 150;                            // 小瓶の高さ（背景画像1200pxのうち）
+let smallPage = null;
+
+function drawSmallShelf() {
+  const smalls = smallBottles();
+  const total = smalls.reduce((t, b) => t + b.min, 0);
+  const ready = total >= BIG_BOTTLE_MIN;
+  const pages = Math.max(1, Math.ceil(smalls.length / SMALL_PER_PAGE));
+  if (smallPage === null || smallPage >= pages) smallPage = pages - 1;
+  const today = dateKey();
+
+  $("pool-count").textContent = smalls.length;
+  $("pool-min").textContent = total;
+  $("pool-left").innerHTML = ready
+    ? `<strong>合成できるよ！</strong> 古い小瓶から250分ぶんが大瓶になるよ`
+    : `大瓶まであと <strong>${BIG_BOTTLE_MIN - total}</strong> 分`;
+  const btn = $("merge-btn");
+  btn.disabled = !ready;
+  btn.classList.toggle("ready", ready);
+
+  const board = $("small-shelf");
+  board.replaceChildren();
+  smalls.slice(smallPage * SMALL_PER_PAGE, (smallPage + 1) * SMALL_PER_PAGE).forEach((sb, i) => {
+    const row = Math.floor(i / SMALL_COLS);
+    const col = i % SMALL_COLS;
+    const shape = smallBottleShape(sb.day);
+    const slot = document.createElement("div");
+    slot.className = "small-slot";
+    // 幅と高さをはっきり指定する（iPhone の Safari で幅が0にならないように）
+    slot.style.left = `${(SMALL_COL_X[col] / SHELF_BOARD.w) * 100}%`;
+    slot.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
+    slot.style.height = `${(SMALL_H / SHELF_BOARD.h) * 100}%`;
+    slot.style.width = `${((SMALL_H * shape.w) / shape.h / SHELF_BOARD.w) * 100}%`;
+    slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN);
+    slot.firstElementChild.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.bonus ? "・おまけ" : ""}）`);
+
+    const plate = document.createElement("span");
+    plate.className = "shelf-plate small" + (sb.bonus ? " bonus" : sb.day === today ? " this-week" : ""); // おまけは金色の札
+    plate.style.left = slot.style.left;
+    plate.style.top = `${(SHELF_PLATE_Y[row] / SHELF_BOARD.h) * 100}%`;
+    plate.textContent = sb.day === today ? "今日" : shortDate(sb.day);
+    board.append(slot, plate);
+  });
+
+  $("small-empty").hidden = smalls.length > 0;
+  $("bonus-hint").hidden = !smalls.some((b) => b.bonus);
+  $("small-nav").hidden = pages <= 1;
+  $("small-page").textContent = `${smallPage + 1} / ${pages}`;
+  $("small-prev").disabled = smallPage === 0;
+  $("small-next").disabled = smallPage >= pages - 1;
+}
+
+$("small-prev").addEventListener("click", () => {
+  if (smallPage > 0) smallPage--;
+  drawSmallShelf();
+});
+$("small-next").addEventListener("click", () => {
+  smallPage++;
+  drawSmallShelf();
+});
+
+// 小瓶の棚 / 大瓶の棚 の切りかえ
+function showShelfView(view) {
+  document.querySelectorAll(".shelf-switch-btn").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.shelf === view)));
+  $("small-view").hidden = view !== "small";
+  $("big-view").hidden = view !== "big";
+}
+document.querySelectorAll(".shelf-switch-btn").forEach((b) =>
+  b.addEventListener("click", () => {
+    shelfPage = null;
+    smallPage = null;
+    showShelfView(b.dataset.shelf);
+    drawShelf();
+  })
+);
+
+// ---------- 合成して大瓶に進化 ----------
+
+let justEvolvedId = null;
+
+// 古い小瓶から順に250分ぶんをまとめて大瓶にする。あまった分は、おまけの小瓶として残る
+function mergeSmallBottles() {
+  ensureBottleData();
+  const used = [];
+  const layers = [];
+  let need = BIG_BOTTLE_MIN;
+  for (const sb of smallBottles()) {
+    if (need <= 0) break;
+    let tookFromDay = 0;
+    for (const l of sb.layers) {
+      if (need <= 0) break;
+      const take = Math.min(l.min, need);
+      layers.push({ type: l.type, min: take });
+      need -= take;
+      tookFromDay += take;
+    }
+    data.consumed[sb.day] = (data.consumed[sb.day] || 0) + tookFromDay;
+    used.push({ ...sb, took: tookFromDay });
+  }
+  // 大瓶の形：前の大瓶とそっくりにならないように選ぶ
+  const prev = bigBottlesOldestFirst().slice(-1)[0];
+  const prevShape = prev ? SHELF_SHAPE_OF[prev.bottle] : null;
+  const choices = BOTTLES.filter((b) => SHELF_SHAPE_OF[b.id] !== prevShape);
+  const pick = choices[Math.floor(Math.random() * choices.length)];
+  const big = {
+    id: "big-" + Date.now().toString(36),
+    date: dateKey(),
+    layers,
+    bottle: pick.id,
+    flowers: Math.min(7, new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size),
+    days: used.map((u) => u.day),
+    ts: Date.now(),
+  };
+  data.bigBottles.push(big);
+  saveData();
+  return { big, used };
+}
+
+function sparkle(stage, x, y, delay, size = 14, color = "#fff6c8") {
+  const s = document.createElement("span");
+  s.className = "spark";
+  s.style.left = x + "px";
+  s.style.top = y + "px";
+  s.style.width = s.style.height = size + "px";
+  s.style.background = color;
+  stage.append(s);
+  s.animate(
+    [
+      { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 0 },
+      { transform: "translate(-50%,-50%) scale(1) rotate(90deg)", opacity: 1, offset: 0.4 },
+      { transform: "translate(-50%,-50%) scale(0) rotate(180deg)", opacity: 0 },
+    ],
+    { duration: 900, delay, easing: "ease-out", fill: "both" }
+  );
+}
+
+function playEvolution(big, used) {
+  const overlay = $("merge-overlay");
+  const stage = $("merge-stage");
+  const result = $("merge-result");
+  stage.replaceChildren();
+  result.hidden = true;
+  overlay.hidden = false;
+  const bonus = used.filter((u) => u.took < u.min).length;
+  $("merge-note").textContent =
+    `小瓶${used.length}本ぶん（${BIG_BOTTLE_MIN}分）が、大瓶になったよ` + (bonus ? `。あまった分は、おまけの小瓶として残してあるよ` : "");
+
+  const W = stage.clientWidth || window.innerWidth;
+  const H = stage.clientHeight || window.innerHeight;
+  const cx = W / 2, cy = H * 0.42;
+
+  // 大瓶（あとで出てくる）
+  const bigEl = document.createElement("div");
+  bigEl.className = "merge-big";
+  bigEl.innerHTML = bigBottleSvg(big);
+  bigEl.style.left = cx + "px";
+  bigEl.style.top = cy + "px";
+  stage.append(bigEl);
+
+  const showResult = () => {
+    result.hidden = false;
+    result.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 400, fill: "both" });
+  };
+
+  if (reduceMotionShelf()) {
+    bigEl.style.opacity = 1;
+    showResult();
+    return;
+  }
+
+  // 1) 使った小瓶が、まわりにぽんぽん現れる（多いときは10本まで）
+  const shown = used.slice(-10);
+  const R = Math.min(W, H) * 0.34;
+  const smalls = shown.map((u, i) => {
+    const a = -Math.PI / 2 + (i / shown.length) * Math.PI * 2;
+    const el = document.createElement("div");
+    el.className = "merge-small";
+    const shape = smallBottleShape(u.day);
+    el.style.width = `${(56 * shape.w) / shape.h}px`;
+    el.style.left = cx + Math.cos(a) * R + "px";
+    el.style.top = cy + Math.sin(a) * R + "px";
+    el.innerHTML = bottleHtml(u.layers, shape, 0, SMALL_FULL_MIN);
+    stage.append(el);
+    el.animate(
+      [{ transform: "translate(-50%,-50%) scale(0)", opacity: 0 }, { transform: "translate(-50%,-50%) scale(1.15)", opacity: 1, offset: 0.7 }, { transform: "translate(-50%,-50%) scale(1)", opacity: 1 }],
+      { duration: 380, delay: i * 70, easing: "ease-out", fill: "both" }
+    );
+    return { el, dx: cx - (cx + Math.cos(a) * R), dy: cy - (cy + Math.sin(a) * R) };
+  });
+  const gatherAt = 380 + shown.length * 70 + 250;
+
+  // 2) くるくる回りながら、まん中に集まって光になる
+  smalls.forEach(({ el, dx, dy }, i) => {
+    el.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(1) rotate(0deg)", opacity: 1, filter: "brightness(1)" },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.25) rotate(540deg)`, opacity: 0.2, filter: "brightness(2.2)" },
+      ],
+      { duration: 750, delay: gatherAt + i * 40, easing: "cubic-bezier(.6,0,.4,1)", fill: "both" }
+    );
+    for (let k = 0; k < 3; k++) sparkle(stage, cx - dx * (0.3 + k * 0.25), cy - dy * (0.3 + k * 0.25), gatherAt + i * 40 + k * 120, 10);
+  });
+  const flashAt = gatherAt + 750 + shown.length * 40;
+
+  // 3) ぱあっと光る
+  const flash = document.createElement("div");
+  flash.className = "merge-flash";
+  flash.style.left = cx + "px";
+  flash.style.top = cy + "px";
+  stage.append(flash);
+  flash.animate(
+    [{ transform: "translate(-50%,-50%) scale(0)", opacity: 0 }, { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: 0.35 }, { transform: "translate(-50%,-50%) scale(2.4)", opacity: 0 }],
+    { duration: 900, delay: flashAt, easing: "ease-out", fill: "both" }
+  );
+  // 光の輪のまわりにキラキラ
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2;
+    const r = 70 + (i % 3) * 30;
+    sparkle(stage, cx + Math.cos(a) * r, cy + Math.sin(a) * r, flashAt + 150 + (i % 5) * 60, 12 + (i % 3) * 5, i % 2 ? "#ffffff" : "#ffe08a");
+  }
+
+  // 4) 大瓶がぽんっと登場
+  bigEl.animate(
+    [
+      { transform: "translate(-50%,-50%) scale(.2) rotate(-12deg)", opacity: 0 },
+      { transform: "translate(-50%,-50%) scale(1.15) rotate(4deg)", opacity: 1, offset: 0.6 },
+      { transform: "translate(-50%,-50%) scale(.96) rotate(-2deg)", opacity: 1, offset: 0.8 },
+      { transform: "translate(-50%,-50%) scale(1) rotate(0deg)", opacity: 1 },
+    ],
+    { duration: 800, delay: flashAt + 250, easing: "ease-out", fill: "both" }
+  );
+  // そのあとも、まわりでキラキラ
+  for (let i = 0; i < 10; i++) {
+    sparkle(stage, cx + (Math.random() - 0.5) * 220, cy + (Math.random() - 0.5) * 240, flashAt + 1000 + i * 180, 10 + Math.random() * 10);
+  }
+  setTimeout(showResult, flashAt + 1100);
+}
+const reduceMotionShelf = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+$("merge-btn").addEventListener("click", () => {
+  if (!mergeReady()) return;
+  const { big, used } = mergeSmallBottles();
+  justEvolvedId = big.id;
+  renderAll();
+  playEvolution(big, used);
+});
+$("merge-ok").addEventListener("click", () => {
+  $("merge-overlay").hidden = true;
+  showShelfView("big");
+  shelfPage = null;
+  drawShelf();
+  window.scrollTo(0, 0);
+  setTimeout(() => (justEvolvedId = null), 3000);
+});
+
 document.addEventListener("pagechange", (e) => {
   if (e.detail === "shelf") {
     shelfPage = null; // 開くたびに、いちばん新しい棚から
+    smallPage = null;
     drawShelf();
   }
 });

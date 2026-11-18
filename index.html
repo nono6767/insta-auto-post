@@ -152,14 +152,39 @@
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
-      <p class="lead">いっぱいになった週の瓶が、古い順に左上から並ぶよ。</p>
-      <div class="shelf-board" id="shelf"></div>
-      <div class="shelf-nav" id="shelf-nav" hidden>
-        <button class="icon-btn nav-arrow" type="button" id="shelf-prev" aria-label="前の棚">‹</button>
-        <span class="shelf-page" id="shelf-page"></span>
-        <button class="icon-btn nav-arrow" type="button" id="shelf-next" aria-label="次の棚">›</button>
+      <div class="shelf-switch" role="tablist">
+        <button class="shelf-switch-btn" type="button" role="tab" data-shelf="small" aria-selected="true">小瓶の棚</button>
+        <button class="shelf-switch-btn" type="button" role="tab" data-shelf="big" aria-selected="false">大瓶の棚</button>
       </div>
-      <p class="empty" id="shelf-empty">まだ並んでいる瓶はないよ。今週の瓶をいっぱいにしよう！</p>
+
+      <!-- 小瓶の棚：まだ合成していない小瓶 -->
+      <div class="shelf-view" id="small-view">
+        <div class="card pool-card">
+          <p class="pool-line">小瓶 <strong id="pool-count">0</strong>本・合計 <strong id="pool-min">0</strong>分</p>
+          <p class="pool-left" id="pool-left"></p>
+          <button class="primary-btn merge-btn" type="button" id="merge-btn" disabled>合成する</button>
+        </div>
+        <div class="shelf-board" id="small-shelf"></div>
+        <div class="shelf-nav" id="small-nav" hidden>
+          <button class="icon-btn nav-arrow" type="button" id="small-prev" aria-label="前の棚">‹</button>
+          <span class="shelf-page" id="small-page"></span>
+          <button class="icon-btn nav-arrow" type="button" id="small-next" aria-label="次の棚">›</button>
+        </div>
+        <p class="hint center" id="bonus-hint" hidden>金色の札は、合成であまった「おまけの小瓶」だよ</p>
+        <p class="empty" id="small-empty">運動を記録すると、その日の小瓶ができるよ。</p>
+      </div>
+
+      <!-- 大瓶の棚：合成して進化した大瓶 -->
+      <div class="shelf-view" id="big-view" hidden>
+        <p class="lead">大瓶に進化した日の順に、左上から並ぶよ。</p>
+        <div class="shelf-board" id="shelf"></div>
+        <div class="shelf-nav" id="shelf-nav" hidden>
+          <button class="icon-btn nav-arrow" type="button" id="shelf-prev" aria-label="前の棚">‹</button>
+          <span class="shelf-page" id="shelf-page"></span>
+          <button class="icon-btn nav-arrow" type="button" id="shelf-next" aria-label="次の棚">›</button>
+        </div>
+        <p class="empty" id="shelf-empty">まだ大瓶はないよ。小瓶を250分ぶん集めて合成しよう！</p>
+      </div>
     </section>
   </main>
 
@@ -314,10 +339,11 @@
   <div class="modal-backdrop" id="full-modal" hidden>
     <div class="modal card">
       <div class="modal-n" id="full-n"></div>
-      <h3>瓶がいっぱいになったよ！</h3>
-      <p>今週の瓶は「瓶の棚」に並べておくね。すごい！</p>
+      <h3>小瓶が250分たまったよ！</h3>
+      <p>「瓶の棚」の小瓶の棚で合成すると、大瓶に進化するよ。</p>
       <div class="modal-actions">
-        <button class="primary-btn" type="button" id="full-ok">やったー</button>
+        <button class="text-btn" type="button" id="full-later">あとで</button>
+        <button class="primary-btn" type="button" id="full-ok">合成しにいく</button>
       </div>
     </div>
   </div>
@@ -382,6 +408,16 @@
         <button class="text-btn" type="button" id="check-later">あとで</button>
         <button class="primary-btn" type="button" id="check-go">服チェックへ</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 合成して大瓶に進化する演出 -->
+  <div class="merge-overlay" id="merge-overlay" hidden>
+    <div class="merge-stage" id="merge-stage" aria-hidden="true"></div>
+    <div class="merge-result" id="merge-result" hidden>
+      <h3>大瓶に進化したよ！</h3>
+      <p id="merge-note"></p>
+      <button class="primary-btn" type="button" id="merge-ok">大瓶の棚を見る</button>
     </div>
   </div>
 

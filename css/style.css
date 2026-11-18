@@ -684,3 +684,87 @@ main {
 .shelf-plate.this-week { background: linear-gradient(#f39ab4, #e86a8f); border-color: #b8476a; }
 .shelf-nav { display: flex; align-items: center; justify-content: center; gap: 16px; }
 .shelf-page { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- 小瓶の棚 / 大瓶の棚 ---------- */
+#jar-caption strong { color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
+.shelf-switch { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--rose-soft); }
+.shelf-switch-btn {
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-weight: 700;
+}
+.shelf-switch-btn[aria-selected="true"] { background: var(--surface); color: var(--rose); box-shadow: 0 1px 2px rgb(120 60 80 / .15); }
+.shelf-view { display: grid; gap: 12px; }
+.pool-card { display: grid; gap: 4px; justify-items: center; text-align: center; }
+.pool-line, .pool-left { margin: 0; color: var(--muted); font-size: 14px; }
+.pool-line strong, .pool-left strong { color: var(--ink); font-size: 20px; font-variant-numeric: tabular-nums; margin: 0 1px; }
+.merge-btn { margin-top: 8px; min-width: 200px; }
+.merge-btn:disabled { opacity: .45; }
+/* 250分たまったら、合成ボタンが光る */
+.merge-btn.ready {
+  position: relative;
+  background: linear-gradient(110deg, #e86a8f 0%, #f5a3bd 40%, #ffe08a 50%, #f5a3bd 60%, #e86a8f 100%);
+  background-size: 260% 100%;
+  animation: merge-shine 2.2s linear infinite, merge-glow 1.6s ease-in-out infinite;
+}
+@keyframes merge-shine { from { background-position: 100% 0; } to { background-position: -160% 0; } }
+@keyframes merge-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(232 106 143 / .45), 0 0 10px rgb(255 224 138 / .5); }
+  50% { box-shadow: 0 0 0 8px rgb(232 106 143 / 0), 0 0 22px rgb(255 224 138 / .95); }
+}
+.hint.center { text-align: center; }
+
+.small-slot { position: absolute; translate: -50% 0; }
+.small-slot .bottle { width: 100%; height: 100%; max-width: none; }
+.small-slot .bottle .flower { width: 26% !important; }
+.shelf-plate.small { min-width: 11%; padding: 1px 4px; font-size: clamp(8px, 2.3vw, 11px); }
+.shelf-plate.bonus { background: linear-gradient(#ffe7a3, #e9b84f); border-color: #b5873a; color: #6b4a14; text-shadow: none; }
+.shelf-bottle.just-evolved .shelf-svg { animation: evolved-glow 1.4s ease-in-out 2; }
+@keyframes evolved-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgb(255 224 138 / 0)); }
+  50% { filter: drop-shadow(0 0 8px rgb(255 224 138 / 1)); }
+}
+
+/* ---------- 合成して大瓶に進化する演出 ---------- */
+.merge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  background: radial-gradient(circle at 50% 42%, #fff4f8 0%, #f9d3df 45%, #d99ab0 100%);
+}
+.merge-stage { position: absolute; inset: 0; overflow: hidden; }
+.merge-small { position: absolute; translate: none; }
+.merge-small .bottle { width: 100%; height: auto; }
+.merge-big { position: absolute; width: min(48vw, 200px); opacity: 0; translate: none; }
+.merge-big .shelf-svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 0 14px rgb(255 240 200 / .9)); }
+.merge-flash {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, rgb(255 246 200 / .9) 35%, rgb(255 210 225 / 0) 70%);
+  opacity: 0;
+}
+.spark {
+  position: absolute;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  opacity: 0;
+  pointer-events: none;
+}
+.merge-result {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+.merge-result h3 { margin: 0; font-size: 22px; color: var(--ink); text-shadow: 0 1px 0 #fff; }
+.merge-result p { margin: 0; max-width: 340px; font-size: 14px; color: var(--ink); }

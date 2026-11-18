@@ -180,6 +180,7 @@ $("restore-input").addEventListener("change", async () => {
     `ごはん ${Object.keys(d.meals || {}).length}日分`,
     `からだ ${Object.keys(d.body || {}).length}日分・生理 ${(d.periods || []).length}回`,
     `服 ${(d.clothes || []).length}着・写真 ${(obj.photos || []).length}枚`,
+    `大瓶 ${(d.bigBottles || []).length}本`,
     `貯金 ${((d.savings && d.savings.deposits) || []).length}回分`,
   ];
   $("restore-summary").textContent = parts.join("／");
@@ -204,6 +205,7 @@ $("restore-go").addEventListener("click", async () => {
       await addPhoto({ id: p.id, clothId: p.clothId, date: p.date, ts: p.ts, blob: base64ToBlob(p.base64, p.type || "image/jpeg") });
     }
     const restored = { ...emptyData(), ...obj.data };
+    if (!obj.data.bottleSystem) delete restored.bottleSystem; // 前のしくみのバックアップなら、開き直したときに大瓶へ引っ越す
     if (!restored.lastBackupAt) restored.lastBackupAt = obj.exportedAt;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
     data = restored;

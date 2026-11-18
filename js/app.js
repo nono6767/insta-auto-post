@@ -13,20 +13,23 @@ const SPORTS = [
   { id: "stepper",  name: "ツイストステッパー", color: "#b9a3e3",  presets: [20],     met: 4.0 },
   { id: "stretch",  name: "ストレッチ",         color: "#9fd3f0",  presets: [5, 10],  met: 2.3 },
 ];
-const WEEK_GOAL_MIN = 250;   // 瓶が満タンになる分数（画面には出さない）
+const WEEK_GOAL_MIN = 250;   // 大瓶1本ぶんの分数（小瓶をこれだけ合成すると大瓶になる）
+const BIG_BOTTLE_MIN = WEEK_GOAL_MIN;
+const SMALL_FULL_MIN = 36;   // 小瓶が満タンに見える分数（1日ぶん）
 const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
 const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/18-5"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/18-6"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
 const emptyData = () => ({
   weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [],
   savings: { weekly: null, goal: null, deadline: null, deposits: [] },
+  consumed: {}, bigBottles: [], bottleSystem: 2,
   createdAt: Date.now(), lastBackupAt: null,
 });
 
@@ -155,15 +158,16 @@ function weekFlowerCount(start) {
 }
 
 // 瓶の絵：色の層（瓶の形で切り抜き）とお花の上に、瓶の画像を重ねる
-function bottleHtml(logs, bottle, flowerCount = 0) {
+// capacity：何分で満タンに見えるか（小瓶は36分）
+function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
   const range = bottle.bottom - bottle.top;
   let used = 0;
   let layers = "";
   for (const log of logs) {
-    if (used >= WEEK_GOAL_MIN) break;
-    const min = Math.min(log.min, WEEK_GOAL_MIN - used);
-    const from = 100 - bottle.bottom + (used / WEEK_GOAL_MIN) * range;
-    const h = (min / WEEK_GOAL_MIN) * range;
+    if (used >= capacity) break;
+    const min = Math.min(log.min, capacity - used);
+    const from = 100 - bottle.bottom + (used / capacity) * range;
+    const h = (min / capacity) * range;
     used += min;
     const sport = sportById(log.type);
     layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${sport ? sport.color : "#ddd"}"></span>`;
@@ -181,6 +185,81 @@ function bottleHtml(logs, bottle, flowerCount = 0) {
   </div>`;
 }
 
+// ---------- 小瓶と大瓶 ----------
+// 運動した日ごとに小瓶が1つ。小瓶の合計が250分をこえたら「合成」で大瓶に進化。
+// data.consumed[日付]：その日の分数のうち、もう大瓶にした分（古い記録から順に使う）
+// data.bigBottles：大瓶 { id, date（進化した日）, layers[{type,min}], bottle（瓶の種類）, flowers }
+
+function ensureBottleData() {
+  if (!data.consumed) data.consumed = {};
+  if (!Array.isArray(data.bigBottles)) data.bigBottles = [];
+}
+
+// その日の、まだ大瓶にしていない分（種目ごとの層）
+function dayRemainingLayers(day) {
+  let skip = (data.consumed && data.consumed[day]) || 0;
+  const out = [];
+  for (const l of data.logs.filter((x) => x.date === day).sort((a, b) => a.ts - b.ts)) {
+    const take = Math.min(l.min, skip);
+    skip -= take;
+    if (l.min - take > 0) out.push({ type: l.type, min: l.min - take, ts: l.ts });
+  }
+  return out;
+}
+
+// まだ合成していない小瓶（古い順）。一部だけ大瓶にした日は「おまけの小瓶」
+function smallBottles() {
+  const days = [...new Set(data.logs.map((l) => l.date))].sort();
+  return days
+    .map((day) => {
+      const layers = dayRemainingLayers(day);
+      return { day, layers, min: sumMin(layers), bonus: !!(data.consumed && data.consumed[day] > 0) };
+    })
+    .filter((b) => b.min > 0);
+}
+const poolMinutes = () => smallBottles().reduce((t, b) => t + b.min, 0);
+const mergeReady = () => poolMinutes() >= BIG_BOTTLE_MIN;
+
+// 小瓶の形：日付ごとに9種類の瓶をくり返す
+function smallBottleShape(day) {
+  const [y, m, d] = day.split("-").map(Number);
+  const n = Math.round(Date.UTC(y, m - 1, d) / 86400000);
+  return BOTTLES[((n % BOTTLES.length) + BOTTLES.length) % BOTTLES.length];
+}
+const daySnackFree = (day) => !!(data.meals && data.meals[day] && data.meals[day].snack === "none");
+
+// 前のしくみ（週の瓶）で満タンになった週は、そのまま大瓶として残す（1回だけ）
+function migrateToSmallBottles() {
+  if (data.bottleSystem >= 2) return;
+  ensureBottleData();
+  const byWeek = new Map();
+  for (const l of data.logs) {
+    const w = weekStartKey(l.date);
+    if (!byWeek.has(w)) byWeek.set(w, []);
+    byWeek.get(w).push(l);
+  }
+  for (const [start, logs] of [...byWeek.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
+    if (sumMin(logs) < BIG_BOTTLE_MIN) continue;
+    const sorted = [...logs].sort((a, b) => (a.date === b.date ? a.ts - b.ts : a.date < b.date ? -1 : 1));
+    let acc = 0, evolved = sorted[sorted.length - 1].date;
+    for (const l of sorted) {
+      acc += l.min;
+      if (acc >= BIG_BOTTLE_MIN) { evolved = l.date; break; } // 250分に届いた日＝大瓶に進化した日
+    }
+    for (const l of sorted) data.consumed[l.date] = (data.consumed[l.date] || 0) + l.min; // その週の分は全部、大瓶に
+    data.bigBottles.push({
+      id: "week-" + start,
+      date: evolved,
+      layers: sorted.map((l) => ({ type: l.type, min: l.min })),
+      bottle: bottleForWeek(start).id,
+      flowers: weekFlowerCount(start),
+      ts: parseKey(evolved).getTime(),
+    });
+  }
+  data.bottleSystem = 2;
+  saveData();
+}
+
 // ---------- 画面の描画 ----------
 
 const $ = (id) => document.getElementById(id);
@@ -189,7 +268,7 @@ const MESSAGES = {
   zero: ["今日もいっしょにがんばろ〜", "まずは5分だけでもどう？", "背すじ、すっと伸ばしていこ！"],
   some: ["いいね！その調子〜", "ちゃんと瓶にたまってるよ", "からだ、あったまってきたね"],
   quota: ["今日のノルマクリア！えらい！", "やったね！今日は満点だよ", "今日もよくがんばりました〜"],
-  full: ["瓶がいっぱい！最高の1週間だね", "今週は大成功！棚に飾ったよ"],
+  full: ["小瓶が250分たまったよ！瓶の棚で合成しよう", "合成できるよ！大瓶に進化させよう"],
 };
 function pickMessage(kind) {
   const list = MESSAGES[kind];
@@ -202,9 +281,9 @@ function renderHome() {
   const todayMin = sumMin(today);
   const todayKcal = today.reduce((t, l) => t + kcalOf(l), 0);
   const week = weekLogs();
-  const weekMin = sumMin(week);
   const quotaDone = todayMin >= DAILY_QUOTA_MIN;
-  const full = weekMin >= WEEK_GOAL_MIN;
+  const pool = poolMinutes();
+  const full = pool >= BIG_BOTTLE_MIN; // 小瓶が250分たまって、合成できる
 
   // 場面に合わせて N のポーズを変える
   const bodyCare = typeof bodyBubble === "function" && !!bodyBubble();
@@ -220,9 +299,13 @@ function renderHome() {
     : quotaDone
       ? pickMessage("quota")
       : bodyNote || clothesNote || backupNote || pickMessage(todayMin > 0 ? "some" : "zero");
-  const bottle = bottleForWeek(weekStartKey(dateKey()));
-  $("jar").innerHTML = bottleHtml(week, bottle, weekFlowerCount(weekStartKey(dateKey())));
-  $("jar-caption").textContent = full ? `${bottle.name}（いっぱい！）` : `今週は${bottle.name}`;
+  // 今日の小瓶（36分くらいで満タン）
+  const todayKey = dateKey();
+  const bottle = smallBottleShape(todayKey);
+  $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN);
+  $("jar-caption").innerHTML = full
+    ? `今日の小瓶<br><strong>合成できるよ！</strong>`
+    : `今日の小瓶<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
 
   $("today-min").textContent = todayMin;
   $("today-kcal").textContent = Math.round(todayKcal);
@@ -337,7 +420,7 @@ function openSheet(sport) {
   sheet.sport = sport;
   sheet.entryId = null;
   sheet.mode = "new";
-  sheet.before = { today: sumMin(todayLogs()), week: sumMin(weekLogs()) };
+  sheet.before = { today: sumMin(todayLogs()), pool: poolMinutes() };
 
   $("sheet-title").innerHTML = `<span class="dot" style="--c:${sport.color}"></span><span></span>`;
   $("sheet-title").lastElementChild.textContent = sport.name;
@@ -363,7 +446,7 @@ function openEditSheet(log) {
   sheet.sport = sportById(log.type);
   sheet.entryId = log.id;
   sheet.mode = "edit";
-  sheet.before = { today: sumMin(todayLogs()), week: sumMin(weekLogs()) };
+  sheet.before = { today: sumMin(todayLogs()), pool: poolMinutes() };
   $("sheet-pick").hidden = true;
   $("sheet-done").hidden = false;
   updateDone();
@@ -470,11 +553,10 @@ function closeSheet() {
 $("done-btn").addEventListener("click", closeSheet);
 $("sheet-backdrop").addEventListener("click", closeSheet);
 
-// ノルマクリア・瓶いっぱいになった瞬間にお祝い（トーストに出す言葉を返す）
+// ノルマクリア・小瓶が250分たまった瞬間にお祝い（トーストに出す言葉を返す）
 function celebrate(before) {
   const todayMin = sumMin(todayLogs());
-  const weekMin = sumMin(weekLogs());
-  if (before.week < WEEK_GOAL_MIN && weekMin >= WEEK_GOAL_MIN) {
+  if (before.pool < BIG_BOTTLE_MIN && poolMinutes() >= BIG_BOTTLE_MIN) {
     $("full-n").innerHTML = nCharacterHtml("full");
     $("full-modal").hidden = false;
   } else if (before.today < DAILY_QUOTA_MIN && todayMin >= DAILY_QUOTA_MIN) {
@@ -487,6 +569,12 @@ function celebrate(before) {
   return null;
 }
 $("full-ok").addEventListener("click", () => {
+  $("full-modal").hidden = true;
+  // 小瓶の棚を開いて、合成ボタンを見せる
+  if (typeof showShelfView === "function") showShelfView("small");
+  document.querySelector('.tabbar-btn[data-page="shelf"]').click();
+});
+$("full-later").addEventListener("click", () => {
   $("full-modal").hidden = true;
 });
 
@@ -519,7 +607,6 @@ $("weight-form").addEventListener("submit", (ev) => {
   $("weight-modal").hidden = true;
   renderAll();
   showToast(first ? "準備できたよ！" : "体重を変更したよ");
-  if (first) setTimeout(announceBottle, 2200);
 });
 $("weight-cancel").addEventListener("click", () => {
   $("weight-modal").hidden = true;
@@ -547,24 +634,15 @@ function showToast(msg, action) {
 
 // ---------- 起動 ----------
 
-// 新しい週の瓶が決まったらお知らせ
-function announceBottle() {
-  if (!newBottleThisVisit || !data.weight) return;
-  showToast(`今週の瓶は「${newBottleThisVisit.name}」だよ！`);
-  newBottleThisVisit = null;
-}
-
+ensureBottleData();
+migrateToSmallBottles();
 buildSportButtons();
 renderAll();
 if (!data.weight) openWeightModal(true);
-else announceBottle();
 
 // 日付が変わってから開き直したときに表示を更新
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    renderAll();
-    announceBottle();
-  }
+  if (!document.hidden) renderAll();
 });
 
 // データが勝手に消されにくくするお願い（対応しているブラウザのみ）
