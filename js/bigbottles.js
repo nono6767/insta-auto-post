@@ -21,21 +21,20 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 // チャーム。place＝つけ方
 //   hang：首からひもで下げる / neck：首に巻く（リボン・ネックレス） / top：ふた（コルクのかわりに瓶の口に）
 //   body：体にかぶせる / base：瓶の下の台
+//   band：（首に巻く）絵の中の「首に巻くひも・くさり」の [まん中の横の位置, まん中の高さ, 幅]（絵の大きさに対する割合）。ひもの幅を首の太さに合わせて、首にそろえる
 //   fit：（宝石だけのふた）瓶の口の幅の何倍の大きさにするか
 //   pc：（ふた）絵の中で宝石のまん中が左から何割か / pw：置く幅（top は瓶の高さの%、neck は瓶の幅の%） / pa：チャームの絵の上から何割のところを、瓶の口（top）や首（neck）にそろえるか
 // 1本の瓶に3個までつけられる
 const CHARMS = [
   { id: "a00", name: "ピンクの宝石", w: 76, h: 96, place: "top", pw: 13, pa: 1, pc: 0.5, fit: 1.25 },
   { id: "a01", name: "パールのリボン", w: 197, h: 189, place: "neck", pw: 66, pa: 0.22 },
-  { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", pw: 52, pa: 0.12 },
+  { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", band: [0.45, 0.1, 0.5] },
   { id: "a03", name: "パールのネックレス", w: 110, h: 68, place: "neck", pw: 56, pa: 0.15 },
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
-  { id: "a05", name: "宝石のふたと月", w: 161, h: 200, place: "top", pw: 44, pa: 0.28, pc: 0.7 },
   { id: "a06", name: "つたのカバー", w: 79, h: 200, place: "body" },
   { id: "a07", name: "馬車の車輪", w: 200, h: 68, place: "base" },
-  { id: "a08", name: "宝石と月と星", w: 115, h: 200, place: "top", pw: 27, pa: 0.42, pc: 0.45 },
-  { id: "a09", name: "リボンとガラスのくつ", w: 200, h: 187, place: "neck", pw: 72, pa: 0.18 },
-  { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "hang" },
+  { id: "a09", name: "リボンとガラスのくつ", w: 200, h: 187, place: "neck", band: [0.49, 0.15, 0.38] },
+  { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "neck", band: [0.66, 0.1, 0.6] },
   { id: "a10b", name: "月のネックレス", w: 183, h: 109, place: "neck", pw: 70, pa: 0.15 },
   { id: "b00a", name: "星のピン", w: 50, h: 200, place: "hang" },
   { id: "b00b", name: "宝石のピン", w: 27, h: 200, place: "hang" },

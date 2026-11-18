@@ -33,6 +33,7 @@ const charmsOf = (b) => (Array.isArray(b.charms) ? b.charms : b.charm ? [b.charm
 // チャームをつけ方ごとに描く（位置は瓶の箱の中の%。ひもは SVG、チャームは画像）
 // 首の太さ（まんまるの大瓶を1とした大きさ）
 const NECK_REF_PX = 31 * 281 / 100;
+const NECK_BAND = 1.15; // 首に巻くひもの幅（瓶の口の幅の何倍か）
 const neckScale = (bottle) => (bottle.mouth ? (bottle.mouth[1] * bottle.w) / 100 / NECK_REF_PX : 1);
 
 function charmsHtml(bottle, ids) {
@@ -62,8 +63,15 @@ function charmsHtml(bottle, ids) {
       hasTop = true;
     } else if (c.place === "neck") {
       // 首に巻く：大きさは首の太さに合わせる（まんまるの大瓶の首を基準に。細い瓶でも小さくなりすぎない）。2個目からは少し下に
-      const w = Math.min(100, (c.pw * neckScale(bottle) * 281) / bottle.w);
-      front += img(c, "neck", nx, topAt(c, w, c.pa, ny + 3 + neckN * 6), w);
+      if (c.band && bottle.mouth) {
+        // ひもやくさりの部分を、首の太さ・首の高さにぴったり合わせる
+        const [bx, by, bw] = c.band;
+        const w = (bottle.mouth[1] * NECK_BAND) / bw;
+        front += img(c, "neck", nx + (0.5 - bx) * w, topAt(c, w, by, ny - 1 + neckN * 5), w);
+      } else {
+        const w = Math.min(100, (c.pw * neckScale(bottle) * 281) / bottle.w);
+        front += img(c, "neck", nx, topAt(c, w, c.pa, ny + 3 + neckN * 6), w);
+      }
       neckN++;
     } else if (c.place === "body") {
       // 体にかぶせる：体の高さの85%
