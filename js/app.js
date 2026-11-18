@@ -20,7 +20,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/18-1"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/18-3"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -284,33 +284,7 @@ function renderLogList(week) {
 }
 
 function renderShelf() {
-  const thisWeek = weekStartKey(dateKey());
-  const byWeek = new Map();
-  for (const log of data.logs) {
-    const w = weekStartKey(log.date);
-    if (!byWeek.has(w)) byWeek.set(w, []);
-    byWeek.get(w).push(log);
-  }
-  const fullWeeks = [...byWeek.entries()]
-    .filter(([, logs]) => sumMin(logs) >= WEEK_GOAL_MIN)
-    .sort((a, b) => (a[0] < b[0] ? 1 : -1));
-
-  const shelf = $("shelf");
-  shelf.replaceChildren();
-  $("shelf-empty").hidden = fullWeeks.length > 0;
-  shelf.hidden = fullWeeks.length === 0;
-
-  for (const [start, logs] of fullWeeks) {
-    const end = parseKey(start);
-    end.setDate(end.getDate() + 6);
-    const fig = document.createElement("figure");
-    fig.className = "shelf-item" + (start === thisWeek ? " this-week" : "");
-    fig.innerHTML = bottleHtml([...logs].sort((a, b) => a.ts - b.ts), bottleForWeek(start), weekFlowerCount(start));
-    const cap = document.createElement("figcaption");
-    cap.textContent = start === thisWeek ? "今週" : `${shortDate(start)}〜${shortDate(dateKey(end))}`;
-    fig.append(cap);
-    shelf.append(fig);
-  }
+  if (typeof drawShelf === "function") drawShelf(); // 棚の描画は js/shelf.js
 }
 
 function renderAll() {

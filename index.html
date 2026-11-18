@@ -152,8 +152,13 @@
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
-      <p class="lead">いっぱいになった週の瓶がここに並ぶよ。</p>
-      <div class="shelf" id="shelf"></div>
+      <p class="lead">いっぱいになった週の瓶が、古い順に左上から並ぶよ。</p>
+      <div class="shelf-board" id="shelf"></div>
+      <div class="shelf-nav" id="shelf-nav" hidden>
+        <button class="icon-btn nav-arrow" type="button" id="shelf-prev" aria-label="前の棚">‹</button>
+        <span class="shelf-page" id="shelf-page"></span>
+        <button class="icon-btn nav-arrow" type="button" id="shelf-next" aria-label="次の棚">›</button>
+      </div>
       <p class="empty" id="shelf-empty">まだ並んでいる瓶はないよ。今週の瓶をいっぱいにしよう！</p>
     </section>
   </main>
@@ -389,6 +394,7 @@
   <script src="js/body.js"></script>
   <script src="js/clothes.js"></script>
   <script src="js/savings.js"></script>
+  <script src="js/shelf.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>
