@@ -33,7 +33,7 @@ const CHARMS = [
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
   { id: "a06", name: "つたのカバー", w: 79, h: 200, place: "body" },
   { id: "a07", name: "馬車の車輪", w: 200, h: 68, place: "base" },
-  { id: "a09", name: "リボンとガラスのくつ", w: 200, h: 187, place: "neck", band: [0.66, 0.12, 0.37] },
+  { id: "a09", name: "リボンとガラスのくつ", w: 200, h: 187, place: "neck", band: [0.66, 0.21, 0.37] },
   { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "neck", band: [0.55, 0.07, 0.41] },
   { id: "a10b", name: "月のネックレス", w: 183, h: 109, place: "neck", pw: 70, pa: 0.15 },
   { id: "b00a", name: "星のピン", w: 50, h: 200, place: "hang" },
