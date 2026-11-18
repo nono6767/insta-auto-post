@@ -54,7 +54,7 @@
       <h2 class="section-title">どの運動をした？</h2>
       <div class="sports" id="sports"></div>
 
-      <h2 class="section-title">今週の記録</h2>
+      <h2 class="section-title">最近の記録</h2>
       <p class="lead">まちがえたときは「直す」から時間を変えたり消したりできるよ。</p>
       <div class="log-days" id="log-list"></div>
       <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
@@ -221,7 +221,16 @@
     <div class="sheet-handle"></div>
     <div id="sheet-pick">
       <h3 id="sheet-title" class="sheet-title"></h3>
-      <p class="sheet-sub">時間をタップすると記録されるよ</p>
+      <div class="day-chips" id="day-chips" role="group" aria-label="記録する日">
+        <button class="day-chip" type="button" data-back="0">今日</button>
+        <button class="day-chip" type="button" data-back="1">きのう</button>
+        <button class="day-chip" type="button" data-back="2">おととい</button>
+        <label class="day-chip other" id="day-other">
+          <span id="day-other-label">ほかの日</span>
+          <input type="date" id="day-input" aria-label="記録する日をえらぶ">
+        </label>
+      </div>
+      <p class="sheet-sub" id="sheet-sub">時間をタップすると記録されるよ</p>
       <div class="preset-row" id="preset-row"></div>
     </div>
     <div id="sheet-done" hidden>

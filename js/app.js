@@ -22,7 +22,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/19-1"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/19-2"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -428,8 +428,17 @@ function renderHome() {
   $("today-fat").textContent = fatOf(todayKcal).toFixed(1);
   $("quota-stamp").hidden = !quotaDone;
 
-  renderLogList(week);
+  renderLogList(recentLogs());
 }
+
+// あとから記録・直せるのは、7日前まで
+const BACKFILL_DAYS = 7;
+function daysAgoKey(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return dateKey(d);
+}
+const recentLogs = () => data.logs.filter((l) => l.date >= daysAgoKey(BACKFILL_DAYS) && l.date <= dateKey());
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 function dayLabel(key) {
@@ -537,6 +546,7 @@ function openSheet(sport) {
   sheet.entryId = null;
   sheet.mode = "new";
   sheet.before = { today: sumMin(todayLogs()), pool: poolMinutes() };
+  setRecordDay(dateKey()); // 記録する日：はじめは今日
 
   $("sheet-title").innerHTML = `<span class="dot" style="--c:${sport.color}"></span><span></span>`;
   $("sheet-title").lastElementChild.textContent = sport.name;
@@ -569,10 +579,35 @@ function openEditSheet(log) {
   showSheet();
 }
 
+// ---------- 記録する日（入れ忘れた日もあとから記録できる） ----------
+
+function setRecordDay(key) {
+  const today = dateKey();
+  if (!key || key > today) key = today;
+  if (key < daysAgoKey(BACKFILL_DAYS)) key = daysAgoKey(BACKFILL_DAYS);
+  sheet.day = key;
+  const quick = [0, 1, 2].map(daysAgoKey);
+  document.querySelectorAll("#day-chips .day-chip[data-back]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(daysAgoKey(Number(b.dataset.back)) === key))
+  );
+  const other = !quick.includes(key);
+  $("day-other").classList.toggle("on", other);
+  $("day-other-label").textContent = other ? dayLabel(key) : "ほかの日";
+  const input = $("day-input");
+  input.max = today;
+  input.min = daysAgoKey(BACKFILL_DAYS);
+  input.value = key;
+  $("sheet-sub").textContent = key === today ? "時間をタップすると記録されるよ" : `${dayLabel(key)}の分として記録するよ`;
+}
+document.querySelectorAll("#day-chips .day-chip[data-back]").forEach((b) =>
+  b.addEventListener("click", () => setRecordDay(daysAgoKey(Number(b.dataset.back))))
+);
+$("day-input").addEventListener("change", (e) => setRecordDay(e.target.value));
+
 function record(min) {
   const entry = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    date: dateKey(),
+    date: sheet.day || dateKey(),
     type: sheet.sport.id,
     min,
     ts: Date.now(),
@@ -601,7 +636,7 @@ function updateDone() {
   if (!e) return;
   $("done-title").textContent =
     sheet.mode === "new"
-      ? `${sheet.sport.name} ${e.min}分 記録したよ！`
+      ? `${e.date === dateKey() ? "" : dayLabel(e.date) + "の"}${sheet.sport.name} ${e.min}分 記録したよ！`
       : `${dayLabel(e.date)}の${sheet.sport.name} ${e.min}分`;
   $("done-burn").textContent = burnText(kcalOf(e));
   document.querySelector('.adjust-btn[data-add="-5"]').disabled = e.min <= 5;
@@ -672,7 +707,8 @@ function closeSheet() {
   sheet.before = null;
   // 記録した直後は、しばらく「取り消す」を出しておく
   if (justRecorded) {
-    showToast(cheer || `${sheet.sport.name} ${justRecorded.min}分 記録したよ`, {
+    const dayText = justRecorded.date === dateKey() ? "" : `${dayLabel(justRecorded.date)}の`;
+    showToast(cheer || `${dayText}${sheet.sport.name} ${justRecorded.min}分 記録したよ`, {
       label: "取り消す",
       run: async () => {
         const answer = await askAboutBig(justRecorded, "記録を消す");
