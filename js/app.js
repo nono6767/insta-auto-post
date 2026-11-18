@@ -22,7 +22,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/19-2"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/19-3"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -157,31 +157,82 @@ function weekFlowerCount(start) {
   return n;
 }
 
-// 瓶の絵：色の層（瓶の形で切り抜き）とお花の上に、瓶の画像を重ねる
+// パステルの色：運動の色を白とまぜて、やさしくする（mix が大きいほど淡い）
+function pastel(hex, mix = 0.3) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (255 - v) * mix));
+  return `rgb(${c.join(",")})`;
+}
+
+// 小瓶の絵：淡いパステルの中身（瓶の形で切り抜き）とお花の上に、瓶の画像を重ねる
 // capacity：何分で満タンに見えるか（小瓶は36分）
+// ・満タンまでは、運動した分だけたまる
+// ・満タンをこえた日は、その日の全部の運動の割合で層を分け直して、瓶のまわりがキラキラする
+// ・どんなに短い運動でも、細い層として必ず見える
+// ・層の境目はやわらかくぼかす
+const SMALL_MIN_LAYER = 7;   // いちばん細い層の厚さ（瓶の中身が入る高さの%）
+const SMALL_BLUR = 1.6;      // 境目のぼかしの幅（同じく%）
+const SMALL_FULL_LEVEL = 92; // 満タンの高さ（中身が入る高さの%）。首の飾りに、いちばん上の層がかくれないように
 function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
-  const range = bottle.bottom - bottle.top;
-  let used = 0;
-  let layers = "";
+  const range = bottle.bottom - bottle.top; // 中身が入る高さ（瓶の画像の%）
+  // 同じ運動が続いたら1つの層にまとめる
+  const bands = [];
   for (const log of logs) {
-    if (used >= capacity) break;
-    const min = Math.min(log.min, capacity - used);
-    const from = 100 - bottle.bottom + (used / capacity) * range;
-    const h = (min / capacity) * range;
-    used += min;
     const sport = sportById(log.type);
-    layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${sport ? sport.color : "#ddd"}"></span>`;
+    const color = pastel(sport ? sport.color : "#dddddd", 0.4);
+    const last = bands[bands.length - 1];
+    if (last && last.color === color) last.min += log.min;
+    else bands.push({ color, min: log.min });
   }
+  const total = bands.reduce((t, b) => t + b.min, 0);
+  const overflow = total > capacity;
+
+  let layers = "";
+  if (total > 0) {
+    // 中身の高さ（中身が入る高さに対する%）：満タンまでは分数どおり、こえたら100%
+    let fill = Math.min(1, total / capacity) * SMALL_FULL_LEVEL;
+    // 層の厚さ：分数の割合。ただし細すぎる層は SMALL_MIN_LAYER まで太くして、ほかで調整する
+    fill = Math.max(fill, Math.min(SMALL_FULL_LEVEL, bands.length * SMALL_MIN_LAYER));
+    let thick = bands.map((b) => (b.min / total) * fill);
+    const thin = thick.map((t) => t < SMALL_MIN_LAYER);
+    const need = thin.reduce((t, isThin, i) => t + (isThin ? SMALL_MIN_LAYER - thick[i] : 0), 0);
+    const room = thick.reduce((t, v, i) => t + (thin[i] ? 0 : v), 0);
+    thick = thick.map((t, i) => (thin[i] ? SMALL_MIN_LAYER : t - (room > 0 ? (need * t) / room : 0)));
+    // 下から上へ、境目をぼかしたグラデーションにする（%は中身の高さに対して）
+    let stops = [], acc = 0;
+    thick.forEach((t, i) => {
+      const lo = (acc / fill) * 100;
+      acc += t;
+      const hi = (acc / fill) * 100;
+      // ぼかしは、となりの層のうち細いほうの3割まで（細い層の色がちゃんと残るように）
+      const blurBelow = i === 0 ? 0 : (Math.min(SMALL_BLUR, 0.3 * Math.min(t, thick[i - 1])) / fill) * 100;
+      const blurAbove = i === thick.length - 1 ? 0 : (Math.min(SMALL_BLUR, 0.3 * Math.min(t, thick[i + 1])) / fill) * 100;
+      const a = Math.min(hi, lo + blurBelow);
+      const z = Math.max(a, hi - blurAbove);
+      stops.push(`${bands[i].color} ${a.toFixed(2)}%`, `${bands[i].color} ${z.toFixed(2)}%`);
+    });
+    const heightPct = (fill / 100) * range;
+    layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(heightPct + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
+  }
+
   const mask = `url(bottles/${bottle.id}-mask.webp)`;
   const spots = (bottle.flowers || []).slice(0, Math.min(flowerCount, 7));
   const size = ((11 * bottle.h) / bottle.w).toFixed(1); // お花の大きさ：瓶の高さの11%
   const flowers = spots
     .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
     .join("");
-  const label = flowerCount > 0 ? `${bottle.name}（お花${spots.length}つ）` : bottle.name;
-  return `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
+  // 満タンをこえた日は、瓶のまわりにキラキラ
+  const sparks = overflow
+    ? [[8, 30], [92, 40], [14, 72], [88, 78], [50, 6], [96, 62]]
+        .map(([x, y], i) => `<span class="bottle-spark" style="left:${x}%;top:${y}%;animation-delay:${(i * 0.37).toFixed(2)}s"></span>`)
+        .join("")
+    : "";
+  const label = `${bottle.name}${overflow ? "（満タン！）" : ""}${flowerCount > 0 ? `（お花${spots.length}つ）` : ""}`;
+  return `<div class="bottle small-bottle${overflow ? " overflow" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
+    <img class="glass-shine" src="bottles/${bottle.id}-shine.webp" alt="" width="${bottle.w}" height="${bottle.h}">
+    ${sparks}
   </div>`;
 }
 

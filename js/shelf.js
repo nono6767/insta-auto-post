@@ -22,12 +22,7 @@ const BIG_H = 178;     // 棚にのせる大瓶の高さ（背景画像1200pxの
 const bigBottleById = (id) => BIG_BOTTLES.find((b) => b.id === (BIG_BOTTLE_ALIAS[id] || id)) || BIG_BOTTLES[0];
 const charmById = (id) => CHARMS.find((c) => c.id === id) || null;
 
-// パステルの色：運動の色を白とまぜて、やさしくする
-function pastel(hex, mix = 0.3) {
-  const n = parseInt(hex.slice(1), 16);
-  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (255 - v) * mix));
-  return `rgb(${c.join(",")})`;
-}
+// （パステルの色は js/app.js の pastel）
 
 const CHARM_MAX = 3; // 1本の瓶につけられるチャームの数
 

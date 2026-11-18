@@ -853,3 +853,28 @@ main {
 .day-chip[aria-pressed="true"], .day-chip.other.on { border-color: var(--rose); background: var(--rose-soft); color: var(--rose); }
 /* 「ほかの日」：見えないカレンダー入力を上にかぶせて、タップでカレンダーが開くようにする */
 .day-chip.other input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+
+/* ---------- 小瓶の中身：淡いパステル・半透明。ガラスのツヤや線が上から見える ---------- */
+.small-bottle .layer-stack { position: absolute; left: 0; right: 0; opacity: .78; }
+/* ガラスの絵の上に、ツヤだけを取り出した絵（bottles/〇〇-shine.webp）を重ねて、白いツヤを中身の上に光らせる */
+.small-bottle .glass-shine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .75;
+  pointer-events: none;
+}
+/* 満タンをこえた日：瓶のまわりがキラキラ */
+.small-bottle .bottle-spark {
+  position: absolute;
+  height: 10%; /* 瓶の高さに合わせる（細い瓶でも小さくなりすぎない） */
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: #fff3c4;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  filter: drop-shadow(0 0 2px rgb(255 214 120 / .9));
+  animation: twinkle 1.9s ease-in-out infinite;
+  pointer-events: none;
+}
+.small-bottle.overflow { filter: drop-shadow(0 0 6px rgb(255 232 170 / .75)); }
