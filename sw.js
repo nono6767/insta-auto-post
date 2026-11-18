@@ -8,7 +8,7 @@
 //
 // ★ プログラムを直したら CODE_VERSION を、画像を変えたら IMAGE_VERSION を、必ず1つ上げる。
 importScripts("js/bottles.js");
-const CODE_VERSION = 18;
+const CODE_VERSION = 19;
 const IMAGE_VERSION = 2;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;

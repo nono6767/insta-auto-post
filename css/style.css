@@ -661,7 +661,7 @@ main {
   background: #f3c9cf url("../img/shelf-bg.webp") center / 100% 100% no-repeat;
   box-shadow: 0 2px 0 var(--line);
 }
-.shelf-bottle { position: absolute; width: 14%; translate: -50% 0; } /* 上の段の名札にかからない高さ */
+.shelf-bottle { position: absolute; width: 17%; translate: -50% 0; } /* 棚の高さいっぱいに近く。上の段の名札にはかからない */
 .shelf-bottle .shelf-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .shelf-plate {
   position: absolute;
