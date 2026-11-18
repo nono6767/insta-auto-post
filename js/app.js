@@ -22,14 +22,14 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/18-8"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/18-9"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
 const emptyData = () => ({
   weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [],
   savings: { weekly: null, goal: null, deadline: null, deposits: [] },
-  consumed: {}, bigBottles: [], bottleSystem: 2,
+  usedByLog: {}, bigBottles: [], bottleSystem: 3,
   createdAt: Date.now(), lastBackupAt: null,
 });
 
@@ -187,22 +187,22 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN) {
 
 // ---------- 小瓶と大瓶 ----------
 // 運動した日ごとに小瓶が1つ。小瓶の合計が250分をこえたら「合成」で大瓶に進化。
-// data.consumed[日付]：その日の分数のうち、もう大瓶にした分（古い記録から順に使う）
+// data.usedByLog[記録のid]：その記録の分数のうち、もう大瓶にした分
+//   （記録1件ごとに覚えるので、大瓶にした記録を消して入れ直しても、新しい記録はちゃんと数える）
 // data.bigBottles：大瓶 { id, date（進化した日）, layers[{type,min}], bottle（瓶の種類）, flowers }
 
 function ensureBottleData() {
-  if (!data.consumed) data.consumed = {};
+  if (!data.usedByLog) data.usedByLog = {};
   if (!Array.isArray(data.bigBottles)) data.bigBottles = [];
 }
 
 // その日の、まだ大瓶にしていない分（種目ごとの層）
+const usedOf = (log) => Math.min(log.min, (data.usedByLog && data.usedByLog[log.id]) || 0);
 function dayRemainingLayers(day) {
-  let skip = (data.consumed && data.consumed[day]) || 0;
   const out = [];
   for (const l of data.logs.filter((x) => x.date === day).sort((a, b) => a.ts - b.ts)) {
-    const take = Math.min(l.min, skip);
-    skip -= take;
-    if (l.min - take > 0) out.push({ type: l.type, min: l.min - take, ts: l.ts });
+    const rest = l.min - usedOf(l);
+    if (rest > 0) out.push({ id: l.id, type: l.type, min: rest, ts: l.ts });
   }
   return out;
 }
@@ -213,7 +213,8 @@ function smallBottles() {
   return days
     .map((day) => {
       const layers = dayRemainingLayers(day);
-      return { day, layers, min: sumMin(layers), bonus: !!(data.consumed && data.consumed[day] > 0) };
+      const bonus = data.logs.some((l) => l.date === day && usedOf(l) > 0); // 一部だけ大瓶にした日
+      return { day, layers, min: sumMin(layers), bonus };
     })
     .filter((b) => b.min > 0);
 }
@@ -246,7 +247,7 @@ function migrateToSmallBottles() {
       acc += l.min;
       if (acc >= BIG_BOTTLE_MIN) { evolved = l.date; break; } // 250分に届いた日＝大瓶に進化した日
     }
-    for (const l of sorted) data.consumed[l.date] = (data.consumed[l.date] || 0) + l.min; // その週の分は全部、大瓶に
+    for (const l of sorted) data.usedByLog[l.id] = l.min; // その週の分は全部、大瓶に
     data.bigBottles.push({
       id: "week-" + start,
       date: evolved,
@@ -256,7 +257,33 @@ function migrateToSmallBottles() {
       ts: parseKey(evolved).getTime(),
     });
   }
-  data.bottleSystem = 2;
+  data.bottleSystem = 3;
+  saveData();
+}
+
+// 日付ごとに覚えていた版（data.consumed）から、記録1件ごとの形にうつす（1回だけ）。
+// 大瓶ができたあとに入れた記録は「まだ使っていない分」にする（記録を消して入れ直したときに数えられなかった不具合の修正）
+function migrateToUsedByLog() {
+  if (data.bottleSystem >= 3) return;
+  ensureBottleData();
+  const consumed = data.consumed || {};
+  for (const [day, total] of Object.entries(consumed)) {
+    // その日の分を使った大瓶のうち、いちばんあとにできた時刻
+    const bigs = data.bigBottles.filter((b) => (b.days || []).includes(day) || (String(b.id).startsWith("week-") && weekStartKey(day) === b.id.slice(5)));
+    // 前の「週の瓶」から来た大瓶（その週の記録は全部使った）。どの大瓶に使ったか分からない日も、前と同じく使ったことにする
+    const weekMade = bigs.length === 0 || bigs.some((b) => String(b.id).startsWith("week-"));
+    const madeAt = Math.max(0, ...bigs.filter((b) => !String(b.id).startsWith("week-")).map((b) => b.ts || 0));
+    let left = total;
+    for (const l of data.logs.filter((x) => x.date === day).sort((a, b) => a.ts - b.ts)) {
+      if (left <= 0) break;
+      if (!weekMade && !(l.ts <= madeAt)) continue; // 大瓶ができたあとに入れた記録は使っていない
+      const take = Math.min(l.min, left);
+      data.usedByLog[l.id] = (data.usedByLog[l.id] || 0) + take;
+      left -= take;
+    }
+  }
+  delete data.consumed;
+  data.bottleSystem = 3;
   saveData();
 }
 
@@ -636,6 +663,7 @@ function showToast(msg, action) {
 
 ensureBottleData();
 migrateToSmallBottles();
+migrateToUsedByLog();
 buildSportButtons();
 renderAll();
 if (!data.weight) openWeightModal(true);

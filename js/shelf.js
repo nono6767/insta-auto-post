@@ -266,10 +266,10 @@ function mergeSmallBottles() {
       if (need <= 0) break;
       const take = Math.min(l.min, need);
       layers.push({ type: l.type, min: take });
+      data.usedByLog[l.id] = (data.usedByLog[l.id] || 0) + take; // その記録のうち、大瓶にした分
       need -= take;
       tookFromDay += take;
     }
-    data.consumed[sb.day] = (data.consumed[sb.day] || 0) + tookFromDay;
     used.push({ ...sb, took: tookFromDay });
   }
   // 大瓶の形：前の大瓶とそっくりにならないように選ぶ
