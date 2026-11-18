@@ -22,14 +22,14 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/18-9"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/18-10"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
 const emptyData = () => ({
   weight: null, logs: [], weekBottles: {}, meals: {}, body: {}, periods: [], clothes: [],
   savings: { weekly: null, goal: null, deadline: null, deposits: [] },
-  usedByLog: {}, bigBottles: [], bottleSystem: 3,
+  usedByLog: {}, bigBottles: [], bottleSystem: 4,
   createdAt: Date.now(), lastBackupAt: null,
 });
 
@@ -259,6 +259,79 @@ function migrateToSmallBottles() {
   }
   data.bottleSystem = 3;
   saveData();
+}
+
+// 今までの大瓶にも「どの記録を何分使ったか」(uses) をつける（1回だけ）。
+// 合成と同じく、作った順に、その大瓶の日付の記録の「使った分」から割りふる
+function migrateBigUses() {
+  if (data.bottleSystem >= 4) return;
+  ensureBottleData();
+  const left = {}; // 記録ごとに、まだどの大瓶にも割りふっていない「使った分」
+  for (const l of data.logs) left[l.id] = usedOf(l);
+  const logsOn = (day) => data.logs.filter((l) => l.date === day).sort((a, b) => a.ts - b.ts);
+  for (const b of [...data.bigBottles].sort((x, y) => (x.ts || 0) - (y.ts || 0))) {
+    if (Array.isArray(b.uses)) continue;
+    const days = String(b.id).startsWith("week-")
+      ? [...new Set(data.logs.filter((l) => weekStartKey(l.date) === b.id.slice(5)).map((l) => l.date))].sort()
+      : [...(b.days || [])].sort();
+    let need = b.layers.reduce((t, l) => t + l.min, 0);
+    b.uses = [];
+    for (const day of days) {
+      for (const l of logsOn(day)) {
+        if (need <= 0) break;
+        const take = Math.min(left[l.id] || 0, need);
+        if (take > 0) {
+          b.uses.push({ logId: l.id, min: take });
+          left[l.id] -= take;
+          need -= take;
+        }
+      }
+    }
+  }
+  data.bottleSystem = 4;
+  saveData();
+}
+
+// ---------- 大瓶に入っている記録を消す・減らすとき ----------
+
+const bigsUsingLog = (logId) => (data.bigBottles || []).filter((b) => (b.uses || []).some((u) => u.logId === logId));
+
+// 大瓶を小瓶に戻す：その大瓶に使った分を「まだ使っていない」に戻して、大瓶をなくす
+function dissolveBig(big) {
+  for (const u of big.uses || []) {
+    const rest = ((data.usedByLog || {})[u.logId] || 0) - u.min;
+    if (rest > 0) data.usedByLog[u.logId] = rest;
+    else delete data.usedByLog[u.logId];
+  }
+  data.bigBottles = data.bigBottles.filter((b) => b.id !== big.id);
+}
+
+// 大瓶に入っている記録なら、どうするか聞く。"dissolve"（戻す）/ "keep"（そのまま）/ "cancel"（やめる）
+function askAboutBig(log, action) {
+  const bigs = bigsUsingLog(log.id);
+  if (!bigs.length) return Promise.resolve("keep");
+  return new Promise((resolve) => {
+    const names = bigs.map((b) => {
+      const n = typeof charmsOf === "function" ? charmsOf(b).length : 0;
+      const shape = typeof bigBottleById === "function" ? bigBottleById(b.bottle).name : "大瓶";
+      return `${shortDate(b.date)}にできた${shape}${n ? `（チャーム${n}個）` : ""}`;
+    });
+    $("bigtouch-text").textContent =
+      `この記録は、${names.join("と")}に入っているよ。${action}と、大瓶をどうする？`;
+    $("bigtouch-note").textContent =
+      `「小瓶に戻す」にすると、大瓶はなくなって、中の運動は小瓶の棚に戻るよ${bigs.some((b) => (typeof charmsOf === "function" ? charmsOf(b).length : 0)) ? "（つけていたチャームもはずれるよ）" : ""}。`;
+    $("bigtouch-n").innerHTML = nCharacterHtml("wave");
+    $("bigtouch-modal").hidden = false;
+    const done = (answer) => {
+      $("bigtouch-modal").hidden = true;
+      ["bigtouch-dissolve", "bigtouch-keep", "bigtouch-cancel"].forEach((id) => ($(id).onclick = null));
+      if (answer === "dissolve") bigs.forEach(dissolveBig);
+      resolve(answer);
+    };
+    $("bigtouch-dissolve").onclick = () => done("dissolve");
+    $("bigtouch-keep").onclick = () => done("keep");
+    $("bigtouch-cancel").onclick = () => done("cancel");
+  });
 }
 
 // 日付ごとに覚えていた版（data.consumed）から、記録1件ごとの形にうつす（1回だけ）。
@@ -520,10 +593,15 @@ function updateDone() {
 }
 
 document.querySelectorAll(".adjust-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     const e = currentEntry();
     if (!e) return;
-    e.min = Math.max(5, e.min + Number(btn.dataset.add));
+    const next = Math.max(5, e.min + Number(btn.dataset.add));
+    if (next < usedOf(e)) {
+      const answer = await askAboutBig(e, "分数を減らす");
+      if (answer === "cancel") return;
+    }
+    e.min = next;
     saveData();
     updateDone();
     renderAll();
@@ -541,16 +619,29 @@ $("undo-btn").addEventListener("click", () => {
     return;
   }
   const removed = currentEntry();
-  data.logs = data.logs.filter((l) => l.id !== sheet.entryId);
-  saveData();
-  sheet.entryId = null;
-  sheet.before = null;
-  closeSheet();
-  if (removed) showToast(sheet.mode === "new" ? "取り消したよ" : "記録を消したよ", { label: "もとに戻す", run: () => restore(removed) });
+  const remove = async () => {
+    const answer = removed ? await askAboutBig(removed, "記録を消す") : "keep";
+    if (answer === "cancel") {
+      resetDeleteButton();
+      return;
+    }
+    const usedBefore = removed && answer === "keep" ? (data.usedByLog[removed.id] || 0) : 0;
+    data.logs = data.logs.filter((l) => l.id !== sheet.entryId);
+    if (removed) delete data.usedByLog[removed.id];
+    saveData();
+    sheet.entryId = null;
+    sheet.before = null;
+    closeSheet();
+    const msg = answer === "dissolve" ? "大瓶を小瓶に戻して、記録を消したよ" : sheet.mode === "new" ? "取り消したよ" : "記録を消したよ";
+    if (removed) showToast(msg, { label: "もとに戻す", run: () => restore(removed, usedBefore) });
+  };
+  remove();
 });
 
-function restore(log) {
+// used：消す前に大瓶に使っていた分（「大瓶はそのまま」で消したときだけ。大瓶と小瓶で二重に数えないように）
+function restore(log, used = 0) {
   data.logs.push(log);
+  if (used > 0) data.usedByLog[log.id] = used;
   saveData();
   renderAll();
   showToast("もとに戻したよ");
@@ -567,8 +658,11 @@ function closeSheet() {
   if (justRecorded) {
     showToast(cheer || `${sheet.sport.name} ${justRecorded.min}分 記録したよ`, {
       label: "取り消す",
-      run: () => {
+      run: async () => {
+        const answer = await askAboutBig(justRecorded, "記録を消す");
+        if (answer === "cancel") return;
         data.logs = data.logs.filter((l) => l.id !== justRecorded.id);
+        delete data.usedByLog[justRecorded.id];
         saveData();
         renderAll();
         showToast("取り消したよ");
@@ -664,6 +758,7 @@ function showToast(msg, action) {
 ensureBottleData();
 migrateToSmallBottles();
 migrateToUsedByLog();
+migrateBigUses();
 buildSportButtons();
 renderAll();
 if (!data.weight) openWeightModal(true);

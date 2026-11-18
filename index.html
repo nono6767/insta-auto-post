@@ -436,6 +436,21 @@
     </div>
   </div>
 
+  <!-- 大瓶に入っている記録を消す・減らすときの確認 -->
+  <div class="modal-backdrop bigtouch-backdrop" id="bigtouch-modal" hidden>
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="bigtouch-title">
+      <div class="modal-n" id="bigtouch-n"></div>
+      <h3 id="bigtouch-title">大瓶に入っている記録だよ</h3>
+      <p id="bigtouch-text"></p>
+      <p class="soft-note" id="bigtouch-note"></p>
+      <div class="bigtouch-actions">
+        <button class="primary-btn" type="button" id="bigtouch-dissolve">大瓶を小瓶に戻す</button>
+        <button class="choice-btn" type="button" id="bigtouch-keep">大瓶はそのまま</button>
+        <button class="text-btn" type="button" id="bigtouch-cancel">やめる</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button class="toast-action" type="button" id="toast-action" hidden></button></div>
 
   <script src="js/character.js"></script>

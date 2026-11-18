@@ -258,6 +258,7 @@ function mergeSmallBottles() {
   ensureBottleData();
   const used = [];
   const layers = [];
+  const uses = []; // どの記録を何分使ったか（あとで大瓶を小瓶に戻すときに使う）
   let need = BIG_BOTTLE_MIN;
   for (const sb of smallBottles()) {
     if (need <= 0) break;
@@ -267,6 +268,7 @@ function mergeSmallBottles() {
       const take = Math.min(l.min, need);
       layers.push({ type: l.type, min: take });
       data.usedByLog[l.id] = (data.usedByLog[l.id] || 0) + take; // その記録のうち、大瓶にした分
+      uses.push({ logId: l.id, min: take });
       need -= take;
       tookFromDay += take;
     }
@@ -286,6 +288,7 @@ function mergeSmallBottles() {
     flowers: Math.min(7, new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size),
     days: used.map((u) => u.day),
     charms: [], // 進化したあとに、好きなチャームを3個まで選んでつける
+    uses,
     ts: Date.now(),
   };
   data.bigBottles.push(big);
