@@ -18,6 +18,7 @@ let shelfPage = null; // 表示中の棚（null＝いちばん新しい棚）
 // ---------- 大瓶（チャームなしの瓶のイラスト ＋ 中身 ＋ お花 ＋ チャーム） ----------
 
 const BIG_FILL = 0.8;  // 中身は体の8割まで（上にすき間）
+const BIG_BLUR = 2.2; // 層の境目のぼかしの幅（中身の高さの%）
 const BIG_H = 178;     // 棚にのせる大瓶の高さ（背景画像1200pxのうち）
 const bigBottleById = (id) => BIG_BOTTLES.find((b) => b.id === (BIG_BOTTLE_ALIAS[id] || id)) || BIG_BOTTLES[0];
 const charmById = (id) => CHARMS.find((c) => c.id === id) || null;
@@ -85,16 +86,29 @@ function bigBottleHtml(b) {
   const bottle = bigBottleById(b.bottle);
   const range = bottle.bottom - bottle.top;
   const total = Math.max(1, b.layers.reduce((t, l) => t + l.min, 0));
-  let used = 0, layers = "";
-  for (const l of b.layers) {
-    const from = 100 - bottle.bottom + (used / total) * range * BIG_FILL;
-    const h = (l.min / total) * range * BIG_FILL;
-    used += l.min;
-    // 新しい大瓶は、その日の色の層（l.color）。前の版の大瓶は、種目の色の層
+  // 小瓶と同じく、淡いパステル・半透明で、層の境目をやわらかくぼかしたグラデーションにする
+  // 新しい大瓶は、その日の色の層（l.color）。前の版の大瓶は、種目の色の層
+  const colors = b.layers.map((l) => {
+    if (l.color) return pastel(l.color, 0.12);
     const sport = sportById(l.type);
-    const color = l.color ? liquidColor(l.color) : pastel(sport ? sport.color : "#dddddd");
-    layers += `<span class="layer" style="bottom:${from.toFixed(2)}%;height:${(h + 0.3).toFixed(2)}%;background:${color}"></span>`;
-  }
+    return pastel(sport ? sport.color : "#dddddd", 0.4);
+  });
+  const stops = [];
+  let acc = 0;
+  b.layers.forEach((l, i) => {
+    const lo = (acc / total) * 100;
+    acc += l.min;
+    const hi = (acc / total) * 100;
+    const t = hi - lo;
+    const near = (j) => (b.layers[j] ? (b.layers[j].min / total) * 100 : 0);
+    const blurBelow = i === 0 ? 0 : Math.min(BIG_BLUR, 0.3 * Math.min(t, near(i - 1)));
+    const blurAbove = i === b.layers.length - 1 ? 0 : Math.min(BIG_BLUR, 0.3 * Math.min(t, near(i + 1)));
+    const a = Math.min(hi, lo + blurBelow);
+    const z = Math.max(a, hi - blurAbove);
+    stops.push(`${colors[i]} ${a.toFixed(2)}%`, `${colors[i]} ${z.toFixed(2)}%`);
+  });
+  const fillH = range * BIG_FILL;
+  const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
   const size = ((10 * bottle.h) / bottle.w).toFixed(1);
   const flowers = bottle.flowers
     .slice(0, Math.min(b.flowers || 0, 7))
