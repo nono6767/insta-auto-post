@@ -29,22 +29,61 @@ function pastel(hex, mix = 0.3) {
   return `rgb(${c.join(",")})`;
 }
 
-// チャームを首からひもで下げる（ひもは SVG、チャームは画像）
-function charmHtml(bottle, charm) {
-  if (!charm) return "";
+const CHARM_MAX = 3; // 1本の瓶につけられるチャームの数
+
+// その大瓶のチャーム（前の版の「1個だけ」の記録もそのまま読む）
+const charmsOf = (b) => (Array.isArray(b.charms) ? b.charms : b.charm ? [b.charm] : []).filter((id) => charmById(id)).slice(0, CHARM_MAX);
+
+// チャームをつけ方ごとに描く（位置は瓶の箱の中の%。ひもは SVG、チャームは画像）
+function charmsHtml(bottle, ids) {
+  const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
   const [nx, ny] = bottle.neck;
-  const hangX = nx + (20 * bottle.h) / bottle.w; // 首から右にずらす（瓶の高さの20%ぶん）
-  const hangY = ny + 9;                           // そこから少し下に下げる
-  // チャームの大きさ：縦も横も、瓶の高さの32%の枠におさめる（細長いピンも、はみ出しすぎない）
-  const box = 32;
-  const size = ((box * bottle.h) / bottle.w) * (charm.w / Math.max(charm.w, charm.h));
-  const knotX = nx + (7 * bottle.h) / bottle.w;
-  return `<svg class="charm-string" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M${nx - 4} ${ny} Q${nx} ${ny + 2.2} ${knotX} ${ny} M${knotX} ${ny} Q${(knotX + hangX) / 2 + 2} ${ny + 3} ${hangX} ${hangY}"
-        fill="none" stroke="#b58d62" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    </svg>
-    <img class="charm" src="charms/${charm.id}.webp" alt="" width="${charm.w}" height="${charm.h}"
-      style="left:${hangX}%;top:${hangY}%;width:${size.toFixed(1)}%;aspect-ratio:${charm.w}/${charm.h}">`;
+  const charms = ids.map(charmById).filter(Boolean);
+  const img = (c, cls, left, top, width) =>
+    `<img class="charm ${cls}" src="charms/${c.id}.webp" alt="" width="${c.w}" height="${c.h}"
+      style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;width:${width.toFixed(1)}%;aspect-ratio:${c.w}/${c.h}">`;
+  // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
+  const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
+
+  let back = "", front = "", strings = "", hangN = 0, neckN = 0, hasTop = false;
+  for (const c of charms) {
+    if (c.place === "top") {
+      // ふた：もとのコルクやふたをかくして、瓶の口にのせる（宝石のまん中を瓶のまん中に）
+      const w = c.pw * k;
+      front += img(c, "top", 50 + (0.5 - (c.pc ?? 0.5)) * w, topAt(c, w, c.pa, bottle.cap + 1.5), w);
+      hasTop = true;
+    } else if (c.place === "neck") {
+      // 首に巻く：2個目からは少し下に
+      const w = c.pw;
+      front += img(c, "neck", nx, topAt(c, w, c.pa, ny + 3 + neckN * 6), w);
+      neckN++;
+    } else if (c.place === "body") {
+      // 体にかぶせる：体の高さの85%
+      const hPct = (bottle.bottom - bottle.top) * 0.85;
+      const w = (hPct * k * c.w) / c.h;
+      front += img(c, "body", 50, (bottle.top + bottle.bottom) / 2 - hPct / 2 + 2, w);
+    } else if (c.place === "base") {
+      // 瓶の下の台：瓶より少し広く、底のところに
+      const w = 118;
+      back += img(c, "base", 50, bottle.bottom - (w / k) * (c.h / c.w) * 0.55, w);
+    } else {
+      // 首からひもで下げる：1個目は右、2個目は左、3個目は前のまん中
+      const slot = [{ dx: 20, dy: 9 }, { dx: -20, dy: 9 }, { dx: 3, dy: 15 }][hangN % 3];
+      hangN++;
+      const hangX = nx + slot.dx * k; // 瓶の高さの dx% ぶん横へ
+      const hangY = ny + slot.dy;
+      const box = 30; // 縦も横も、瓶の高さの30%の枠におさめる
+      const width = box * k * (c.w / Math.max(c.w, c.h));
+      const knotX = nx + Math.sign(slot.dx || 1) * 6 * k;
+      strings += `<path d="M${nx - 4 * Math.sign(slot.dx || 1)} ${ny} Q${nx} ${ny + 2.2} ${knotX} ${ny} M${knotX} ${ny} Q${(knotX + hangX) / 2} ${ny + 3} ${hangX} ${hangY}"
+        fill="none" stroke="#b58d62" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+      front += img(c, "hang", hangX, hangY, width);
+    }
+  }
+  const svg = strings
+    ? `<svg class="charm-string" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${strings}</svg>`
+    : "";
+  return { html: back + svg + front, hasTop }; // 台 → ひも → ほかのチャーム の順に重ねる
 }
 
 function bigBottleHtml(b) {
@@ -65,10 +104,11 @@ function bigBottleHtml(b) {
     .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
     .join("");
   const mask = `url(big/${bottle.id}-mask.webp)`;
+  const charms = charmsHtml(bottle, charmsOf(b));
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
-    <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
-    ${charmHtml(bottle, charmById(b.charm))}
+    <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
+    ${charms.html}
   </div>`;
 }
 
@@ -89,7 +129,7 @@ function drawShelf() {
     const row = Math.floor(i / SHELF_COLS);
     const col = i % SHELF_COLS;
     const bottle = bigBottleById(b.bottle);
-    const charm = charmById(b.charm);
+    const names = charmsOf(b).map((id) => charmById(id).name);
     const item = document.createElement("button");
     item.type = "button";
     item.className = "shelf-bottle" + (b.id === justEvolvedId ? " just-evolved" : "");
@@ -98,7 +138,7 @@ function drawShelf() {
     item.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
     item.style.height = `${(BIG_H / SHELF_BOARD.h) * 100}%`;
     item.style.width = `${((BIG_H * bottle.w) / bottle.h / SHELF_BOARD.w) * 100}%`;
-    item.setAttribute("aria-label", `${shortDate(b.date)}に進化した${bottle.name}${charm ? `（${charm.name}）` : ""}。タップでチャームを選ぶ`);
+    item.setAttribute("aria-label", `${shortDate(b.date)}に進化した${bottle.name}${names.length ? `（${names.join("・")}）` : ""}。タップでチャームを選ぶ`);
     item.innerHTML = bigBottleHtml(b);
     item.addEventListener("click", () => openCharmPicker(b));
 
@@ -245,7 +285,7 @@ function mergeSmallBottles() {
     bottle: pick.id,
     flowers: Math.min(7, new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size),
     days: used.map((u) => u.day),
-    charm: null, // 進化したあとに、好きなチャームを選んでつける
+    charms: [], // 進化したあとに、好きなチャームを3個まで選んでつける
     ts: Date.now(),
   };
   data.bigBottles.push(big);
@@ -399,19 +439,19 @@ $("merge-ok").addEventListener("click", () => {
 // ---------- チャームを選ぶ・付け替える ----------
 
 let charmTarget = null;
-let charmChoice = null;
+let charmChoice = []; // 選んだ順（3個まで）
 function openCharmPicker(b, justEvolved = false) {
   charmTarget = b;
-  charmChoice = b.charm || null;
+  charmChoice = [...charmsOf(b)];
   $("charm-title").textContent = justEvolved ? "チャームを選んでつけよう" : "チャームを付け替える";
-  $("charm-sub").textContent = `${shortDate(b.date)}に進化した大瓶`;
+  $("charm-sub").textContent = `${shortDate(b.date)}に進化した大瓶・${CHARM_MAX}個まで選べるよ`;
   const grid = $("charm-grid");
   grid.replaceChildren();
   const none = document.createElement("button");
   none.type = "button";
   none.className = "charm-option none";
   none.dataset.id = "";
-  none.innerHTML = `<span>つけない</span>`;
+  none.innerHTML = `<span>ぜんぶ<br>はずす</span>`;
   grid.append(none);
   for (const c of CHARMS) {
     const btn = document.createElement("button");
@@ -419,12 +459,18 @@ function openCharmPicker(b, justEvolved = false) {
     btn.className = "charm-option";
     btn.dataset.id = c.id;
     btn.setAttribute("aria-label", c.name);
-    btn.innerHTML = `<img src="charms/${c.id}.webp" alt="" width="${c.w}" height="${c.h}" loading="lazy">`;
+    btn.innerHTML = `<img src="charms/${c.id}.webp" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
     grid.append(btn);
   }
   grid.querySelectorAll(".charm-option").forEach((btn) =>
     btn.addEventListener("click", () => {
-      charmChoice = btn.dataset.id || null;
+      const id = btn.dataset.id;
+      if (!id) charmChoice = [];                                             // ぜんぶはずす
+      else if (charmChoice.includes(id)) charmChoice = charmChoice.filter((x) => x !== id); // もう一度押すとはずす
+      else if (charmChoice.length >= CHARM_MAX) {
+        showToast(`チャームは${CHARM_MAX}個までだよ。どれかをはずしてね`);
+        return;
+      } else charmChoice = [...charmChoice, id];
       updateCharmPreview();
     })
   );
@@ -432,23 +478,29 @@ function openCharmPicker(b, justEvolved = false) {
   $("charm-modal").hidden = false;
 }
 function updateCharmPreview() {
-  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: charmChoice });
+  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: null, charms: charmChoice });
   const bottle = bigBottleById(charmTarget.bottle);
   $("charm-preview").style.width = `${(150 * bottle.w) / bottle.h}px`;
-  const c = charmById(charmChoice);
-  $("charm-name").textContent = c ? c.name : "チャームなし";
-  $("charm-grid").querySelectorAll(".charm-option").forEach((btn) =>
-    btn.setAttribute("aria-pressed", String((btn.dataset.id || null) === charmChoice))
-  );
+  $("charm-name").textContent = charmChoice.length
+    ? charmChoice.map((id) => charmById(id).name).join("・") + `（${charmChoice.length}/${CHARM_MAX}）`
+    : "チャームなし";
+  $("charm-grid").querySelectorAll(".charm-option").forEach((btn) => {
+    const n = charmChoice.indexOf(btn.dataset.id);
+    btn.setAttribute("aria-pressed", String(btn.dataset.id ? n >= 0 : charmChoice.length === 0));
+    const num = btn.querySelector(".charm-num");
+    if (num) num.textContent = n >= 0 ? "①②③"[n] : "";
+  });
 }
 $("charm-save").addEventListener("click", () => {
   const b = (data.bigBottles || []).find((x) => x.id === charmTarget.id);
-  if (b) b.charm = charmChoice;
+  if (b) {
+    b.charms = [...charmChoice];
+    delete b.charm; // 前の版の「1個だけ」の記録は、新しい形にうつしたので消す
+  }
   saveData();
   $("charm-modal").hidden = true;
   drawShelf();
-  const c = charmById(charmChoice);
-  showToast(c ? `「${c.name}」をつけたよ` : "チャームをはずしたよ");
+  showToast(charmChoice.length ? `チャームを${charmChoice.length}個つけたよ` : "チャームをはずしたよ");
 });
 $("charm-cancel").addEventListener("click", () => {
   $("charm-modal").hidden = true;

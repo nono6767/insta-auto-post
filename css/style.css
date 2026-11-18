@@ -781,6 +781,7 @@ main {
 .big-bottle .charm {
   position: absolute;
   translate: -50% 0;
+  pointer-events: none;
   height: auto;
   max-width: none;
   transform-origin: 50% 0;
@@ -816,3 +817,12 @@ main {
 .charm-option img { display: block; width: 100%; height: 52px; object-fit: contain; } /* 高さをはっきり決めて、全体をマスにおさめる */
 .charm-option.none span { font-size: 12px; font-weight: 700; color: var(--muted); }
 .charm-option[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); }
+
+/* チャームのつけ方ごと：揺れるのは下げるチャームだけ */
+.big-bottle .charm.top, .big-bottle .charm.neck, .big-bottle .charm.body, .big-bottle .charm.base { animation: none; filter: drop-shadow(0 1px 1px rgb(90 50 40 / .25)); }
+.charm-option { position: relative; }
+.charm-option.none span { line-height: 1.3; text-align: center; }
+.charm-num {
+  position: absolute; top: 3px; right: 4px;
+  font-size: 15px; font-weight: 700; color: var(--rose); line-height: 1;
+}
