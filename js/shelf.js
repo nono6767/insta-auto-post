@@ -67,7 +67,7 @@ function charmsHtml(bottle, ids) {
         // ひもやくさりの部分を、首の太さ・首の高さにぴったり合わせる
         const [bx, by, bw] = c.band;
         const w = (bottle.mouth[1] * NECK_BAND) / bw;
-        front += img(c, "neck", nx + (0.5 - bx) * w, topAt(c, w, by, ny - 1 + neckN * 5), w);
+        front += img(c, "neck", nx + (0.5 - bx) * w, topAt(c, w, by, (bottle.wrap ?? ny - 1) + neckN * 5), w);
       } else {
         const w = Math.min(100, (c.pw * neckScale(bottle) * 281) / bottle.w);
         front += img(c, "neck", nx, topAt(c, w, c.pa, ny + 3 + neckN * 6), w);
