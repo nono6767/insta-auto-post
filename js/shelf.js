@@ -31,6 +31,10 @@ const CHARM_MAX = 3; // 1本の瓶につけられるチャームの数
 const charmsOf = (b) => (Array.isArray(b.charms) ? b.charms : b.charm ? [b.charm] : []).filter((id) => charmById(id)).slice(0, CHARM_MAX);
 
 // チャームをつけ方ごとに描く（位置は瓶の箱の中の%。ひもは SVG、チャームは画像）
+// 首の太さ（まんまるの大瓶を1とした大きさ）
+const NECK_REF_PX = 31 * 281 / 100;
+const neckScale = (bottle) => (bottle.mouth ? (bottle.mouth[1] * bottle.w) / 100 / NECK_REF_PX : 1);
+
 function charmsHtml(bottle, ids) {
   const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
   const [nx, ny] = bottle.neck;
@@ -45,12 +49,20 @@ function charmsHtml(bottle, ids) {
   for (const c of charms) {
     if (c.place === "top") {
       // ふた：もとのコルクやふたをかくして、瓶の口にのせる（宝石のまん中を瓶のまん中に）
-      const w = c.pw * k;
-      front += img(c, "top", 50 + (0.5 - (c.pc ?? 0.5)) * w, topAt(c, w, c.pa, bottle.cap + 1.5), w);
+      // 宝石だけのふた（fit）は、瓶の口の幅に合わせた大きさにして、首の中まで差しこむ
+      const fit = c.fit && bottle.mouth;
+      const w = fit ? bottle.mouth[1] * c.fit : c.pw * k;
+      const bottomY = fit ? bottle.mouth[0] - 1 : bottle.cap + 1.5;
+      // 首の中に見えるコルクを、ガラスの色でかくす
+      if (bottle.cork) {
+        const cw = bottle.mouth[1] * 0.92;
+        back += `<span class="cork-cover" style="left:${(50 - cw / 2).toFixed(1)}%;width:${cw.toFixed(1)}%;top:${bottle.cap}%;height:${(bottle.mouth[0] - bottle.cap + 0.8).toFixed(1)}%"></span>`;
+      }
+      front += img(c, "top", 50 + (0.5 - (c.pc ?? 0.5)) * w, topAt(c, w, c.pa, bottomY), w);
       hasTop = true;
     } else if (c.place === "neck") {
-      // 首に巻く：2個目からは少し下に
-      const w = c.pw;
+      // 首に巻く：大きさは首の太さに合わせる（まんまるの大瓶の首を基準に。細い瓶でも小さくなりすぎない）。2個目からは少し下に
+      const w = Math.min(100, (c.pw * neckScale(bottle) * 281) / bottle.w);
       front += img(c, "neck", nx, topAt(c, w, c.pa, ny + 3 + neckN * 6), w);
       neckN++;
     } else if (c.place === "body") {
