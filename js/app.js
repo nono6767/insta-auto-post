@@ -22,7 +22,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/18-10"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/19-1"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -296,14 +296,25 @@ function migrateBigUses() {
 
 const bigsUsingLog = (logId) => (data.bigBottles || []).filter((b) => (b.uses || []).some((u) => u.logId === logId));
 
-// 大瓶を小瓶に戻す：その大瓶に使った分を「まだ使っていない」に戻して、大瓶をなくす
-function dissolveBig(big) {
-  for (const u of big.uses || []) {
-    const rest = ((data.usedByLog || {})[u.logId] || 0) - u.min;
-    if (rest > 0) data.usedByLog[u.logId] = rest;
-    else delete data.usedByLog[u.logId];
+// 「使った分」を、今ある大瓶の中身（uses）から計算し直す。
+// どの大瓶にも入っていない記録は、必ず「まだ使っていない」に戻る（印だけ取り残されて小瓶が消えるのを防ぐ）
+function syncUsedFromBigs() {
+  ensureBottleData();
+  const exists = new Map(data.logs.map((l) => [l.id, l]));
+  const used = {};
+  for (const b of data.bigBottles) {
+    for (const u of b.uses || []) {
+      if (exists.has(u.logId)) used[u.logId] = (used[u.logId] || 0) + u.min;
+    }
   }
+  for (const [id, m] of Object.entries(used)) used[id] = Math.min(m, exists.get(id).min);
+  data.usedByLog = used;
+}
+
+// 大瓶を小瓶に戻す：大瓶をなくして、「使った分」を計算し直す
+function dissolveBig(big) {
   data.bigBottles = data.bigBottles.filter((b) => b.id !== big.id);
+  syncUsedFromBigs();
 }
 
 // 大瓶に入っている記録なら、どうするか聞く。"dissolve"（戻す）/ "keep"（そのまま）/ "cancel"（やめる）
@@ -321,6 +332,11 @@ function askAboutBig(log, action) {
     $("bigtouch-note").textContent =
       `「小瓶に戻す」にすると、大瓶はなくなって、中の運動は小瓶の棚に戻るよ${bigs.some((b) => (typeof charmsOf === "function" ? charmsOf(b).length : 0)) ? "（つけていたチャームもはずれるよ）" : ""}。`;
     $("bigtouch-n").innerHTML = nCharacterHtml("wave");
+    // ボタンの名前に「記録をどうするか」も入れて、押したら何が起きるかはっきりさせる
+    const what = action === "記録を消す" ? "記録を消す" : "分数を減らす";
+    $("bigtouch-dissolve").textContent = `大瓶を小瓶に戻して、${what}`;
+    $("bigtouch-keep").textContent = `大瓶はそのままで、${what}`;
+    $("bigtouch-cancel").textContent = action === "記録を消す" ? "やめる（記録も消さない）" : "やめる";
     $("bigtouch-modal").hidden = false;
     const done = (answer) => {
       $("bigtouch-modal").hidden = true;
@@ -759,6 +775,12 @@ ensureBottleData();
 migrateToSmallBottles();
 migrateToUsedByLog();
 migrateBigUses();
+// 開くたびに「使った分」を大瓶の中身から計算し直す（前の版で取り残された印もここで直る）
+{
+  const before = JSON.stringify(data.usedByLog || {});
+  syncUsedFromBigs();
+  if (JSON.stringify(data.usedByLog) !== before) saveData();
+}
 buildSportButtons();
 renderAll();
 if (!data.weight) openWeightModal(true);
