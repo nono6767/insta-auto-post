@@ -6,9 +6,10 @@
 //   新しい版が出たら（CODE_VERSION が変わったら）、プログラムの分だけダウンロードし直す。
 // ・アプリを開くたびの通信は、新しい版があるかの確認（このファイル）だけ。
 //
-// ★ プログラムを直したら CODE_VERSION を、画像を変えたら IMAGE_VERSION を、必ず1つ上げる。
-importScripts("js/bottles.js");
-const CODE_VERSION = 21;
+// ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
+//   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
+importScripts("js/bottles.js", "js/bigbottles.js");
+const CODE_VERSION = 22;
 const IMAGE_VERSION = 2;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
@@ -23,6 +24,7 @@ const CODE_FILES = [
   "js/body.js",
   "js/clothes.js",
   "js/savings.js",
+  "js/bigbottles.js",
   "js/shelf.js",
   "js/backup.js",
   "js/bottles.js",
@@ -42,6 +44,8 @@ const IMAGE_FILES = [
   "icons/icon-maskable-512.png",
   "icons/apple-touch-icon.png",
   ...BOTTLES.flatMap((b) => [`bottles/${b.id}.webp`, `bottles/${b.id}-mask.webp`]),
+  ...BIG_BOTTLES.flatMap((b) => [`big/${b.id}.webp`, `big/${b.id}-mask.webp`]),
+  ...CHARMS.map((c) => `charms/${c.id}.webp`),
 ];
 const isImage = (path) => /\.(webp|png|jpe?g|gif|svg)$/i.test(path);
 
