@@ -5,8 +5,8 @@
 // 瓶は画像を使わず SVG（コード）で描く：ピンクのガラス・コルク・ひも・星のチャーム。
 // =========================================================
 
-const SHELF_PER_PAGE = 16;
-const SHELF_COLS = 4;
+const SHELF_PER_PAGE = 9; // 大瓶のショーケース：3段 × 3つ（小瓶の棚より少なくして、ゆったり飾る）
+const SHELF_COLS = 3;
 // 背景画像（896×1200）の中で、棚板の上面のまん中（瓶の底を置く高さ）と、板の前面のまん中（名札の高さ）
 const SHELF_BOARD = { w: 896, h: 1200 };
 const SHELF_BASE_Y = [375, 625, 874, 1128]; // 板の上面の、少し手前より
@@ -36,6 +36,17 @@ const NECK_REF_PX = 31 * 281 / 100;
 const NECK_BAND = 1.15; // 首に巻くひもの幅（瓶の口の幅の何倍か）
 const neckScale = (bottle) => (bottle.mouth ? (bottle.mouth[1] * bottle.w) / 100 / NECK_REF_PX : 1);
 
+// 小さな輪がつながったチェーン（シャンパンゴールド）。d は SVG の線の道すじ
+// 輪を「横向き（ふつうの輪）」と「たて向き（細く見える輪）」で交互にならべて、くさりに見せる
+function chainPath(d, behind = false) {
+  const o = behind ? ' opacity=".55"' : "";
+  return `<g fill="none" stroke-linecap="round"${o}>
+    <path d="${d}" stroke="#9c845a" stroke-width="1.5" stroke-dasharray="1.5 1.3"/>
+    <path d="${d}" stroke="#ecdcb4" stroke-width=".75" stroke-dasharray="1.5 1.3"/>
+    <path d="${d}" stroke="#b9a172" stroke-width=".55" stroke-dasharray="1.2 1.6" stroke-dashoffset="-1.45"/>
+  </g>`;
+}
+
 function charmsHtml(bottle, ids) {
   const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
   const [nx, ny] = bottle.neck;
@@ -46,7 +57,8 @@ function charmsHtml(bottle, ids) {
   // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
   const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
 
-  let back = "", front = "", strings = "", hangN = 0, neckN = 0, hasTop = false;
+  let back = "", front = "", neckN = 0, hasTop = false;
+  const hangs = [];
   for (const c of charms) {
     if (c.place === "top") {
       // ふた：もとのコルクやふたをかくして、瓶の口にのせる（宝石のまん中を瓶のまん中に）
@@ -83,23 +95,46 @@ function charmsHtml(bottle, ids) {
       const w = 118;
       back += img(c, "base", 50, bottle.bottom - (w / k) * (c.h / c.w) * 0.55, w);
     } else {
-      // 首からひもで下げる：1個目は右、2個目は左、3個目は前のまん中
-      const slot = [{ dx: 20, dy: 9 }, { dx: -20, dy: 9 }, { dx: 3, dy: 15 }][hangN % 3];
-      hangN++;
-      const hangX = nx + slot.dx * k; // 瓶の高さの dx% ぶん横へ
-      const hangY = ny + slot.dy;
-      const box = 30; // 縦も横も、瓶の高さの30%の枠におさめる
-      const width = box * k * (c.w / Math.max(c.w, c.h));
-      const knotX = nx + Math.sign(slot.dx || 1) * 6 * k;
-      strings += `<path d="M${nx - 4 * Math.sign(slot.dx || 1)} ${ny} Q${nx} ${ny + 2.2} ${knotX} ${ny} M${knotX} ${ny} Q${(knotX + hangX) / 2} ${ny + 3} ${hangX} ${hangY}"
-        fill="none" stroke="#b58d62" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
-      front += img(c, "hang", hangX, hangY, width);
+      hangs.push(c); // 首のチェーンから下げるもの（あとでまとめて並べる）
     }
   }
-  const svg = strings
-    ? `<svg class="charm-string" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${strings}</svg>`
-    : "";
-  return { html: back + svg + front, hasTop }; // 台 → ひも → ほかのチャーム の順に重ねる
+
+  // ---------- 首に巻いた細いチェーンと、そこから下がるチャーム ----------
+  // 座標は「瓶の幅を100」としたもの（縦も同じ目もりなので、チェーンの輪がつぶれない）
+  let svg = "";
+  if (hangs.length) {
+    const H = 100 * k;                         // 瓶の高さ（幅100の目もりで）
+    const Y = (pctH) => (pctH * H) / 100;      // 「瓶の高さの%」→ 目もり
+    const nw = (bottle.mouth ? bottle.mouth[1] : 30) * 1.08; // 首の太さ
+    const cy = Y((bottle.wrap ?? ny - 1) + 1.5); // チェーンを巻く高さ
+    const sag = Math.max(2.2, nw * 0.16);       // 少したるませる
+    const L = nx - nw / 2, R = nx + nw / 2;
+    // 首のチェーン：うしろ側（細く・うすく）と、前側（たるんだカーブ）
+    let paths = chainPath(`M${L} ${cy} Q${nx} ${cy - sag * 0.55} ${R} ${cy}`, true);
+    paths += chainPath(`M${L} ${cy} Q${nx} ${cy + sag * 2} ${R} ${cy}`);
+    // 下げる場所：1個＝まん中 / 2個＝右と左 / 3個＝右・左・まん中
+    const at = (t) => ({ x: L + (R - L) * t, y: cy + sag * 2 * 2 * t * (1 - t) }); // 前側のカーブの上の点
+    const spots = hangs.length === 1 ? [0.5] : hangs.length === 2 ? [0.82, 0.18] : [0.84, 0.16, 0.5];
+    const box = 28; // チャームは、瓶の高さの28%の枠におさめる
+    hangs.forEach((c, i) => {
+      const t = spots[i];
+      const p = at(t);
+      const side = t > 0.6 ? 1 : t < 0.4 ? -1 : 0;
+      const width = box * k * (c.w / Math.max(c.w, c.h));
+      // 短いチェーンで、少し外がわ・下へ（長く引きのばさない）
+      // 2個・3個のときは、左右のチャームを少し外がわへ。まん中は少し下に（重ならないように）
+      const many = hangs.length;
+      const out = side ? width * (many === 3 ? 0.42 : many === 2 ? 0.3 : 0.15) : 0;
+      const drop = side ? 6 : many === 3 ? 9 : 4.5;
+      const ex = p.x + side * out, ey = p.y + drop;
+      // たるんだカーブ（まん中が少し下にふくらむ）
+      paths += chainPath(`M${p.x} ${p.y} Q${(p.x + ex) / 2} ${Math.max(p.y, ey) + 1.6} ${ex} ${ey}`);
+      paths += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="1.05" fill="none" stroke="#b39a6a" stroke-width=".7"/>`; // つなぎの輪
+      front += img(c, "hang", ex, (ey / H) * 100 - 0.6, width);
+    });
+    svg = `<svg class="charm-string" viewBox="0 0 100 ${H.toFixed(2)}" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
+  }
+  return { html: back + svg + front, hasTop }; // 台 → チェーン → ほかのチャーム の順に重ねる
 }
 
 function bigBottleHtml(b) {
@@ -154,33 +189,37 @@ function drawShelf() {
   if (shelfPage === null || shelfPage >= pages) shelfPage = pages - 1; // はじめは、いちばん新しい棚
   const today = dateKey();
 
+  // ショーケース：3つずつ、ガラスの棚に飾る。大瓶のうしろはふんわり光り、ガラスにときどき光が流れる
   const board = $("shelf");
   board.replaceChildren();
-  bigs.slice(shelfPage * SHELF_PER_PAGE, (shelfPage + 1) * SHELF_PER_PAGE).forEach((b, i) => {
-    const row = Math.floor(i / SHELF_COLS);
-    const col = i % SHELF_COLS;
-    const bottle = bigBottleById(b.bottle);
-    const names = charmsOf(b).map((id) => charmById(id).name);
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "shelf-bottle" + (b.id === justEvolvedId ? " just-evolved" : "");
-    // 幅と高さをはっきり指定する（iPhone の Safari で幅が0にならないように）
-    item.style.left = `${(SHELF_COL_X[col] / SHELF_BOARD.w) * 100}%`;
-    item.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
-    item.style.height = `${(BIG_H / SHELF_BOARD.h) * 100}%`;
-    item.style.width = `${((BIG_H * bottle.w) / bottle.h / SHELF_BOARD.w) * 100}%`;
-    item.setAttribute("aria-label", `${shortDate(b.date)}に進化した${bottle.name}${names.length ? `（${names.join("・")}）` : ""}。タップでチャームを選ぶ`);
-    item.innerHTML = bigBottleHtml(b);
-    item.addEventListener("click", () => openCharmPicker(b));
-
-    // 札：大瓶に進化した日
-    const plate = document.createElement("span");
-    plate.className = "shelf-plate" + (b.date === today ? " this-week" : "");
-    plate.style.left = item.style.left;
-    plate.style.top = `${(SHELF_PLATE_Y[row] / SHELF_BOARD.h) * 100}%`;
-    plate.textContent = b.date === today ? "今日" : shortDate(b.date);
-    board.append(item, plate);
-  });
+  const onPage = bigs.slice(shelfPage * SHELF_PER_PAGE, (shelfPage + 1) * SHELF_PER_PAGE);
+  for (let i = 0; i < SHELF_PER_PAGE; i++) {
+    const cell = document.createElement("div");
+    cell.className = "case-slot";
+    const b = onPage[i];
+    if (b) {
+      const bottle = bigBottleById(b.bottle);
+      const names = charmsOf(b).map((id) => charmById(id).name);
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "case-bottle" + (b.id === justEvolvedId ? " just-evolved" : "");
+      item.style.aspectRatio = `${bottle.w}/${bottle.h}`;
+      item.setAttribute("aria-label", `${shortDate(b.date)}に進化した${bottle.name}${names.length ? `（${names.join("・")}）` : ""}。タップでチャームを選ぶ`);
+      item.innerHTML = `<span class="case-glow" aria-hidden="true"></span>` + bigBottleHtml(b);
+      // ガラスの形にそって、ときどき光がすーっと流れる（瓶ごとに時間をずらす）
+      const shine = document.createElement("span");
+      shine.className = "big-shimmer occasional";
+      shine.style.webkitMaskImage = shine.style.maskImage = `url(big/${bottle.id}-mask.webp)`;
+      shine.style.animationDelay = `${(i * 1.7 + Math.random()).toFixed(1)}s`;
+      item.querySelector(".bottle").append(shine);
+      item.addEventListener("click", () => openCharmPicker(b));
+      const plate = document.createElement("span");
+      plate.className = "case-plate" + (b.date === today ? " today" : "");
+      plate.textContent = b.date === today ? "今日" : shortDate(b.date);
+      cell.append(item, plate);
+    }
+    board.append(cell);
+  }
 
   $("shelf-empty").hidden = bigs.length > 0;
   $("shelf-nav").hidden = pages <= 1;
