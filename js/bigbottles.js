@@ -21,7 +21,7 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 
 // チャーム。place＝つけ方
 //   hang：首からひもで下げる / neck：首に巻く（リボン・ネックレス） / top：ふた（コルクのかわりに瓶の口に）
-//   body：体にかぶせる / base：瓶の下の台
+//   base：瓶の下の台（body：体にかぶせる も使えるけど、今はなし）
 //   band：（首に巻く）絵の中の「首に巻くひも・くさり」の [まん中の横の位置, まん中の高さ, 幅]（絵の大きさに対する割合）。ひもの幅を首の太さに合わせて、首にそろえる
 //   fit：（宝石だけのふた）瓶の口の幅の何倍の大きさにするか
 //   pc：（ふた）絵の中で宝石のまん中が左から何割か / pw：置く幅（top は瓶の高さの%、neck は瓶の幅の%） / pa：チャームの絵の上から何割のところを、瓶の口（top）や首（neck）にそろえるか
@@ -32,7 +32,6 @@ const CHARMS = [
   { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", band: [0.36, 0.06, 0.72] },
   { id: "a03", name: "パールのネックレス", w: 110, h: 68, place: "neck", pw: 56, pa: 0.15 },
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
-  { id: "a06", name: "つたのカバー", w: 79, h: 200, place: "body" },
   { id: "a07", name: "馬車の車輪", w: 200, h: 68, place: "base" },
   { id: "a09", name: "リボンとガラスのくつ", w: 200, h: 187, place: "neck", band: [0.66, 0.21, 0.37] },
   { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "neck", band: [0.55, 0.07, 0.41] },
@@ -62,4 +61,26 @@ const CHARMS = [
   { id: "c09", name: "月と黒ねこ", w: 169, h: 200, place: "hang" },
   { id: "c10", name: "肉球", w: 168, h: 179, place: "hang" },
   { id: "c11", name: "黒ねことハート", w: 130, h: 200, place: "hang" },
+  // バラ・バレエのチャーム（追加）
+  { id: "d00", name: "バラのメダル", w: 144, h: 200, place: "hang" },
+  { id: "d01", name: "しずくのバラ", w: 96, h: 200, place: "hang" },
+  { id: "d02", name: "赤いバラ", w: 115, h: 200, place: "hang" },
+  { id: "d03", name: "金のハート", w: 141, h: 200, place: "hang" },
+  { id: "d04", name: "バラのつる", w: 78, h: 200, place: "hang" },
+  { id: "d05", name: "バラのロケット", w: 147, h: 200, place: "hang" },
+  { id: "d06", name: "バラの門", w: 120, h: 200, place: "hang" },
+  { id: "d07", name: "じょうろ", w: 132, h: 200, place: "hang" },
+  { id: "d08", name: "うさぎとバラ", w: 114, h: 200, place: "hang" },
+  { id: "e00", name: "トウシューズ", w: 131, h: 200, place: "hang" },
+  { id: "e01", name: "ピンクのチュチュ", w: 182, h: 191, place: "hang" },
+  { id: "e02", name: "ティアラ", w: 137, h: 121, place: "hang" },
+  { id: "e03", name: "白鳥", w: 122, h: 157, place: "hang" },
+  { id: "e04", name: "ラベンダーのチュチュ", w: 186, h: 175, place: "hang" },
+  { id: "e05", name: "バレリーナ", w: 131, h: 192, place: "hang" },
+  { id: "e06", name: "星と月のトウシューズ", w: 56, h: 200, place: "hang" },
+  { id: "e07", name: "トウシューズと星", w: 158, h: 200, place: "hang" },
+  { id: "e08", name: "バラのリボン", w: 112, h: 200, place: "hang" },
+  { id: "e09", name: "アンティークのかぎ", w: 81, h: 196, place: "hang" },
+  { id: "e10", name: "ハートのアンティークかぎ", w: 79, h: 200, place: "hang" },
+  { id: "e11", name: "レースのリボン", w: 200, h: 174, place: "neck", pw: 58, pa: 0.21 },
 ];
