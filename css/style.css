@@ -1005,3 +1005,70 @@ main {
   border-radius: 0 0 35% 35% / 0 0 25% 25%;
   pointer-events: none;
 }
+
+/* ---------- 大瓶に進化したときの、特別なかがやき ---------- */
+.merge-rays, .merge-halo { position: absolute; translate: -50% -50%; border-radius: 50%; pointer-events: none; }
+.merge-rays {
+  background: repeating-conic-gradient(from 0deg, rgb(255 236 170 / .55) 0deg 7deg, rgb(255 255 255 / 0) 7deg 22deg);
+  -webkit-mask-image: radial-gradient(circle, #000 18%, transparent 68%);
+  mask-image: radial-gradient(circle, #000 18%, transparent 68%);
+  animation: rays-in .8s ease-out both, rays-spin 14s linear infinite;
+}
+.merge-halo {
+  background: radial-gradient(circle, rgb(255 250 225 / .95) 0%, rgb(255 224 150 / .55) 28%, rgb(255 190 215 / .25) 48%, transparent 66%);
+  animation: rays-in .8s ease-out both, halo-pulse 2.2s ease-in-out infinite;
+}
+@keyframes rays-in { from { opacity: 0; scale: .4; } }
+@keyframes rays-spin { to { rotate: 360deg; } }
+@keyframes halo-pulse { 0%, 100% { opacity: .75; scale: .95; } 50% { opacity: 1; scale: 1.06; } }
+/* 大瓶そのものも、金色にふちどられて光る */
+.merge-big.glory .bottle { animation: glory-glow 2.2s ease-in-out infinite; }
+@keyframes glory-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px rgb(255 255 255 / .95)) drop-shadow(0 0 24px rgb(255 205 100 / .9)) brightness(1.04); }
+  50% { filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 18px rgb(255 255 255 / 1)) drop-shadow(0 0 44px rgb(255 190 70 / 1)) brightness(1.12); }
+}
+.big-shimmer {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .9) 48%, rgb(255 246 200 / .7) 52%, transparent 62%) no-repeat;
+  background-size: 300% 100%;
+  animation: shimmer-sweep 2s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+@keyframes shimmer-sweep { 0% { background-position: 110% 0; } 55%, 100% { background-position: -10% 0; } }
+.merge-twinkle {
+  position: absolute;
+  width: 16px;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: #fff8d8;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 4px rgb(255 214 120 / 1));
+  animation: twinkle-star 2s ease-in-out infinite both;
+  pointer-events: none;
+}
+.merge-twinkle.big { width: 34px; }
+.merge-twinkle.inside { width: 9%; z-index: 2; background: #fff; filter: drop-shadow(0 0 3px rgb(255 255 255 / 1)) drop-shadow(0 0 6px rgb(255 214 120 / .9)); }
+@keyframes twinkle-star {
+  0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+.merge-glitter {
+  position: absolute;
+  top: -10px;
+  width: 6px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgb(255 230 160 / .9);
+  animation: glitter-fall 4s linear infinite both;
+  pointer-events: none;
+}
+@keyframes glitter-fall {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translateY(50vh) translateX(12px); }
+  100% { transform: translateY(105vh) translateX(-8px); opacity: 0; }
+}

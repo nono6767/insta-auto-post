@@ -465,8 +465,68 @@ function playEvolution(big, used) {
   for (let i = 0; i < 10; i++) {
     sparkle(stage, cx + (Math.random() - 0.5) * 220, cy + (Math.random() - 0.5) * 240, flashAt + 1000 + i * 180, 10 + Math.random() * 10);
   }
+  // 5) 大瓶の特別なかがやき（閉じるまでずっと）
+  setTimeout(() => bigGlory(stage, bigEl, big, cx, cy), flashAt + 500);
   setTimeout(showResult, flashAt + 1100);
 }
+// 大瓶のまわりの、うしろでまわる光の筋・ふんわり光る輪・ガラスをすべる光・ずっとまたたく星・ふってくる光のつぶ
+function bigGlory(stage, bigEl, big, cx, cy) {
+  const size = Math.max(bigEl.offsetWidth, bigEl.offsetHeight) * 2.3;
+  const back = (cls) => {
+    const el = document.createElement("div");
+    el.className = cls;
+    el.style.left = cx + "px";
+    el.style.top = cy + "px";
+    el.style.width = el.style.height = size + "px";
+    stage.insertBefore(el, bigEl);
+    return el;
+  };
+  back("merge-rays");
+  back("merge-halo");
+  bigEl.classList.add("glory");
+  // ガラスの形にそって、光がすーっとすべる
+  const bottle = bigBottleById(big.bottle);
+  const shine = document.createElement("span");
+  shine.className = "big-shimmer";
+  const mask = `url(big/${bottle.id}-mask.webp)`;
+  shine.style.webkitMaskImage = shine.style.maskImage = mask;
+  bigEl.querySelector(".bottle").append(shine);
+  // 瓶の中にも、ラメのようなきらめき
+  const range = bottle.bottom - bottle.top;
+  for (let i = 0; i < 12; i++) {
+    const t = document.createElement("span");
+    t.className = "merge-twinkle inside";
+    t.style.left = 22 + Math.random() * 56 + "%";
+    t.style.top = bottle.top + range * (0.25 + Math.random() * 0.68) + "%";
+    t.style.animationDelay = (Math.random() * 2).toFixed(2) + "s";
+    t.style.animationDuration = (1.1 + Math.random() * 1.1).toFixed(2) + "s";
+    bigEl.querySelector(".bottle").append(t);
+  }
+  // まわりで、ずっとまたたく星
+  const w = bigEl.offsetWidth, h = bigEl.offsetHeight;
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2 + Math.random() * 0.3;
+    const rx = w * (0.62 + Math.random() * 0.35), ry = h * (0.5 + Math.random() * 0.22);
+    const t = document.createElement("span");
+    t.className = "merge-twinkle" + (i % 3 === 0 ? " big" : "");
+    t.style.left = cx + Math.cos(a) * rx + "px";
+    t.style.top = cy + Math.sin(a) * ry + "px";
+    t.style.animationDelay = (Math.random() * 1.8).toFixed(2) + "s";
+    t.style.animationDuration = (1.4 + Math.random() * 1.2).toFixed(2) + "s";
+    stage.append(t);
+  }
+  // 上から光のつぶがふってくる
+  for (let i = 0; i < 26; i++) {
+    const g = document.createElement("span");
+    g.className = "merge-glitter";
+    g.style.left = Math.random() * 100 + "%";
+    g.style.animationDelay = (Math.random() * 4).toFixed(2) + "s";
+    g.style.animationDuration = (3 + Math.random() * 3).toFixed(2) + "s";
+    g.style.background = ["#fff6c8", "#ffffff", "#ffd1e3", "#ffe08a"][i % 4];
+    stage.append(g);
+  }
+}
+
 const reduceMotionShelf = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 $("merge-btn").addEventListener("click", () => {
