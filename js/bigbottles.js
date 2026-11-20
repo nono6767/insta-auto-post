@@ -96,7 +96,6 @@ const CHARMS = [
   { id: "j01", name: "さくら色のリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
   { id: "j02", name: "ラベンダーのリボン", w: 160, h: 143, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
   { id: "j03", name: "ミントのリボン", w: 160, h: 142, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
-  { id: "j04", name: "レモン色のリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
