@@ -414,16 +414,16 @@ function playJewelBox(results, { multi, traded }) {
       later(boxes.length * 130 + 1700, finish);
     } else {
       openBox(boxes[0], true);
-      later(3400, finish);
+      later(4400, finish);
     }
   };
 }
 
 // ---------- 宝石箱の絵 ----------
 // ★ あとでイラストに差しかえるときは、ここに画像のファイル名を書くだけ（箱の下の部分とふたを、別々の画像にする）
-//   例：{ base: "img/box-base.webp", lid: "img/box-lid.webp" }
+//   例：{ base: "img/box-base.webp", lid: "img/box-lid.webp", lidInside: "img/box-lid-inside.webp" }
 //   画像は「200×200 の正方形」の中に、下の絵と同じ位置で描く（ふたのつなぎ目＝上から47%の高さ）
-const JEWEL_BOX_ART = { base: null, lid: null };
+const JEWEL_BOX_ART = { base: null, lid: null, lidInside: null }; // lidInside：開いたふたの内側
 
 // 箱の下の部分（アイボリー・金のふち・角の飾り・正面のピンクの宝石・中のベルベット）
 const JB_BASE_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
@@ -462,18 +462,53 @@ const JB_LID_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
   <rect x="16" y="86" width="168" height="12" rx="5" fill="url(#jbGold2)" stroke="#a87a2c" stroke-width="1"/>
   <g fill="#fff6d6" opacity=".9"><circle cx="40" cy="92" r="1.6"/><circle cx="70" cy="92" r="1.6"/><circle cx="130" cy="92" r="1.6"/><circle cx="160" cy="92" r="1.6"/></g>
 </svg>`;
+// 開いたふたの内側（箱のうしろに立って、ピンクのベルベットの内張りが見える）
+const JB_LID_INSIDE_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs>
+    <radialGradient id="jbVelvet2" cx=".5" cy=".7" r=".8"><stop offset="0" stop-color="#f6b2cb"/><stop offset=".6" stop-color="#d86b95"/><stop offset="1" stop-color="#a3416a"/></radialGradient>
+    <linearGradient id="jbGold3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2bf"/><stop offset=".45" stop-color="#e2b75c"/><stop offset="1" stop-color="#a87a2c"/></linearGradient>
+  </defs>
+  <path d="M18 98 V62 C18 14 182 14 182 62 V98 Z" fill="#f3e6cf" stroke="#b8904f" stroke-width="2"/>
+  <path d="M28 96 V64 C28 26 172 26 172 64 V96 Z" fill="url(#jbVelvet2)" stroke="url(#jbGold3)" stroke-width="3"/>
+  <path d="M40 90 V66 C40 38 160 38 160 66 V90" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2" stroke-dasharray="2 4"/>
+  <ellipse cx="78" cy="52" rx="26" ry="8" fill="#fff" opacity=".22" transform="rotate(-12 78 52)"/>
+</svg>`;
+
+// 布のリボン（細くて平たい。うっすらツヤと影）と、ちょうちょ結び（小さめの輪2つと、垂れる端2本）
+const JB_RIBBON_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs>
+    <linearGradient id="rbV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c95683"/><stop offset=".18" stop-color="#ec8fb2"/><stop offset=".45" stop-color="#fbc6da"/><stop offset=".62" stop-color="#ef9dbc"/><stop offset="1" stop-color="#c95683"/></linearGradient>
+    <linearGradient id="rbH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c95683"/><stop offset=".2" stop-color="#ec8fb2"/><stop offset=".45" stop-color="#fbc6da"/><stop offset=".65" stop-color="#ef9dbc"/><stop offset="1" stop-color="#c95683"/></linearGradient>
+    <linearGradient id="rbLoop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbcade"/><stop offset=".55" stop-color="#ec8fb2"/><stop offset="1" stop-color="#c24f7c"/></linearGradient>
+  </defs>
+  <g class="rb-strips">
+    <path class="rb-v" d="M94 46 C94 70 94 90 94 184 H106 C106 90 106 70 106 46 Z" fill="url(#rbV)"/>
+    <path class="rb-h" d="M22 110 H178 V120 H22 Z" fill="url(#rbH)"/>
+    <path d="M94.6 50 V184 M105.4 50 V184 M22 110.6 H178 M22 119.4 H178" stroke="#fff" stroke-opacity=".35" stroke-width=".6" stroke-dasharray="1.5 2"/>
+  </g>
+  <g class="rb-bow">
+    <g class="rb-tail-l"><path d="M97 50 C94 60 88 70 82 80 L88 79 L90 85 C95 74 99 62 100 51 Z" fill="url(#rbLoop)" stroke="#b5426e" stroke-width=".8"/></g>
+    <g class="rb-tail-r"><path d="M103 50 C106 60 112 70 118 80 L112 79 L110 85 C105 74 101 62 100 51 Z" fill="url(#rbLoop)" stroke="#b5426e" stroke-width=".8"/></g>
+    <g class="rb-loop-l"><path d="M99 46 C88 34 72 32 72 42 C72 51 86 52 99 48 Z" fill="url(#rbLoop)" stroke="#b5426e" stroke-width=".8"/><path d="M96 45 C88 39 79 38 78 42" fill="none" stroke="#a83c66" stroke-opacity=".5" stroke-width="1.2"/></g>
+    <g class="rb-loop-r"><path d="M101 46 C112 34 128 32 128 42 C128 51 114 52 101 48 Z" fill="url(#rbLoop)" stroke="#b5426e" stroke-width=".8"/><path d="M104 45 C112 39 121 38 122 42" fill="none" stroke="#a83c66" stroke-opacity=".5" stroke-width="1.2"/></g>
+    <rect class="rb-knot" x="95.5" y="42" width="9" height="9" rx="3" fill="url(#rbLoop)" stroke="#b5426e" stroke-width=".8"/>
+  </g>
+</svg>`;
 const jbArt = (part, svg) => (JEWEL_BOX_ART[part] ? `<img src="${JEWEL_BOX_ART[part]}" alt="">` : svg);
 
 // 宝石箱1つぶんの部品（inner：中から浮かぶもの）
 function jewelBoxHtml(inner = "") {
+  // 重なる順：光 → 開いたふたの内側 → 光の筋 → チャーム → 箱 → すき間の光 → ふた → リボン
+  // （チャームは箱のうしろにいるので、箱の中から出てくるように見える。ふたとは重ならない）
   return `
-    <span class="jb-glow"></span><span class="jb-rays"></span>
-    <span class="jb-base">${jbArt("base", JB_BASE_SVG)}</span>
+    <span class="jb-glow"></span>
+    <span class="jb-lid-in">${jbArt("lidInside", JB_LID_INSIDE_SVG)}</span>
+    <span class="jb-rays"></span>
     ${inner}
+    <span class="jb-base">${jbArt("base", JB_BASE_SVG)}</span>
     <span class="jb-seam"></span>
     <span class="jb-lid">${jbArt("lid", JB_LID_SVG)}</span>
-    <span class="jb-ribbon-v"></span><span class="jb-ribbon-h"></span>
-    <span class="jb-bow"><i></i><i></i><b></b></span>`;
+    <span class="jb-ribbons">${JB_RIBBON_SVG}</span>`;
 }
 
 // 小さな星のキラキラ（宝石箱のまわり）
