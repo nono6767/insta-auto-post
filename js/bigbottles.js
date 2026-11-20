@@ -25,6 +25,7 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 //   band：（首に巻く）絵の中の「首に巻くひも・くさり」の [まん中の横の位置, まん中の高さ, 幅]（絵の大きさに対する割合）。ひもの幅を首の太さに合わせて、首にそろえる
 //   fit：（宝石だけのふた）瓶の口の幅の何倍の大きさにするか
 //   kind: "ribbon"：首のリボン（チャームとは別に1つだけ選ぶ。いつもチャームより手前に出る）
+//   scale：（下げるチャーム）ほかより大きく見えるときに小さくする（0.7 ＝ 7割の大きさ）
 //   pc：（ふた）絵の中で宝石のまん中が左から何割か / pw：置く幅（top は瓶の高さの%、neck は瓶の幅の%） / pa：チャームの絵の上から何割のところを、瓶の口（top）や首（neck）にそろえるか
 // ここにあるのは「ベーシックライン」（最初から持っている）。ガチャのシリーズのチャームは js/series.js
 // 1本の瓶に3個までつけられる
@@ -41,14 +42,14 @@ const CHARMS = [
   { id: "b00a", name: "星のピン", w: 40, h: 160, place: "hang" },
   { id: "b00b", name: "宝石のピン", w: 22, h: 160, place: "hang" },
   { id: "b00c", name: "金のピン", w: 36, h: 160, place: "hang" },
-  { id: "b01", name: "銀の星", w: 62, h: 91, place: "hang" },
-  { id: "b02", name: "月と星", w: 106, h: 149, place: "hang" },
+  { id: "b01", name: "銀の星", w: 62, h: 91, place: "hang", scale: 0.62 },
+  { id: "b02", name: "月と星", w: 106, h: 149, place: "hang", scale: 0.72 },
   { id: "b03", name: "しずくの宝石", w: 68, h: 145, place: "hang" },
   { id: "b04", name: "羽根のチャーム", w: 37, h: 160, place: "hang" },
-  { id: "b05", name: "金のかぎ", w: 46, h: 142, place: "hang" },
-  { id: "b06", name: "ハートのかぎ", w: 56, h: 141, place: "hang" },
-  { id: "b07", name: "タグ", w: 105, h: 170, place: "hang" },
-  { id: "b08", name: "銀の月", w: 71, h: 117, place: "hang" },
+  { id: "b05", name: "金のかぎ", w: 46, h: 142, place: "hang", scale: 0.72 },
+  { id: "b06", name: "ハートのかぎ", w: 56, h: 141, place: "hang", scale: 0.72 },
+  { id: "b07", name: "タグ", w: 105, h: 170, place: "hang", scale: 0.68 },
+  { id: "b08", name: "銀の月", w: 71, h: 117, place: "hang", scale: 0.66 },
   { id: "b09", name: "ピンクのリボン", w: 160, h: 132, place: "neck", pw: 60, pa: 0.2, kind: "ribbon" },
   { id: "b10", name: "麻ひものリボン", w: 160, h: 138, place: "neck", pw: 58, pa: 0.15, kind: "ribbon" },
   { id: "c00", name: "ハートのリボン", w: 160, h: 135, place: "neck", pw: 54, pa: 0.3, kind: "ribbon" },

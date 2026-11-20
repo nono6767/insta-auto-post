@@ -138,7 +138,7 @@ function charmsHtml(bottle, ids, ribbonId = null) {
       const t = spots[i];
       const p = at(t);
       const side = t > 0.6 ? 1 : t < 0.4 ? -1 : 0;
-      const width = box * k * (c.w / Math.max(c.w, c.h));
+      const width = box * k * (c.w / Math.max(c.w, c.h)) * (c.scale || 1);
       // 短いチェーンで、少し外がわ・下へ（長く引きのばさない）
       // 2個・3個のときは、左右のチャームを少し外がわへ。まん中は少し下に（重ならないように）
       const many = hangs.length;
