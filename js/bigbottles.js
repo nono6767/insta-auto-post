@@ -91,6 +91,12 @@ const CHARMS = [
   { id: "f09", name: "ギター", w: 77, h: 160, place: "hang" },
   { id: "f10", name: "黒レースの赤いリボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2, kind: "ribbon" },
   { id: "f11", name: "金もようの赤いリボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16, kind: "ribbon" },
+  // パステルのリボン（ベーシック・最初から持っている）
+  { id: "j00", name: "水色のリボン", w: 160, h: 126, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
+  { id: "j01", name: "さくら色のリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
+  { id: "j02", name: "ラベンダーのリボン", w: 160, h: 143, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
+  { id: "j03", name: "ミントのリボン", w: 160, h: 142, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
+  { id: "j04", name: "レモン色のリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
