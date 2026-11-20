@@ -293,6 +293,10 @@
           <span class="settings-label">体重を変える</span>
           <span class="settings-sub">消費カロリーの計算に使うよ</span>
         </button>
+        <button class="settings-item" type="button" id="settings-character">
+          <span class="settings-label">キャラクター</span>
+          <span class="settings-sub" id="settings-character-sub"></span>
+        </button>
         <button class="settings-item" type="button" id="settings-savings">
           <span class="settings-label">貯金瓶の設定</span>
           <span class="settings-sub" id="settings-savings-sub">毎週の金額・目標金額・期限</span>
@@ -311,6 +315,18 @@
         <button class="primary-btn" type="button" id="settings-close">閉じる</button>
       </div>
       <input type="file" id="restore-input" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <!-- キャラクターを選ぶ -->
+  <div class="modal-backdrop" id="character-modal" hidden>
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="character-title">
+      <h3 id="character-title">キャラクターを選ぶ</h3>
+      <p>ホームや、お祝いのときに出てくるよ</p>
+      <div class="char-choices" id="char-choices"></div>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="character-close">閉じる</button>
+      </div>
     </div>
   </div>
 

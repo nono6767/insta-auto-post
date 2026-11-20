@@ -40,6 +40,7 @@ function openSettings() {
     : "まだバックアップしていないよ";
   $("backup-save").classList.toggle("due", backupDue());
   $("app-version").textContent = `アプリの版：${APP_VERSION}`;
+  $("settings-character-sub").textContent = `いまは ${charName()}（${currentCharacter().desc}）`;
   $("settings-modal").hidden = false;
 }
 const closeSettings = () => {
@@ -51,6 +52,35 @@ $("settings-weight").addEventListener("click", () => {
   closeSettings();
   openWeightModal(false);
 });
+
+// ---------- キャラクターを選ぶ ----------
+function openCharacterPicker() {
+  const box = $("char-choices");
+  box.replaceChildren();
+  const now = data.character || "n";
+  for (const [id, c] of Object.entries(CHARACTERS)) {
+    const p = c.poses.cheer || c.poses.wave;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "char-choice";
+    b.setAttribute("aria-pressed", String(id === now));
+    b.innerHTML = `<img src="${p.src}" alt="" width="${p.w}" height="${p.h}"><b>${c.name}</b><small>${c.desc}</small>`;
+    b.addEventListener("click", () => {
+      data.character = id;
+      saveData();
+      $("character-modal").hidden = true;
+      renderAll();
+      showToast(`キャラクターを ${c.name} にしたよ`);
+    });
+    box.append(b);
+  }
+  $("character-modal").hidden = false;
+}
+$("settings-character").addEventListener("click", () => {
+  closeSettings();
+  openCharacterPicker();
+});
+$("character-close").addEventListener("click", () => ($("character-modal").hidden = true));
 
 // ---------- バックアップを保存 ----------
 

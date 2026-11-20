@@ -1457,3 +1457,11 @@ body.gacha-open { overflow: hidden; }
 .jb-wrap.multi .jb-charm { width: 40%; }
 .gacha-anim > .g-skip { position: absolute; z-index: 3; }
 .jbox.wobble.open { animation: none; } /* 開いたあとに、出てくる動きをくり返さない */
+
+/* キャラクターを選ぶ */
+.char-choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+.char-choice { display: grid; justify-items: center; gap: 2px; padding: 10px 6px 8px; border: 2px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink); }
+.char-choice img { width: auto; height: 130px; object-fit: contain; }
+.char-choice b { font-size: 18px; }
+.char-choice small { font-size: 11px; color: var(--muted); }
+.char-choice[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); }
