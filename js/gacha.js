@@ -148,7 +148,10 @@ const freeLeft = () => {
 // 開催中のガチャ：ピックアップ（開始日が早い順に、最大2つ）＋ いろいろガチャ
 const openGachas = () => {
   const t = dateKey();
+  // 3つ以上重なったときは、新しく始まったものを優先して2つまで
   const pickups = SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && SERIES[p.series])
+    .slice()
+    .reverse()
     .slice(0, GACHA.maxPickups)
     .map((p) => {
       const sr = SERIES[p.series];
