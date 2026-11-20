@@ -96,4 +96,12 @@ const CHARMS = [
   { id: "f09", name: "ギター", w: 96, h: 200, place: "hang" },
   { id: "f10", name: "黒レースの赤いリボン", w: 192, h: 200, place: "neck", pw: 60, pa: 0.2 },
   { id: "f11", name: "金もようの赤いリボン", w: 134, h: 200, place: "neck", pw: 54, pa: 0.16 },
+  // わんこのチャーム（追加）
+  { id: "g00", name: "わんこのハート", w: 200, h: 190, place: "hang" },
+  { id: "g01", name: "宝石の肉球", w: 184, h: 200, place: "hang" },
+  { id: "g02", name: "クリスタルとほね", w: 129, h: 200, place: "hang" },
+  { id: "g03", name: "星のほね", w: 195, h: 200, place: "hang" },
+  { id: "g04", name: "しずくの羽根", w: 107, h: 200, place: "hang" },
+  { id: "g05", name: "わんこの本", w: 168, h: 200, place: "hang" },
+  { id: "g06", name: "ほねの小瓶", w: 118, h: 200, place: "hang" },
 ];
