@@ -220,6 +220,9 @@ function runGacha(kind) {
     r.rarity = rarityOf(r, gacha);
     return r;
   });
+  // キャラがびっくりする（ピックアップやレアの新しいチャームが出たとき）
+  const wow = results.find((r) => r.isNew && r.rarity === "pickup") || results.find((r) => r.isNew && r.rarity === "rare");
+  if (typeof talkState !== "undefined") talkState.lastDraw = wow ? wow.charm.name : null;
   saveData();
   updateCoinBadge();
   playGacha(results, kind === "multi", false, gacha);
@@ -586,7 +589,7 @@ $("gacha-anim-ok").addEventListener("click", () => {
 
 // ---------- ボタン ----------
 
-$("coin-btn").addEventListener("click", openGacha);
+$("coin-btn").addEventListener("click", () => openGacha());
 $("gacha-close").addEventListener("click", closeGacha);
 $("g-free").addEventListener("click", () => runGacha("free"));
 $("g-one").addEventListener("click", () => runGacha("one"));

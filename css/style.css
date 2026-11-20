@@ -1556,3 +1556,18 @@ body.gacha-open { overflow: hidden; }
 #page-home .today-stats { margin-top: 0; }
 #page-home .quiz-bar { margin-top: 8px; min-height: 38px; }
 #page-home .section-title { margin-top: 8px; margin-bottom: 4px; }
+
+/* ---------- 画面ごとのキャラのひとこと ---------- */
+.talk-strip { display: grid; grid-template-columns: 64px 1fr; align-items: end; gap: 6px; margin: 4px 0 10px; }
+.talk-char { position: relative; height: 84px; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.talk-char .n-char, #page-home .hero .n-char { aspect-ratio: auto; height: 100%; }
+.talk-bubble {
+  position: relative; align-self: center; margin: 0; min-height: 2.9em; padding: 9px 12px; border-radius: 16px;
+  background: var(--surface); box-shadow: 0 2px 0 var(--line); font-size: 13.5px; line-height: 1.5; color: var(--ink);
+}
+.talk-bubble::before { content: ""; position: absolute; left: -7px; bottom: 14px; border: 7px solid transparent; border-right-color: var(--surface); border-left: 0; }
+.talk-bubble.gacha-talk { background: linear-gradient(120deg, #fff, #fff0f6); color: #b2456f; font-weight: 700; }
+.gacha-talk-strip { margin-top: -4px; }
+.n-char.talk-pop img { animation: quiz-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+#n-figure { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#page-home .bubble { min-height: 3em; }

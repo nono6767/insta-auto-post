@@ -41,14 +41,16 @@ function quizCoinsToday() {
 
 // キャラの絵（ポーズ）とふきだし
 function quizSay(pose, html) {
-  const p = currentCharacter().poses[pose] || currentCharacter().poses.wave;
+  const p = poseOf(pose);
   const fig = $("quiz-char");
   fig.innerHTML = `<img src="${p.src}" alt="${p.alt}" width="${p.w}" height="${p.h}">`;
   fig.classList.remove("pop");
   void fig.offsetWidth;
   fig.classList.add("pop");
-  $("quiz-bubble").innerHTML = html;
+  if (typeof speakHtml === "function") speakHtml($("quiz-bubble"), html); // 1文字ずつ（js/lines.js）
+  else $("quiz-bubble").innerHTML = html;
 }
+const escHtml = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
 
 async function openQuiz() {
   $("quiz-screen").hidden = false;
@@ -56,7 +58,7 @@ async function openQuiz() {
   $("quiz-name").textContent = charName();
   const bank = await loadQuizBank();
   if (bank.length < QUIZ_COUNT) {
-    quizSay("relax", "あれれ、問題集が読みこめなかったよ。<br>電波のいいところで、もう一度開いてみてね");
+    quizSay("hands", "あれれ、問題集が読みこめなかったよ。<br>電波のいいところで、もう一度開いてみてね");
     $("quiz-body").replaceChildren();
     return;
   }
@@ -89,7 +91,7 @@ function showQuestion() {
   quiz.answered = false;
   drawProgress();
   quizSay(
-    quiz.i === 0 ? "cheer" : "wave",
+    "rolling",
     `<span class="quiz-genre">${q.genre || "ピラティス"}</span><b class="quiz-qno">Q${quiz.i + 1}.</b> ${q.question}`
   );
   const body = $("quiz-body");
@@ -122,8 +124,7 @@ function answer(k) {
   });
   drawProgress();
   const head = q.ok ? `<b class="quiz-ok">正解！すごい〜✨</b>` : `<b class="quiz-ng">おしい！</b> 正解は「${q.shown[q.correct]}」だよ`;
-  quizSay(q.ok ? "quota" : "relax", `${head}<br><span class="quiz-exp"></span>`);
-  $("quiz-bubble").querySelector(".quiz-exp").textContent = q.explanation || "";
+  quizSay(q.ok ? "guts" : "hands", `${head}<br><span class="quiz-exp">${escHtml(q.explanation || "")}</span>`);
   if (q.ok) quizSparkle();
   const next = document.createElement("button");
   next.type = "button";
@@ -155,7 +156,7 @@ function finishQuiz() {
     ? `コインを <b>${give}枚</b> もらったよ！`
     : `今日のクイズのコインは、もう${COIN_RULES.quizDailyMax}枚もらったよ。また明日ね`;
   quizSay(
-    perfect ? "full" : quiz.score >= 3 ? "love" : "cheer",
+    perfect ? "jump" : quiz.score >= 3 ? "wink" : "guts",
     perfect
       ? `<b class="quiz-ok">全問正解〜！！</b><br>ピラティスマスターだね✨ ${coinText}`
       : `<b>${quiz.list.length}問中 ${quiz.score}問 正解！</b><br>${quiz.score >= 3 ? "いい感じ！" : "つぎはもっといけるよ！"} ${coinText}`

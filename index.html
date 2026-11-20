@@ -76,6 +76,7 @@
 
     <!-- ごはん -->
     <section id="page-meals" class="page" hidden>
+      <div class="talk-strip" data-screen="meals"><button class="talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" aria-live="polite"></p></div>
       <div class="day-nav">
         <button class="icon-btn nav-arrow" type="button" id="meal-prev" aria-label="前の日">‹</button>
         <h2 class="day-nav-title" id="meal-day-title">今日</h2>
@@ -95,6 +96,7 @@
 
     <!-- からだ（体調・気分・生理） -->
     <section id="page-body" class="page" hidden>
+      <div class="talk-strip" data-screen="body"><button class="talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" aria-live="polite"></p></div>
       <div class="day-nav">
         <button class="icon-btn nav-arrow" type="button" id="body-prev" aria-label="前の日">‹</button>
         <h2 class="day-nav-title" id="body-day-title">今日</h2>
@@ -126,6 +128,7 @@
     <!-- 服チェック -->
     <section id="page-clothes" class="page" hidden>
       <h2 class="section-title">服チェック</h2>
+      <div class="talk-strip" data-screen="clothes"><button class="talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" aria-live="polite"></p></div>
       <p class="lead">お気に入りの服を着て写真を撮って、前回とくらべてみよう。写真はこのスマホの中にだけ保存されるよ。</p>
       <div class="card check-banner" id="check-banner" hidden></div>
       <div class="clothes-list" id="clothes-list"></div>
@@ -138,6 +141,7 @@
     <!-- 貯金瓶 -->
     <section id="page-savings" class="page" hidden>
       <h2 class="section-title">貯金瓶</h2>
+      <div class="talk-strip" data-screen="savings"><button class="talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" aria-live="polite"></p></div>
       <div class="card savings-hero">
         <div class="savings-jar" id="savings-jar" role="button" tabindex="0" aria-label="瓶をゆらしてコインを跳ねさせる"></div>
         <p class="hint" id="savings-tap-hint" hidden>瓶をタップしてみてね</p>
@@ -166,6 +170,7 @@
     <!-- 瓶の棚 -->
     <section id="page-shelf" class="page" hidden>
       <h2 class="section-title">瓶の棚</h2>
+      <div class="talk-strip" data-screen="shelf"><button class="talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" aria-live="polite"></p></div>
       <div class="shelf-switch" role="tablist">
         <button class="shelf-switch-btn" type="button" role="tab" data-shelf="small" aria-selected="true">小瓶の棚</button>
         <button class="shelf-switch-btn" type="button" role="tab" data-shelf="big" aria-selected="false">大瓶の棚</button>
@@ -548,6 +553,7 @@
       </span>
     </div>
     <h2 class="gacha-title" id="gacha-title">チャームガチャ</h2>
+    <div class="talk-strip gacha-talk-strip"><button class="talk-char" id="gacha-talk-char" type="button" aria-label="キャラをタップすると、別のセリフになるよ"></button><p class="talk-bubble" id="gacha-talk-bubble" aria-live="polite"></p></div>
     <div class="g-tabs" id="g-tabs" role="tablist"></div>
     <div id="g-banners"></div>
     <div class="gacha-showcase" aria-hidden="true">
@@ -622,7 +628,7 @@
   <script src="js/shake.js"></script>
   <script src="js/gacha.js"></script>
   <script src="js/quiz.js"></script>
-  <script src="js/talk.js"></script>
+  <script src="js/lines.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>

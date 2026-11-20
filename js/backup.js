@@ -59,7 +59,7 @@ function openCharacterPicker() {
   box.replaceChildren();
   const now = data.character || "n";
   for (const [id, c] of Object.entries(CHARACTERS)) {
-    const p = c.poses.cheer || c.poses.wave;
+    const p = c.poses.guts;
     const b = document.createElement("button");
     b.type = "button";
     b.className = "char-choice";
