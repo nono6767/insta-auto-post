@@ -36,6 +36,7 @@ const LINES = {
     { when: (c) => c.todayMin === 0 && c.tod === "day", pose: "pointSide", say: ["こんにちは！下のボタンから運動を記録してね", "お昼休みに5分だけ動いてみる？"] },
     { when: (c) => c.todayMin === 0 && c.tod === "night", pose: "stretch", say: ["おつかれさま。寝る前にストレッチ5分はどう？", "今日もおつかれさま〜。ゆっくりほぐそう"] },
     { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、まだだよ〜！左上から引けるよ" },
+    { when: (c) => c.upcoming, pose: "surprise", say: (c) => `${c.upcoming.date}から、ガチャに「${c.upcoming.name}」が来るよ！` },
     { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
     { when: (c) => c.coins >= 1 && c.coins < c.multiCost, pose: "pointUp", say: (c) => `コイン${c.coins}枚あるよ。ガチャ引いてみる？` },
     WEATHER_NORMAL,
@@ -85,6 +86,7 @@ const LINES = {
     { when: (c) => c.lastDraw, pose: "surprise", say: (c) => `わっ！${c.lastDraw}が出たよ！` },
     { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、引いてみよう！" },
     { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
+    { when: (c) => c.upcoming, pose: "surprise", say: (c) => `予告だよ！${c.upcoming.date}から「${c.upcoming.name}」が始まるよ` },
     { when: (c) => c.pickup, pose: "surprise", say: (c) => `${c.pickup}開催中！${c.pickupHave}/${c.pickupTotal}集めたよ` },
     { when: (c) => c.coins < 1, pose: "hands", say: "コインは、運動やクイズでたまるよ" },
     { pose: "wink", say: "どのチャームが出るかな〜" },
@@ -187,6 +189,7 @@ function talkContext() {
     pickupTotal: lineup.length,
     newPickup: newPickup ? { id: newPickup.id, label: SERIES[newPickup.series]?.name || newPickup.name } : null,
     lastDraw: talkState.lastDraw,
+    upcoming: (() => { const u = typeof upcomingPickups === "function" ? upcomingPickups()[0] : null; return u ? { name: SERIES[u.series].name, date: shortDate(u.start) } : null; })(),
     wx: typeof weatherFacts === "function" ? weatherFacts() : null,
   };
 }

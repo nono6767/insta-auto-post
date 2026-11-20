@@ -32,6 +32,7 @@ const GACHA = {
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
   shardsForCharm: 10,  // 好きなチャームと交換するのに使う、かけらの数
   maxPickups: 2,       // 同時に開催するピックアップガチャの数
+  noticeDays: 14,      // ピックアップの予告を出すのは、開始の何日前から
 };
 
 // シリーズ（ベーシックライン ＋ js/series.js の SERIES_LIST）
@@ -179,6 +180,12 @@ const startedSeries = () => {
   const t = dateKey();
   return new Set(SERIES_PICKUPS.filter((p) => p.start <= t).map((p) => p.series));
 };
+// もうすぐ始まるピックアップ（予告）。js/series.js で preview: false にしたシリーズは出さない
+const upcomingPickups = () => {
+  const t = dateKey(), until = addDaysKey(t, GACHA.noticeDays);
+  return SERIES_PICKUPS.filter((p) => p.start > t && p.start <= until && SERIES[p.series] && SERIES[p.series].preview !== false);
+};
+const daysUntil = (start) => Math.round((Date.parse(start) - Date.parse(dateKey())) / 86400000);
 const daysLeft = (end) => Math.round((Date.parse(end) - Date.parse(dateKey())) / 86400000) + 1; // 今日をふくめて、あと何日
 let gachaTab = null; // 選んでいるガチャの id
 const currentGacha = () => {
@@ -317,6 +324,24 @@ function drawGachaScreen() {
       <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${pool.length ? "ピックアップが終わったシリーズが、ぜんぶ入っているよ" : "ピックアップが終わったシリーズが、ここに入るよ。お楽しみに！"}</p>
       ${groups.join("")}</section>`;
+  }
+  // 予告：もうすぐ始まるピックアップ（チャームはシルエットで、ちらっと見せる）
+  const notice = $("g-notice");
+  notice.replaceChildren();
+  for (const p of upcomingPickups()) {
+    const sr = SERIES[p.series];
+    const lineup = CHARMS.filter((c) => seriesOf(c) === p.series);
+    const n = daysUntil(p.start);
+    const el = document.createElement("section");
+    el.className = "g-notice";
+    el.style.setProperty("--c", sr.color || "#e8a3b8");
+    el.innerHTML = `
+      <p class="g-notice-tag">${p.revival ? "復刻予告" : "ピックアップ予告"}</p>
+      <h3 class="g-notice-title">${sr.name}</h3>
+      <p class="g-notice-date"><b>${n === 1 ? "明日から！" : `あと${n}日`}</b>（${shortDate(p.start)}〜${shortDate(p.end)}）</p>
+      ${sr.catch ? `<p class="g-notice-sub">${sr.catch}</p>` : ""}
+      <div class="g-notice-lineup">${lineup.map((c) => (p.revival ? `<img src="${charmSrc(c)}" alt="${c.name}" loading="lazy">` : `<img class="silhouette" src="${charmSrc(c)}" alt="" loading="lazy">`)).join("")}</div>`;
+    notice.append(el);
   }
   // ボタン
   const free = freeLeft();

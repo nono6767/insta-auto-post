@@ -1621,3 +1621,19 @@ body.gacha-open { overflow: hidden; }
 .weather-chip .wx-svg { width: 17px; height: 17px; }
 .weather-chip .wx-umbrella { font-size: 14px; }
 .weather-chip .wx-tomorrow { padding: 0 5px; border-radius: 999px; background: #e9e1fb; color: #6b55a8; font-size: 10px; font-weight: 700; line-height: 16px; }
+
+/* ---------- ピックアップの予告 ---------- */
+.g-notice {
+  position: relative; margin-bottom: 12px; padding: 12px 14px; border-radius: 18px;
+  border: 2px dashed color-mix(in srgb, var(--c, #e8a3b8) 70%, #fff);
+  background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--c, #e8a3b8) 18%, #fff));
+  color: #5a3442;
+}
+.g-notice-tag { display: inline-block; margin: 0; padding: 1px 10px; border-radius: 999px; background: #5a3442; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.g-notice-title { margin: 6px 0 0; font-size: 18px; }
+.g-notice-date { margin: 2px 0 0; font-size: 12px; color: #8d6070; }
+.g-notice-date b { color: #e0668f; }
+.g-notice-sub { margin: 2px 0 0; font-size: 12px; color: #8d6070; }
+.g-notice-lineup { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+.g-notice-lineup img { flex: none; width: 44px; height: 44px; object-fit: contain; }
+.g-notice-lineup img.silhouette { filter: brightness(0) opacity(.35); }
