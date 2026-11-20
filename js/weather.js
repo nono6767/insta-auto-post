@@ -73,6 +73,50 @@ function readWeatherCache() {
 
 // 降水確率 → 傘マーク（なければ空）
 const umbrellaFor = (p) => (p >= UMBRELLA.big ? { icon: "☂️", label: "傘" } : p >= UMBRELLA.small ? { icon: "🌂", label: "折りたたみ傘" } : null);
+// ---------- キャラが話すための「天気のようす」 ----------
+// 天気のデータ（1時間ごとの降水確率・昨日／今日／明日の最高気温）から読みとる。セリフは js/lines.js の WEATHER_LINES
+// 返すもの：{ mode: "today"｜"tomorrow", rainNow, rainPart（"朝から" など）, umbrella（"big"｜"small"｜null）,
+//            sunny, cloudy, snow, tmax（最高気温）, diff（昨日（夜は今日）とくらべた最高気温の差）, cold（"coat"｜"light"｜null）, hot }
+function rainPartOf(hour) {
+  return hour <= 9 ? "朝から" : hour <= 11 ? "お昼前から" : hour <= 14 ? "午後から" : hour <= 17 ? "夕方から" : "夜から";
+}
+function weatherFacts() {
+  const w = readWeatherCache();
+  if (!w || w.pref !== weatherPref() || !w.daily || !w.daily.time) return null;
+  const now = new Date();
+  const tomorrow = now.getHours() >= NIGHT_FROM;
+  const day = tomorrow ? addDaysKey(dateKey(), 1) : dateKey();
+  const prev = addDaysKey(day, -1);
+  const di = w.daily.time.indexOf(day), pi = w.daily.time.indexOf(prev);
+  if (di < 0) return null;
+  const tmax = Math.round(w.daily.tmax[di]);
+  const code = w.daily.code[di];
+  // その日の、これからの時間（明日なら朝6時から）の降水確率
+  const from = tomorrow ? `${day}T06:00` : hourKey(now);
+  let maxP = 0, startH = null;
+  (w.hourly?.time || []).forEach((h, i) => {
+    if (!h.startsWith(day) || h < from) return;
+    const pr = w.hourly.prob[i] ?? 0;
+    maxP = Math.max(maxP, pr);
+    if (startH === null && pr >= UMBRELLA.small) startH = Number(h.slice(11, 13));
+  });
+  const umbrella = maxP >= UMBRELLA.big ? "big" : maxP >= UMBRELLA.small ? "small" : null;
+  const rainNow = !tomorrow && ((w.code >= 51 && w.code <= 67) || (w.code >= 80 && w.code <= 82) || w.code >= 95);
+  return {
+    mode: tomorrow ? "tomorrow" : "today",
+    rainNow,
+    umbrella,
+    rainPart: startH === null ? "" : startH <= (tomorrow ? 7 : now.getHours()) ? (tomorrow ? "朝から" : "今から") : rainPartOf(startH),
+    snow: (code >= 71 && code <= 77) || code === 85 || code === 86,
+    sunny: code <= 1 && !umbrella,
+    cloudy: code >= 2 && code <= 3 && !umbrella,
+    tmax,
+    diff: pi >= 0 ? Math.round(w.daily.tmax[di] - w.daily.tmax[pi]) : 0,
+    cold: tmax < 12 ? "coat" : tmax < 18 ? "light" : null,
+    hot: tmax >= 28,
+  };
+}
+
 const hourKey = (d) => `${dateKey(d)}T${String(d.getHours()).padStart(2, "0")}:00`;
 
 function drawWeather(w) {
@@ -120,14 +164,14 @@ async function updateWeather(force = false) {
   const pref = weatherPref();
   const cache = readWeatherCache();
   // 前の版で保存した天気（傘・明日のデータがない）は、1回だけ取り直す
-  const fresh = cache && cache.pref === pref && cache.daily && Date.now() - cache.ts < WEATHER_HOURS * 3600 * 1000;
+  const fresh = cache && cache.pref === pref && cache.v === 2 && Date.now() - cache.ts < WEATHER_HOURS * 3600 * 1000;
   // 前に取った天気があれば、まずそれを出す（古くても、取り直すまでのあいだ）
   drawWeather(cache && cache.pref === pref ? cache : null);
   if ((fresh && !force) || weatherLoading || !navigator.onLine) return;
   weatherLoading = true;
   try {
     const [, lat, lon] = PREFS.find((p) => p[0] === pref);
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,precipitation_probability_max&forecast_days=2&timezone=Asia%2FTokyo`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,precipitation_probability_max&past_days=1&forecast_days=2&timezone=Asia%2FTokyo`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("weather " + res.status);
     const j = await res.json();
@@ -136,7 +180,7 @@ async function updateWeather(force = false) {
     // 今の天気・今日と明日の1時間ごとの降水確率・明日の天気（1回の通信でまとめて取る）
     const d = j.daily || {};
     const w = {
-      pref, ts: Date.now(), temp: cur.temperature_2m, code: cur.weather_code, isDay: cur.is_day !== 0,
+      v: 2, pref, ts: Date.now(), temp: cur.temperature_2m, code: cur.weather_code, isDay: cur.is_day !== 0,
       hourly: { time: j.hourly?.time || [], prob: j.hourly?.precipitation_probability || [] },
       daily: { time: d.time || [], code: d.weather_code || [], tmax: d.temperature_2m_max || [], pmax: d.precipitation_probability_max || [] },
     };
@@ -144,6 +188,8 @@ async function updateWeather(force = false) {
       localStorage.setItem(WEATHER_CACHE, JSON.stringify(w));
     } catch (e) {}
     drawWeather(w);
+    // キャラの天気のセリフも、新しい天気に合わせる
+    if (typeof talk === "function") talk("home", $("n-figure"), $("n-bubble"));
   } catch (e) {
     // 取れなかったときは、なにもしない（保存した天気がなければ、表示は出さない）
   } finally {

@@ -16,11 +16,14 @@
 
 const GACHA_TALK_MAX = 4; // ホームでのガチャの声かけは、1日にここまで
 
+// （天気のセリフは下の WEATHER_LINES。ホームの LINES の中の WEATHER_IMPORTANT／WEATHER_NORMAL の場所に入る）
+const WEATHER_IMPORTANT = "weather-important", WEATHER_NORMAL = "weather-normal";
 const LINES = {
   home: [
     { when: (c) => c.full, pose: "jump", say: (c) => `小瓶が${c.pool}分たまったよ！瓶の棚で合成できるよ` },
     { when: (c) => c.quotaDone, pose: "jump", say: (c) => [`今日は${c.todayMin}分！ノルマクリア、えらい！`, `${c.todayMin}分も動いたね！今日は満点だよ`] },
     { when: (c) => c.quotaDone && c.pilatesMin, pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！がんばったね` },
+    WEATHER_IMPORTANT,
     { when: (c) => c.quotaDone, pose: "guts", say: (c) => `あと${c.overLeft}分動くと、ボーナスのコイン+1だよ！` },
     { when: (c) => c.quotaDone && c.coins >= 1, pose: "pointUp", say: (c) => `コインが${c.coins}枚になったよ！左上からガチャ引けるよ` },
     { when: (c) => c.bodyNote, pose: "stretch", say: (c) => c.bodyNote },
@@ -35,6 +38,7 @@ const LINES = {
     { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、まだだよ〜！左上から引けるよ" },
     { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
     { when: (c) => c.coins >= 1 && c.coins < c.multiCost, pose: "pointUp", say: (c) => `コイン${c.coins}枚あるよ。ガチャ引いてみる？` },
+    WEATHER_NORMAL,
     { pose: "guts", say: (c) => `大瓶まであと${c.poolLeft}分！いっしょにためよう` },
     { pose: "pointSide", say: "運動したら、下のボタンから記録してね" },
     { when: (c) => c.tod === "morning", pose: "armsOpen", say: (c) => `おはよう、${c.name}だよ！今日もよろしくね` },
@@ -86,6 +90,45 @@ const LINES = {
     { pose: "wink", say: "どのチャームが出るかな〜" },
   ],
 };
+
+// ★ 天気のセリフ（ホーム）。c.wx が天気のようす（js/weather.js の weatherFacts）。回数の制限はなし
+//   important: true のセリフは「知らせたほうがいい日」用で、運動のセリフより前に出る（雨・寒い・大きな変化）
+//   ポーズ：晴れ＝armsOpen ／ 雨や寒い日＝pointSide（天気の表示を指す） ／ 暑い日・大きな変化＝surprise
+const WEATHER_LINES = [
+  // ---- 今日（21時まで） ----
+  { important: true, when: (w) => w.mode === "today" && w.rainNow, pose: "pointSide", say: "今、雨が降ってるみたい。お出かけは傘を持ってね" },
+  { important: true, when: (w) => w.mode === "today" && !w.rainNow && w.umbrella === "big", pose: "pointSide", say: (w) => `${w.rainPart}雨が降りそう！傘持っていってね` },
+  { important: true, when: (w) => w.mode === "today" && !w.rainNow && w.umbrella === "small", pose: "pointSide", say: (w) => `${w.rainPart}雨かも。折りたたみ傘があると安心だよ` },
+  { important: true, when: (w) => w.mode === "today" && w.snow, pose: "pointSide", say: "雪が降るかも！足もとに気をつけてね" },
+  { important: true, when: (w) => w.mode === "today" && w.diff >= 5, pose: "surprise", say: (w) => `昨日より${w.diff}℃も暑くなるよ！` },
+  { important: true, when: (w) => w.mode === "today" && w.diff <= -5, pose: "surprise", say: (w) => `昨日より${-w.diff}℃も寒くなるよ！あったかくしてね` },
+  { important: true, when: (w) => w.mode === "today" && w.cold === "coat", pose: "pointSide", say: "今日は寒いよ〜、コートで出かけてね" },
+  { important: true, when: (w) => w.mode === "today" && w.hot, pose: "surprise", say: (w) => `今日は${w.tmax}℃まで上がるよ！水分をしっかりとってね` },
+  { important: true, when: (w) => w.mode === "today" && (w.rainNow || w.umbrella), pose: "pointSide", say: "雨の日は、おうちでピラティスやストレッチもいいね" },
+  { important: true, when: (w) => w.mode === "today" && w.cold === "coat", pose: "pointSide", say: "寒い日は、ストレッチでからだをあっためてから動こう" },
+  { when: (w) => w.mode === "today" && w.sunny, pose: "armsOpen", say: ["今日は1日晴れだよ！", "いいお天気！お散歩ウォーキング日和だね"] },
+  { when: (w) => w.mode === "today" && w.cloudy, pose: "pointSide", say: "今日はくもり。雨は降らなさそうだよ" },
+  { when: (w) => w.mode === "today" && w.cold === "light", pose: "pointSide", say: (w) => `今日の最高は${w.tmax}℃。うす手の上着があるといいよ` },
+  { when: (w) => w.mode === "today" && !w.cold && !w.hot, pose: "armsOpen", say: (w) => `今日の最高は${w.tmax}℃。すごしやすいね` },
+  // ---- 明日（21時から） ----
+  { important: true, when: (w) => w.mode === "tomorrow" && w.umbrella === "big", pose: "pointSide", say: (w) => `明日は${w.rainPart}雨みたい。傘を用意しておこう` },
+  { important: true, when: (w) => w.mode === "tomorrow" && w.umbrella === "small", pose: "pointSide", say: (w) => `明日は${w.rainPart}雨かも。折りたたみ傘を入れておこう` },
+  { important: true, when: (w) => w.mode === "tomorrow" && w.snow, pose: "pointSide", say: "明日は雪が降るかも！あったかくしてね" },
+  { important: true, when: (w) => w.mode === "tomorrow" && w.diff >= 5, pose: "surprise", say: (w) => `明日は今日より${w.diff}℃も暑くなるよ！` },
+  { important: true, when: (w) => w.mode === "tomorrow" && w.diff <= -5, pose: "surprise", say: (w) => `明日は今日より${-w.diff}℃も寒くなるよ！` },
+  { important: true, when: (w) => w.mode === "tomorrow" && w.cold === "coat", pose: "pointSide", say: "明日は寒くなるよ。コートを出しておこう" },
+  { when: (w) => w.mode === "tomorrow" && w.sunny, pose: "armsOpen", say: "明日は晴れ！お出かけ日和だね" },
+  { when: (w) => w.mode === "tomorrow" && w.cloudy, pose: "pointSide", say: "明日はくもり。雨は降らなさそうだよ" },
+  { when: (w) => w.mode === "tomorrow", pose: "armsOpen", say: (w) => `明日の最高は${w.tmax}℃だよ` },
+];
+// 天気のセリフを、LINES と同じ形にして返す（important だけ／それ以外）
+function weatherLines(important) {
+  return WEATHER_LINES.filter((l) => !!l.important === important).map((l) => ({
+    pose: l.pose,
+    when: (c) => !!c.wx && l.when(c.wx),
+    say: (c) => (typeof l.say === "function" ? l.say(c.wx) : l.say),
+  }));
+}
 
 // ホームのガチャの声かけ（1日 GACHA_TALK_MAX 回まで。はじめて開いた日は必ず案内）
 const GACHA_CALLS = [
@@ -144,6 +187,7 @@ function talkContext() {
     pickupTotal: lineup.length,
     newPickup: newPickup ? { id: newPickup.id, label: SERIES[newPickup.series]?.name || newPickup.name } : null,
     lastDraw: talkState.lastDraw,
+    wx: typeof weatherFacts === "function" ? weatherFacts() : null,
   };
 }
 
@@ -157,7 +201,8 @@ const sayText = (line, c) => pickOne(typeof line.say === "function" ? line.say(c
 
 // その画面で、いま出せるセリフ（条件に合うもの、上から順）
 function linesFor(screen, c) {
-  return (LINES[screen] || []).filter((l) => {
+  const all = (LINES[screen] || []).flatMap((l) => (l === WEATHER_IMPORTANT ? weatherLines(true) : l === WEATHER_NORMAL ? weatherLines(false) : [l]));
+  return all.filter((l) => {
     try {
       return !l.when || l.when(c);
     } catch (e) {
