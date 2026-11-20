@@ -605,7 +605,9 @@ function openCharmPicker(b, justEvolved = false) {
   none.dataset.id = "";
   none.innerHTML = `<span>ぜんぶ<br>はずす</span>`;
   grid.append(none);
+  // 持っているチャームだけ（ガチャ限定のシリーズは、ガチャで手に入れると出てくる）
   for (const c of CHARMS) {
+    if (typeof isOwned === "function" && !isOwned(c) && !charmChoice.includes(c.id)) continue;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "charm-option";

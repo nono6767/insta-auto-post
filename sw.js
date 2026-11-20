@@ -9,7 +9,7 @@
 // ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
 //   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
 importScripts("js/bottles.js", "js/bigbottles.js");
-const CODE_VERSION = 42;
+const CODE_VERSION = 43;
 const IMAGE_VERSION = 5;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
@@ -28,6 +28,7 @@ const CODE_FILES = [
   "js/shelf.js",
   "js/colors.js",
   "js/shake.js",
+  "js/gacha.js",
   "js/backup.js",
   "js/bottles.js",
   "manifest.webmanifest",
