@@ -14,7 +14,7 @@
 //   ・c（状況）で使えるもの：下の talkContext() を見てね（例：c.todayMin 今日の分数、c.quotaLeft ノルマまで、c.poolLeft 大瓶まで）
 // =========================================================
 
-const GACHA_TALK_MAX = 2; // ホームでのガチャの声かけは、1日にここまで
+const GACHA_TALK_MAX = 4; // ホームでのガチャの声かけは、1日にここまで
 
 const LINES = {
   home: [
@@ -22,15 +22,19 @@ const LINES = {
     { when: (c) => c.quotaDone, pose: "jump", say: (c) => [`今日は${c.todayMin}分！ノルマクリア、えらい！`, `${c.todayMin}分も動いたね！今日は満点だよ`] },
     { when: (c) => c.quotaDone && c.pilatesMin, pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！がんばったね` },
     { when: (c) => c.quotaDone, pose: "guts", say: (c) => `あと${c.overLeft}分動くと、ボーナスのコイン+1だよ！` },
+    { when: (c) => c.quotaDone && c.coins >= 1, pose: "pointUp", say: (c) => `コインが${c.coins}枚になったよ！左上からガチャ引けるよ` },
     { when: (c) => c.bodyNote, pose: "stretch", say: (c) => c.bodyNote },
     { when: (c) => c.clothesNote, pose: "wink", say: (c) => c.clothesNote },
     { when: (c) => c.backupNote, pose: "pointSide", say: (c) => c.backupNote },
-    { when: (c) => c.last && c.last.type === "stretch", pose: "stretch", say: (c) => `ストレッチ${c.last.min}分、からだがほぐれたね。あと${c.quotaLeft}分でノルマだよ` },
-    { when: (c) => c.last && c.last.type === "pilates", pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！あと${c.quotaLeft}分で今日のノルマだよ` },
-    { when: (c) => c.todayMin > 0, pose: "guts", say: (c) => [`あと${c.quotaLeft}分で今日のノルマだよ！`, `今日は${c.todayMin}分！あと${c.quotaLeft}分でノルマクリア`] },
+    { when: (c) => !c.quotaDone && c.last && c.last.type === "stretch", pose: "stretch", say: (c) => `ストレッチ${c.last.min}分、からだがほぐれたね。あと${c.quotaLeft}分でノルマだよ` },
+    { when: (c) => !c.quotaDone && c.last && c.last.type === "pilates", pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！あと${c.quotaLeft}分で今日のノルマだよ` },
+    { when: (c) => c.todayMin > 0 && !c.quotaDone, pose: "guts", say: (c) => [`あと${c.quotaLeft}分で今日のノルマだよ！`, `今日は${c.todayMin}分！あと${c.quotaLeft}分でノルマクリア`] },
     { when: (c) => c.todayMin === 0 && c.tod === "morning", pose: "armsOpen", say: ["おはよう！今日はなにから動く？", "おはよう〜！朝のストレッチ5分からどう？"] },
     { when: (c) => c.todayMin === 0 && c.tod === "day", pose: "pointSide", say: ["こんにちは！下のボタンから運動を記録してね", "お昼休みに5分だけ動いてみる？"] },
     { when: (c) => c.todayMin === 0 && c.tod === "night", pose: "stretch", say: ["おつかれさま。寝る前にストレッチ5分はどう？", "今日もおつかれさま〜。ゆっくりほぐそう"] },
+    { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、まだだよ〜！左上から引けるよ" },
+    { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
+    { when: (c) => c.coins >= 1 && c.coins < c.multiCost, pose: "pointUp", say: (c) => `コイン${c.coins}枚あるよ。ガチャ引いてみる？` },
     { pose: "guts", say: (c) => `大瓶まであと${c.poolLeft}分！いっしょにためよう` },
     { pose: "pointSide", say: "運動したら、下のボタンから記録してね" },
     { when: (c) => c.tod === "morning", pose: "armsOpen", say: (c) => `おはよう、${c.name}だよ！今日もよろしくね` },
@@ -42,8 +46,8 @@ const LINES = {
     { when: (c) => c.mealsDone === 3, pose: "hands", say: "今日のごはん、ぜんぶ記録できたね。えらい！" },
     { when: (c) => c.snackNone, pose: "hands", say: "おやつなしで花まる！小瓶にお花が浮かぶよ" },
     { when: (c) => c.mealsDone > 0, pose: "hands", say: (c) => `ごはん記録ありがとう！今日はあと${3 - c.mealsDone}食だよ` },
-    { when: (c) => c.tod === "morning", pose: "pointSide", say: "おはよう！朝ごはん、なに食べた？下から記録してね" },
-    { when: (c) => c.tod === "day", pose: "pointSide", say: "お昼ごはんの記録、わすれずにね" },
+    { when: (c) => c.tod === "morning" && !c.mealDone.breakfast, pose: "pointSide", say: "おはよう！朝ごはん、なに食べた？下から記録してね" },
+    { when: (c) => c.tod === "day" && !c.mealDone.lunch, pose: "pointSide", say: "お昼ごはんの記録、わすれずにね" },
     { when: (c) => c.tod === "night", pose: "hands", say: "夜ごはん、ゆっくり味わって食べてね" },
     { pose: "hands", say: "ごはんを記録すると、コインが1枚もらえるよ" },
   ],
@@ -63,7 +67,7 @@ const LINES = {
     { when: (c) => !c.savingsReady, pose: "pointSide", say: "まずは下から、貯金瓶の設定をしよう！" },
     { when: (c) => c.savingsLeft === 0, pose: "jump", say: "目標達成！ほんとうにおめでとう！" },
     { when: (c) => c.savedThisWeek, pose: "wink", say: (c) => `今週の分、入れたね！目標まであと${c.savingsLeft}回` },
-    { when: (c) => c.savingsReady, pose: "pointSide", say: (c) => `今週の分、まだだよ〜。目標まであと${c.savingsLeft}回` },
+    { when: (c) => c.savingsReady && !c.savedThisWeek && c.savingsLeft > 0, pose: "pointSide", say: (c) => `今週の分、まだだよ〜。目標まであと${c.savingsLeft}回` },
     { pose: "wink", say: "瓶をタップすると、コインが跳ねるよ" },
   ],
   shelf: [
@@ -124,6 +128,7 @@ function talkContext() {
     clothesNote: typeof clothesBubble === "function" ? clothesBubble() : null,
     backupNote: typeof backupBubble === "function" ? backupBubble() : null,
     periodOpen: typeof openPeriod === "function" && !!openPeriod(),
+    mealDone: Object.fromEntries(MEALS.map((m) => [m.id, !!(meals[m.id] && Object.keys(meals[m.id]).length)])),
     mealsDone: MEALS.filter((m) => meals[m.id] && Object.keys(meals[m.id]).length).length,
     snackNone: meals.snack === "none",
     clothesCount: typeof clothes === "function" ? clothes().length : 0,
