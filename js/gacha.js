@@ -14,6 +14,8 @@ const COIN_RULES = {
   quizPlay: 1,     // ピラティスクイズを最後（5問）までやった
   quizPerfect: 3,  // ピラティスクイズで全問正解（このときは参加の1コインのかわりに3コイン）
   quizDailyMax: 3, // クイズでもらえるコインは、1日にここまで
+  overMin: 30,  // ノルマ達成のあと、さらにこの分数を運動するごとに…
+  over: 1,      // …このコインがもらえる（例：35分でノルマ → 65分で+1、95分で+1 …）
   meal: 1,      // 食事を記録した（1日1回まで）
   period: 1,    // 生理を記録した（ボーナス。記録1回ごと）
   bigBottle: 3, // 大瓶に進化した（1本ごと）
@@ -64,6 +66,12 @@ function ensureGacha() {
   const g = data.gacha;
   if (!Array.isArray(g.owned)) g.owned = [];
   if (!g.given) g.given = {};
+  // 「ノルマのあと30分ごと」を始める前の日のぶんは、まとめて出さない（今日のぶんは、もらえる）
+  if (!g.overStart) {
+    const today = dateKey();
+    for (const r of rewardList()) if (r.key.startsWith("qx:") && r.day !== today) g.given[r.key] = true;
+    g.overStart = today;
+  }
   // すでに大瓶につけているチャームは、持っているものとして扱う
   for (const b of data.bigBottles || []) {
     for (const id of b.charms || []) if (!g.owned.includes(id) && charmById(id) && isLimited(charmById(id))) g.owned.push(id);
@@ -79,7 +87,13 @@ function rewardList() {
   const out = [];
   const byDay = {};
   for (const l of data.logs) byDay[l.date] = (byDay[l.date] || 0) + l.min;
-  for (const [day, min] of Object.entries(byDay)) if (min >= DAILY_QUOTA_MIN) out.push({ key: "q:" + day, amount: COIN_RULES.quota, label: "ノルマ達成", day });
+  for (const [day, min] of Object.entries(byDay)) {
+    if (min < DAILY_QUOTA_MIN) continue;
+    out.push({ key: "q:" + day, amount: COIN_RULES.quota, label: "ノルマ達成", day });
+    // ノルマのあとも、30分ごとに+1
+    const extra = Math.floor((min - DAILY_QUOTA_MIN) / COIN_RULES.overMin);
+    for (let k = 1; k <= extra; k++) out.push({ key: `qx:${day}:${k}`, amount: COIN_RULES.over, label: `ノルマのあと+${k * COIN_RULES.overMin}分`, day });
+  }
   for (const [day, m] of Object.entries(data.meals || {})) {
     if (m && Object.values(m).some((v) => v && (typeof v !== "object" || Object.keys(v).length))) out.push({ key: "m:" + day, amount: COIN_RULES.meal, label: "食事の記録", day });
   }
