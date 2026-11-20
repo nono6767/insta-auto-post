@@ -24,12 +24,13 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 //   base：瓶の下の台（body：体にかぶせる も使えるけど、今はなし）
 //   band：（首に巻く）絵の中の「首に巻くひも・くさり」の [まん中の横の位置, まん中の高さ, 幅]（絵の大きさに対する割合）。ひもの幅を首の太さに合わせて、首にそろえる
 //   fit：（宝石だけのふた）瓶の口の幅の何倍の大きさにするか
+//   kind: "ribbon"：首のリボン（チャームとは別に1つだけ選ぶ。いつもチャームより手前に出る）
 //   pc：（ふた）絵の中で宝石のまん中が左から何割か / pw：置く幅（top は瓶の高さの%、neck は瓶の幅の%） / pa：チャームの絵の上から何割のところを、瓶の口（top）や首（neck）にそろえるか
 // ここにあるのは「ベーシックライン」（最初から持っている）。ガチャのシリーズのチャームは js/series.js
 // 1本の瓶に3個までつけられる
 const CHARMS = [
   { id: "a00", name: "ピンクの宝石", w: 76, h: 96, place: "top", pw: 13, pa: 1, pc: 0.5, fit: 1.25 },
-  { id: "a01", name: "パールのリボン", w: 160, h: 154, place: "neck", pw: 66, pa: 0.22 },
+  { id: "a01", name: "パールのリボン", w: 160, h: 154, place: "neck", pw: 66, pa: 0.22, kind: "ribbon" },
   { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", band: [0.36, 0.06, 0.72] },
   { id: "a03", name: "パールのネックレス", w: 110, h: 68, place: "neck", pw: 56, pa: 0.15 },
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
@@ -48,9 +49,9 @@ const CHARMS = [
   { id: "b06", name: "ハートのかぎ", w: 56, h: 141, place: "hang" },
   { id: "b07", name: "タグ", w: 105, h: 170, place: "hang" },
   { id: "b08", name: "銀の月", w: 71, h: 117, place: "hang" },
-  { id: "b09", name: "ピンクのリボン", w: 160, h: 132, place: "neck", pw: 60, pa: 0.2 },
-  { id: "b10", name: "麻ひものリボン", w: 160, h: 138, place: "neck", pw: 58, pa: 0.15 },
-  { id: "c00", name: "ハートのリボン", w: 160, h: 135, place: "neck", pw: 54, pa: 0.3 },
+  { id: "b09", name: "ピンクのリボン", w: 160, h: 132, place: "neck", pw: 60, pa: 0.2, kind: "ribbon" },
+  { id: "b10", name: "麻ひものリボン", w: 160, h: 138, place: "neck", pw: 58, pa: 0.15, kind: "ribbon" },
+  { id: "c00", name: "ハートのリボン", w: 160, h: 135, place: "neck", pw: 54, pa: 0.3, kind: "ribbon" },
   { id: "c01", name: "ふたつのハート", w: 160, h: 118, place: "hang" },
   { id: "c02", name: "恋の矢", w: 160, h: 157, place: "hang" },
   { id: "c03", name: "クリスタル", w: 98, h: 160, place: "hang" },
@@ -75,7 +76,7 @@ const CHARMS = [
   { id: "e08", name: "バラのリボン", w: 90, h: 160, place: "hang" },
   { id: "e09", name: "アンティークのかぎ", w: 64, h: 160, place: "hang" },
   { id: "e10", name: "ハートのアンティークかぎ", w: 79, h: 200, place: "hang" },
-  { id: "e11", name: "レースのリボン", w: 160, h: 139, place: "neck", pw: 58, pa: 0.21 },
+  { id: "e11", name: "レースのリボン", w: 160, h: 139, place: "neck", pw: 58, pa: 0.21, kind: "ribbon" },
   // スペインのチャーム（追加）
   { id: "f00", name: "赤い扇", w: 143, h: 160, place: "hang" },
   { id: "f01", name: "タンバリン", w: 115, h: 160, place: "hang" },
@@ -87,8 +88,8 @@ const CHARMS = [
   { id: "f07", name: "ショール", w: 127, h: 160, place: "hang" },
   { id: "f08", name: "風車", w: 90, h: 160, place: "hang" },
   { id: "f09", name: "ギター", w: 77, h: 160, place: "hang" },
-  { id: "f10", name: "黒レースの赤いリボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2 },
-  { id: "f11", name: "金もようの赤いリボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16 },
+  { id: "f10", name: "黒レースの赤いリボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2, kind: "ribbon" },
+  { id: "f11", name: "金もようの赤いリボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16, kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）

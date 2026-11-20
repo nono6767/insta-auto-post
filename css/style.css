@@ -1595,3 +1595,10 @@ body.gacha-open { overflow: hidden; }
 /* ホームのキャラは、右がわ（ふきだし＋小瓶）と同じくらいの高さまで大きく */
 #page-home .hero .n-char { height: 230px; }
 .g-tab { padding: 0 6px; font-size: 13px; letter-spacing: 0; white-space: nowrap; }
+
+/* ---------- 大瓶の飾り：チャーム／首のリボン ---------- */
+#charm-modal .charm-modal { grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; }
+.charm-tabs { display: flex; gap: 4px; margin-top: 8px; padding: 4px; border-radius: 999px; background: var(--rose-soft); }
+.charm-tab { flex: 1; min-height: 36px; border: 0; border-radius: 999px; background: none; color: var(--muted); font-size: 13px; font-weight: 700; }
+.charm-tab[aria-selected="true"] { background: var(--surface); color: var(--rose); box-shadow: 0 1px 2px rgb(120 60 80 / .15); }
+.big-bottle .charm.ribbon { z-index: 3; animation: none; filter: drop-shadow(0 1px 1px rgb(90 50 40 / .3)); }
