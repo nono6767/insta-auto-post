@@ -199,10 +199,9 @@ function quizSparkle() {
 // ホームのクイズのカード
 function renderQuizCard() {
   if (!$("quiz-card")) return;
-  const p = currentCharacter().poses.cheer;
-  $("quiz-card-char").innerHTML = `<img src="${p.src}" alt="" width="${p.w}" height="${p.h}">`;
   $("quiz-card-title").textContent = `${charName()}のピラティスクイズ`;
-  $("quiz-card-sub").textContent = `今日のクイズコイン ${quizCoinsToday()} / ${COIN_RULES.quizDailyMax}`;
+  $("quiz-card-sub").innerHTML = `<span class="coin-ico" aria-hidden="true"></span>${quizCoinsToday()}/${COIN_RULES.quizDailyMax}`;
+  $("quiz-card").setAttribute("aria-label", `${charName()}のピラティスクイズ。今日のクイズコイン ${quizCoinsToday()} / ${COIN_RULES.quizDailyMax}`);
 }
 
 $("quiz-card").addEventListener("click", openQuiz);

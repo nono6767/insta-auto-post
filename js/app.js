@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/23-2"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/24-1"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -461,18 +461,24 @@ function renderHome() {
 
   // 場面に合わせて N のポーズを変える
   const bodyCare = typeof bodyBubble === "function" && !!bodyBubble();
-  const pose = full ? "full" : quotaDone ? "quota" : bodyCare ? "relax" : todayMin > 0 ? "workout" : "cheer";
-  $("n-figure").innerHTML = nCharacterHtml(pose);
+  let pose = full ? "full" : quotaDone ? "quota" : bodyCare ? "relax" : todayMin > 0 ? "workout" : "cheer";
   // からだのひとこと（生理中・前回から間が空いたとき）は、お祝いがないときにさりげなく
   const bodyNote = typeof bodyBubble === "function" ? bodyBubble() : null;
   const clothesNote = typeof clothesBubble === "function" ? clothesBubble() : null;
   const backupNote = typeof backupBubble === "function" ? backupBubble() : null;
   $("settings-btn").classList.toggle("has-dot", !!backupNote);
-  $("n-bubble").textContent = full
-    ? pickMessage("full")
-    : quotaDone
-      ? pickMessage("quota")
-      : bodyNote || clothesNote || backupNote || pickMessage(todayMin > 0 ? "some" : "zero");
+  // ガチャの声かけ（js/talk.js）は、お祝いや大事なお知らせがないときだけ。1日1〜2回まで
+  const gachaTalk = !full && !quotaDone && !bodyNote && !clothesNote && !backupNote && typeof homeGachaTalk === "function" ? homeGachaTalk() : null;
+  if (gachaTalk) pose = gachaTalk.pose;
+  $("n-figure").innerHTML = nCharacterHtml(pose);
+  $("n-bubble").classList.toggle("gacha-talk", !!gachaTalk);
+  $("n-bubble").textContent = gachaTalk
+    ? gachaTalk.text
+    : full
+      ? pickMessage("full")
+      : quotaDone
+        ? pickMessage("quota")
+        : bodyNote || clothesNote || backupNote || pickMessage(todayMin > 0 ? "some" : "zero");
   // 今日の小瓶（36分くらいで満タン）
   const todayKey = dateKey();
   const bottle = smallBottleShape(todayKey);

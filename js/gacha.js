@@ -131,7 +131,7 @@ function updateCoinBadge() {
   if (!g) return;
   $("coin-count").textContent = g.coins;
   $("coin-btn").classList.toggle("has-free", freeLeft() > 0);
-  $("coin-btn").setAttribute("aria-label", `コイン${g.coins}枚。ガチャをひく${freeLeft() > 0 ? "（今日の無料ガチャがあるよ）" : ""}`);
+  $("coin-btn").setAttribute("aria-label", `ガチャ。コイン${g.coins}枚${freeLeft() > 0 ? "。今日の無料ガチャがあるよ" : ""}`);
 }
 // 「+1」がふわっと出る
 function coinPop(n, label) {

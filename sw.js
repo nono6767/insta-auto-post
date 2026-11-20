@@ -9,7 +9,7 @@
 // ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
 //   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
 importScripts("js/bottles.js", "js/bigbottles.js");
-const CODE_VERSION = 51;
+const CODE_VERSION = 52;
 const IMAGE_VERSION = 5;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
@@ -30,6 +30,7 @@ const CODE_FILES = [
   "js/shake.js",
   "js/gacha.js",
   "js/quiz.js",
+  "js/talk.js",
   "data/quiz-questions.json",
   "js/backup.js",
   "js/bottles.js",
@@ -43,6 +44,14 @@ const IMAGE_FILES = [
   "img/n-full.webp",
   "img/n-relax.webp",
   "img/n-love.webp",
+  "img/n-point.webp",
+  "img/n-point2.webp",
+  "img/n-surprise.webp",
+  "img/n-yay.webp",
+  "img/m2-point.webp",
+  "img/m2-point2.webp",
+  "img/m2-surprise.webp",
+  "img/m2-yay.webp",
   "img/m2-cheer.webp",
   "img/m2-workout.webp",
   "img/m2-quota.webp",

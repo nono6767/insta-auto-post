@@ -19,7 +19,12 @@
 </head>
 <body>
   <header class="topbar">
-    <button class="coin-chip" id="coin-btn" type="button" aria-label="コイン。ガチャをひく"><span class="coin-ico" aria-hidden="true"></span><span id="coin-count">0</span><span class="coin-dot" aria-hidden="true"></span></button>
+    <button class="coin-chip" id="coin-btn" type="button" aria-label="ガチャ。コイン0枚">
+      <svg class="chip-box" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 V8.5 C3 4 21 4 21 8.5 V11 Z" fill="#fff8ec" stroke="#c99b4f" stroke-width="1.3"/><rect x="3.5" y="11" width="17" height="9" rx="2" fill="#fdeedd" stroke="#c99b4f" stroke-width="1.3"/><rect x="10.8" y="5" width="2.4" height="15" fill="#f07aa0"/><path d="M12 5.2 C9.5 2.8 7.6 3.6 8.4 5 C9 6 11 5.8 12 5.2 C13 5.8 15 6 15.6 5 C16.4 3.6 14.5 2.8 12 5.2Z" fill="#f07aa0"/><path d="M12 13.4 L13.4 15 L12 16.8 L10.6 15Z" fill="#ff9fc0" stroke="#c94f7c" stroke-width=".6"/></svg>
+      <span class="chip-label">ガチャ</span>
+      <span class="chip-coins"><span class="coin-ico" aria-hidden="true"></span><span id="coin-count">0</span></span>
+      <span class="coin-free" aria-hidden="true">無料</span>
+    </button>
     <h1>Nのうんどう瓶</h1>
     <button class="icon-btn" id="settings-btn" type="button" aria-label="設定">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.6 4.6-1.9 1.1.2 2.2-2.1 1.2-1.8-1.3-2 .8-.6 2.1h-2.4l-.6-2.1-2-.8-1.8 1.3-2.1-1.2.2-2.2-1.9-1.1V10.9l1.9-1.1-.2-2.2 2.1-1.2 1.8 1.3 2-.8.6-2.1h2.4l.6 2.1 2 .8 1.8-1.3 2.1 1.2-.2 2.2 1.9 1.1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -53,10 +58,11 @@
         </div>
       </div>
 
-      <button class="card quiz-card" type="button" id="quiz-card">
-        <span class="quiz-card-char" id="quiz-card-char" aria-hidden="true"></span>
-        <span class="quiz-card-text"><b id="quiz-card-title">ピラティスクイズ</b><small id="quiz-card-sub"></small></span>
-        <span class="quiz-card-go" aria-hidden="true">›</span>
+      <button class="quiz-bar" type="button" id="quiz-card">
+        <span class="quiz-bar-q" aria-hidden="true">Q</span>
+        <span class="quiz-bar-title" id="quiz-card-title">ピラティスクイズ</span>
+        <span class="quiz-bar-sub" id="quiz-card-sub"></span>
+        <span class="quiz-bar-go" aria-hidden="true">›</span>
       </button>
 
       <h2 class="section-title">どの運動をした？</h2>
@@ -616,6 +622,7 @@
   <script src="js/shake.js"></script>
   <script src="js/gacha.js"></script>
   <script src="js/quiz.js"></script>
+  <script src="js/talk.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>

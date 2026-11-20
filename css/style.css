@@ -1223,7 +1223,7 @@ main {
   box-shadow: 0 1px 2px rgb(150 90 40 / .15);
 }
 .coin-dot { display: none; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--rose); box-shadow: 0 0 0 2px #fff; }
-.coin-chip.has-free .coin-dot { display: block; animation: dot-pulse 1.6s ease-in-out infinite; }
+
 @keyframes dot-pulse { 50% { transform: scale(1.3); } }
 .coin-chip.bump { animation: coin-bump .5s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes coin-bump { 40% { transform: scale(1.18); } }
@@ -1467,14 +1467,6 @@ body.gacha-open { overflow: hidden; }
 .char-choice[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); }
 
 /* ---------- ピラティスクイズ ---------- */
-.quiz-card { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 10px 14px; border: 0; text-align: left; color: var(--ink);
-  background: linear-gradient(120deg, #fff 0%, #fff0f6 60%, #f3e8ff 100%); }
-.quiz-card-char { flex: none; width: 56px; height: 64px; overflow: hidden; border-radius: 16px; background: radial-gradient(circle at 50% 30%, #fff, #fde3ee); }
-.quiz-card-char img { width: 100%; height: auto; margin-top: 2px; }
-.quiz-card-text { flex: 1; display: grid; gap: 2px; }
-.quiz-card-text b { font-size: 16px; }
-.quiz-card-text small { color: var(--muted); font-size: 12px; }
-.quiz-card-go { color: var(--rose); font-size: 26px; font-weight: 700; }
 .quiz-progress { display: flex; gap: 6px; }
 .quiz-progress span { width: 12px; height: 12px; border-radius: 50%; background: #f6d6e3; }
 .quiz-progress span.now { background: #fff; box-shadow: 0 0 0 2px var(--rose); }
@@ -1518,3 +1510,49 @@ body.gacha-open { overflow: hidden; }
 .quiz-today { margin: 0; color: var(--muted); font-size: 12px; }
 .quiz-end-btns { display: flex; justify-content: center; gap: 10px; }
 .quiz-spark { position: absolute; z-index: 2; }
+
+/* ---------- 左上のガチャのボタン ---------- */
+.coin-chip { gap: 4px; padding: 0 9px 0 6px; min-height: 34px; }
+.chip-box { width: 22px; height: 22px; flex: none; }
+.chip-label { color: #c2507d; font-size: 13px; letter-spacing: .04em; }
+.chip-coins { display: inline-flex; align-items: center; gap: 3px; margin-left: 2px; padding-left: 6px; border-left: 1px solid #f0d3a8; }
+.chip-coins .coin-ico { width: 15px; height: 15px; }
+.coin-free { display: none; position: absolute; top: -8px; right: -10px; padding: 0 6px; border-radius: 999px; background: linear-gradient(90deg, #ff6f9f, #ff9f6b); color: #fff; font-size: 10px; line-height: 17px; box-shadow: 0 1px 3px rgb(200 70 110 / .35), 0 0 0 1.5px #fff; }
+.coin-chip.has-free .coin-free { display: block; animation: dot-pulse 1.6s ease-in-out infinite; }
+/* キャラがゆびさしたとき、ボタンがキラッと光る */
+.coin-chip.attn { animation: chip-attn 1.2s ease-in-out 4; }
+@keyframes chip-attn { 0%, 100% { box-shadow: 0 1px 2px rgb(150 90 40 / .15); } 50% { box-shadow: 0 0 0 4px rgb(255 160 195 / .55), 0 0 16px rgb(255 200 120 / .9); transform: scale(1.06); } }
+/* ガチャの声かけのふきだしは、ほんのりピンク */
+.bubble.gacha-talk { background: linear-gradient(120deg, #fff, #fff0f6); color: #b2456f; font-weight: 700; }
+
+/* ---------- クイズ（細い1行のバー） ---------- */
+.quiz-bar {
+  display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 10px; min-height: 40px; padding: 0 12px;
+  border: 1.5px solid #f6d3e1; border-radius: 999px; background: linear-gradient(90deg, #fff, #fff3f8); color: var(--ink); text-align: left;
+}
+.quiz-bar-q { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #ff9fc0, #c9a6f0); color: #fff; font-size: 13px; font-weight: 700; }
+.quiz-bar-title { flex: 1; font-size: 14px; font-weight: 700; }
+.quiz-bar-sub { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.quiz-bar-sub .coin-ico { width: 13px; height: 13px; }
+.quiz-bar-go { color: var(--rose); font-size: 20px; font-weight: 700; line-height: 1; }
+
+/* ---------- ホームを少しコンパクトに（運動のボタンが、スワイプせずに見えるように） ---------- */
+#page-home .hero .n-char { aspect-ratio: auto; height: 190px; }
+#jar .bottle { height: 150px; }
+#page-home .hero-side { gap: 6px; }
+#page-home .bubble { padding: 8px 12px; font-size: 13.5px; line-height: 1.45; }
+#page-home .jar-caption { font-size: 12px; line-height: 1.4; }
+#page-home .day-end-btn { min-height: 30px; margin-top: 2px; padding: 0 14px; font-size: 12px; }
+#page-home .today.card { margin-top: 8px; padding-top: 10px; padding-bottom: 10px; }
+#page-home .today-stats { margin-top: 4px; }
+#page-home .today .big { font-size: 22px; }
+#page-home .section-title { margin-top: 10px; margin-bottom: 6px; }
+/* 左にガチャのボタンがあるので、タイトルは右へよせて重ならないように */
+.topbar h1 { flex: 1; margin-left: 132px; margin-right: 42px; font-size: 16px; text-align: center; white-space: nowrap; }
+#page-home .hero .n-char { height: 180px; }
+#jar .bottle { height: 142px; }
+#page-home .today.card { padding-top: 8px; padding-bottom: 8px; }
+#page-home .today-head h2 { font-size: 14px; }
+#page-home .today-stats { margin-top: 0; }
+#page-home .quiz-bar { margin-top: 8px; min-height: 38px; }
+#page-home .section-title { margin-top: 8px; margin-bottom: 4px; }
