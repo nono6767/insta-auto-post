@@ -6,37 +6,38 @@
 //   stretch：座ってストレッチ（ストレッチのとき・夜） / rolling：ローリングライクアボール（クイズ・ピラティス）
 //   hands：手を合わせてにっこり（ごはん・生理の記録のねぎらい） / wink：腰に手でウインク（服チェック・ほめる）
 // （キャラを増やすときは CHARACTERS に1人ぶん、10このポーズをそろえて足す）
+// fit：枠の高さの何割で表示するか。ポーズで絵の形がちがっても、顔の大きさがそろうように決めてある
 const CHARACTERS = {
   n: {
     name: "N",
     desc: "おだんごヘアの女の子",
     poses: {
-      pointUp:   { src: "img/char/n-pointUp.webp", w: 275, h: 360, alt: "上をゆびさすN" },
-      pointSide: { src: "img/char/n-pointSide.webp", w: 294, h: 360, alt: "横をゆびさすN" },
-      surprise:  { src: "img/char/n-surprise.webp", w: 283, h: 360, alt: "びっくりするN" },
-      jump:      { src: "img/char/n-jump.webp", w: 264, h: 360, alt: "片足ジャンプでばんざいするN" },
-      armsOpen:  { src: "img/char/n-armsOpen.webp", w: 236, h: 360, alt: "両手を広げるN" },
-      guts:      { src: "img/char/n-guts.webp", w: 217, h: 360, alt: "ガッツポーズのN" },
-      stretch:   { src: "img/char/n-stretch.webp", w: 307, h: 360, alt: "座ってストレッチするN" },
-      rolling:   { src: "img/char/n-rolling.webp", w: 381, h: 360, alt: "ローリングライクアボールのN" },
-      hands:     { src: "img/char/n-hands.webp", w: 199, h: 360, alt: "手を合わせてにっこりするN" },
-      wink:      { src: "img/char/n-wink.webp", w: 177, h: 360, alt: "腰に手をあててウインクするN" },
+      pointUp:   { src: "img/char/n-pointUp.webp", w: 275, h: 360, alt: "上をゆびさすN" , fit: 0.87 },
+      pointSide: { src: "img/char/n-pointSide.webp", w: 294, h: 360, alt: "横をゆびさすN" , fit: 0.93 },
+      surprise:  { src: "img/char/n-surprise.webp", w: 283, h: 360, alt: "びっくりするN" , fit: 0.9 },
+      jump:      { src: "img/char/n-jump.webp", w: 264, h: 360, alt: "片足ジャンプでばんざいするN" , fit: 0.88 },
+      armsOpen:  { src: "img/char/n-armsOpen.webp", w: 236, h: 360, alt: "両手を広げるN" , fit: 0.9 },
+      guts:      { src: "img/char/n-guts.webp", w: 217, h: 360, alt: "ガッツポーズのN" , fit: 0.92 },
+      stretch:   { src: "img/char/n-stretch.webp", w: 307, h: 360, alt: "座ってストレッチするN" , fit: 0.8 },
+      rolling:   { src: "img/char/n-rolling.webp", w: 381, h: 360, alt: "ローリングライクアボールのN" , fit: 0.57 },
+      hands:     { src: "img/char/n-hands.webp", w: 199, h: 360, alt: "手を合わせてにっこりするN" , fit: 0.95 },
+      wink:      { src: "img/char/n-wink.webp", w: 177, h: 360, alt: "腰に手をあててウインクするN" , fit: 0.98 },
     },
   },
   m: {
     name: "M",
     desc: "ボブの女の子",
     poses: {
-      pointUp:   { src: "img/char/m-pointUp.webp", w: 287, h: 360, alt: "上をゆびさすM" },
-      pointSide: { src: "img/char/m-pointSide.webp", w: 308, h: 360, alt: "横をゆびさすM" },
-      surprise:  { src: "img/char/m-surprise.webp", w: 283, h: 360, alt: "びっくりするM" },
-      jump:      { src: "img/char/m-jump.webp", w: 253, h: 360, alt: "片足ジャンプでばんざいするM" },
-      armsOpen:  { src: "img/char/m-armsOpen.webp", w: 241, h: 360, alt: "両手を広げるM" },
-      guts:      { src: "img/char/m-guts.webp", w: 226, h: 360, alt: "ガッツポーズのM" },
-      stretch:   { src: "img/char/m-stretch.webp", w: 282, h: 360, alt: "座ってストレッチするM" },
-      rolling:   { src: "img/char/m-rolling.webp", w: 304, h: 360, alt: "ローリングライクアボールのM" },
-      hands:     { src: "img/char/m-hands.webp", w: 215, h: 360, alt: "手を合わせてにっこりするM" },
-      wink:      { src: "img/char/m-wink.webp", w: 190, h: 360, alt: "腰に手をあててウインクするM" },
+      pointUp:   { src: "img/char/m-pointUp.webp", w: 287, h: 360, alt: "上をゆびさすM" , fit: 0.85 },
+      pointSide: { src: "img/char/m-pointSide.webp", w: 308, h: 360, alt: "横をゆびさすM" , fit: 0.86 },
+      surprise:  { src: "img/char/m-surprise.webp", w: 283, h: 360, alt: "びっくりするM" , fit: 0.84 },
+      jump:      { src: "img/char/m-jump.webp", w: 253, h: 360, alt: "片足ジャンプでばんざいするM" , fit: 0.84 },
+      armsOpen:  { src: "img/char/m-armsOpen.webp", w: 241, h: 360, alt: "両手を広げるM" , fit: 0.84 },
+      guts:      { src: "img/char/m-guts.webp", w: 226, h: 360, alt: "ガッツポーズのM" , fit: 0.85 },
+      stretch:   { src: "img/char/m-stretch.webp", w: 282, h: 360, alt: "座ってストレッチするM" , fit: 0.8 },
+      rolling:   { src: "img/char/m-rolling.webp", w: 304, h: 360, alt: "ローリングライクアボールのM" , fit: 0.68 },
+      hands:     { src: "img/char/m-hands.webp", w: 215, h: 360, alt: "手を合わせてにっこりするM" , fit: 0.92 },
+      wink:      { src: "img/char/m-wink.webp", w: 190, h: 360, alt: "腰に手をあててウインクするM" , fit: 0.95 },
     },
   },
 };
@@ -57,7 +58,7 @@ function poseOf(pose) {
 function nCharacterHtml(pose = "guts") {
   const p = poseOf(pose);
   return `<div class="n-char${N_HOP.includes(poseKey(pose)) ? " hop" : ""}">
-    <img src="${p.src}" alt="${p.alt}" width="${p.w}" height="${p.h}" decoding="async">
+    <img src="${p.src}" alt="${p.alt}" width="${p.w}" height="${p.h}" decoding="async" style="height:${((p.fit || 1) * 100).toFixed(0)}%">
   </div>`;
 }
 

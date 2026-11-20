@@ -1571,3 +1571,12 @@ body.gacha-open { overflow: hidden; }
 .n-char.talk-pop img { animation: quiz-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
 #n-figure { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #page-home .bubble { min-height: 3em; }
+
+/* キャラの絵：どのポーズでも顔の大きさがそろうように、枠の下にそろえて fit の高さで出す */
+.n-char { display: flex; align-items: flex-end; justify-content: center; }
+.n-char img { width: auto; max-width: none; object-fit: contain; }
+.quiz-char .n-char { height: 170px; width: 100%; aspect-ratio: auto; }
+.quiz-char.pop .n-char img { animation: quiz-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+/* ホームのキャラの枠は、いつも同じ高さ（この中に fit の高さで出す） */
+#page-home .hero .n-char { height: 180px; aspect-ratio: auto; }
+.talk-char .n-char { height: 84px; aspect-ratio: auto; }

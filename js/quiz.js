@@ -43,7 +43,7 @@ function quizCoinsToday() {
 function quizSay(pose, html) {
   const p = poseOf(pose);
   const fig = $("quiz-char");
-  fig.innerHTML = `<img src="${p.src}" alt="${p.alt}" width="${p.w}" height="${p.h}">`;
+  fig.innerHTML = nCharacterHtml(pose); // 顔の大きさがそろうように（js/character.js の fit）
   fig.classList.remove("pop");
   void fig.offsetWidth;
   fig.classList.add("pop");
