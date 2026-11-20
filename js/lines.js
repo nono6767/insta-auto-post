@@ -58,6 +58,7 @@ const LINES = {
   ],
   body: [
     { when: (c) => c.periodOpen, pose: "hands", say: "生理中は無理しないでね。記録してくれてえらい！" },
+    { when: (c) => c.periodOpen, pose: "hands", say: "生理中は、からだの記録をすると毎日コインが1枚もらえるよ" },
     { when: (c) => c.bodyNote, pose: "stretch", say: (c) => c.bodyNote },
     { when: (c) => c.tod === "night", pose: "stretch", say: "夜はストレッチで、ゆっくりほぐそう" },
     { pose: "hands", say: "からだの記録、ありがとう。今日の調子はどう？" },

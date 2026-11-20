@@ -17,7 +17,8 @@ const COIN_RULES = {
   overMin: 30,  // ノルマ達成のあと、さらにこの分数を運動するごとに…
   over: 1,      // …このコインがもらえる（例：35分でノルマ → 65分で+1、95分で+1 …）
   meal: 1,      // 食事を記録した（1日1回まで）
-  period: 1,    // 生理を記録した（ボーナス。記録1回ごと）
+  period: 1,    // 生理を記録した（ボーナス。始まりを記録したとき）
+  periodDay: 1, // 生理中に、その日のからだの記録をした（毎日）
   bigBottle: 3, // 大瓶に進化した（1本ごと）
 };
 
@@ -60,6 +61,12 @@ function ensureGacha() {
   if (!Array.isArray(g.owned)) g.owned = [];
   if (!g.given) g.given = {};
   // 「ノルマのあと30分ごと」を始める前の日のぶんは、まとめて出さない（今日のぶんは、もらえる）
+  // 「生理中は毎日」を始める前の日のぶんは、まとめて出さない（今日のぶんは、もらえる）
+  if (!g.periodDayStart) {
+    const today = dateKey();
+    for (const r of rewardList()) if (r.key.startsWith("pd:") && r.day !== today) g.given[r.key] = true;
+    g.periodDayStart = today;
+  }
   if (!g.overStart) {
     const today = dateKey();
     for (const r of rewardList()) if (r.key.startsWith("qx:") && r.day !== today) g.given[r.key] = true;
@@ -91,6 +98,13 @@ function rewardList() {
     if (m && Object.values(m).some((v) => v && (typeof v !== "object" || Object.keys(v).length))) out.push({ key: "m:" + day, amount: COIN_RULES.meal, label: "食事の記録", day });
   }
   for (const p of data.periods || []) out.push({ key: "p:" + p.start, amount: COIN_RULES.period, label: "生理の記録ボーナス" });
+  // 生理中は、その日のからだの記録をすると毎日+1
+  if (typeof periodOn === "function") {
+    for (const [day, rec] of Object.entries(data.body || {})) {
+      if (rec && Object.values(rec).some((v) => v !== null && v !== undefined && v !== "") && periodOn(day))
+        out.push({ key: "pd:" + day, amount: COIN_RULES.periodDay, label: "生理中の記録", day });
+    }
+  }
   for (const b of data.bigBottles || []) out.push({ key: "b:" + b.id, amount: COIN_RULES.bigBottle, label: "大瓶に進化" });
   return out;
 }
@@ -371,7 +385,7 @@ function drawGachaScreen() {
   $("g-earn").innerHTML = `
     <li>運動のノルマ達成 <b>+${COIN_RULES.quota}</b>（1日1回）</li>
     <li>食事の記録 <b>+${COIN_RULES.meal}</b>（1日1回）</li>
-    <li>生理の記録 <b>+${COIN_RULES.period}</b>（ボーナス）</li>
+    <li>生理の記録 <b>+${COIN_RULES.period}</b>（ボーナス）・生理中のからだの記録 <b>+${COIN_RULES.periodDay}</b>（毎日）</li>
     <li>大瓶に進化 <b>+${COIN_RULES.bigBottle}</b></li>`;
 }
 
