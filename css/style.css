@@ -1144,7 +1144,7 @@ main {
 }
 .case-bottle {
   position: relative;
-  height: 120px; /* 小瓶（棚で約60px）の約2倍 */
+  height: 140px; /* 小瓶（棚で約60px）の2倍より少し大きく */
   margin-bottom: 2px;
   padding: 0;
   border: 0;
