@@ -1617,3 +1617,7 @@ body.gacha-open { overflow: hidden; }
 .weather-chip .wx-icon { font-size: 14px; }
 .weather-chip .wx-clothes { margin-left: 2px; color: var(--muted); font-size: 11px; }
 .weather-field select { width: 100%; min-height: 44px; padding: 0 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; font-size: 16px; color: var(--ink); }
+.weather-chip .wx-clothes { display: inline-flex; align-items: center; gap: 1px; }
+.weather-chip .wx-svg { width: 17px; height: 17px; }
+.weather-chip .wx-umbrella { font-size: 14px; }
+.weather-chip .wx-tomorrow { padding: 0 5px; border-radius: 999px; background: #e9e1fb; color: #6b55a8; font-size: 10px; font-weight: 700; line-height: 16px; }

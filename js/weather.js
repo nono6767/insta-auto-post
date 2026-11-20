@@ -3,18 +3,36 @@
 // ・天気は Open-Meteo（登録・APIキーいらず）から、選んだ都道府県（県庁所在地）の今の天気を取る
 // ・通信を少なくするため、取りに行くのは WEATHER_HOURS 時間に1回だけ。それ以外は保存した結果を出す
 // ・取れなかったときは、なにも出さない
+// ・傘マークは、今日のこれからの時間の降水確率で。夜（21時から）は、明日の天気・最高気温・服・傘
 // =========================================================
 
 const WEATHER_HOURS = 3;            // 何時間に1回、天気を取りに行くか
 const WEATHER_CACHE = "n-app-weather"; // 天気を保存しておく名前（このスマホの中だけ）
 
 // ★ 服装マーク：気温（°C）がこの数字以上なら、この服（上から順に見る）
+//   絵は下の CLOTHES_SVG（コードで描いた小さな服の絵）
 const CLOTHES_BY_TEMP = [
-  { min: 25, icon: "👕", label: "半袖" },
-  { min: 18, icon: "👚", label: "長袖" },
-  { min: 12, icon: "🧥", label: "うす手" },
-  { min: -99, icon: "🧣", label: "コート" },
+  { min: 25, icon: "tee", label: "半袖" },
+  { min: 18, icon: "long", label: "長袖" },
+  { min: 12, icon: "cardigan", label: "うす手" },
+  { min: -99, icon: "coat", label: "コート" },
 ];
+// ★ 傘マーク：これからの降水確率（%）がこの数字以上なら
+const UMBRELLA = { big: 50, small: 30 }; // big 以上＝傘 ☂️ ／ small 以上＝折りたたみ傘 🌂 ／ それより下＝なし
+const NIGHT_FROM = 21; // この時間からは、明日の天気を出す
+
+// 服の絵（24×24）
+const CLOTHES_SVG = {
+  // 半袖Tシャツ
+  tee: `<path d="M8 3.5 L3 6.5 L5 10.5 L7.5 9.2 V20.5 H16.5 V9.2 L19 10.5 L21 6.5 L16 3.5 C15 5.3 9 5.3 8 3.5 Z" fill="#ffc2d6" stroke="#c9577f" stroke-width="1.2" stroke-linejoin="round"/>`,
+  // 長袖シャツ（そでが手首まで）
+  long: `<path d="M8 3.5 L4.5 5.5 L2.5 18.5 L5.3 19 L7.5 10.5 V20.5 H16.5 V10.5 L18.7 19 L21.5 18.5 L19.5 5.5 L16 3.5 C15 5.3 9 5.3 8 3.5 Z" fill="#d9c8f5" stroke="#7d5fb5" stroke-width="1.2" stroke-linejoin="round"/>`,
+  // うす手の上着（前あきのカーディガン）
+  cardigan: `<path d="M8.5 3.5 L4.5 5.5 L2.5 18.5 L5.3 19 L7.5 10.5 V20.5 H16.5 V10.5 L18.7 19 L21.5 18.5 L19.5 5.5 L15.5 3.5 L12 10 Z" fill="#bfe3d4" stroke="#3f8c70" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 10 V20.5" stroke="#3f8c70" stroke-width="1.1"/><circle cx="13.3" cy="13" r=".9" fill="#3f8c70"/><circle cx="13.3" cy="16.5" r=".9" fill="#3f8c70"/>`,
+  // コート（長め・えり・ベルト）
+  coat: `<path d="M8.5 2.5 L4.5 4.5 L2.5 17.5 L5.3 18 L7 10 L6.5 22 H17.5 L17 10 L18.7 18 L21.5 17.5 L19.5 4.5 L15.5 2.5 L12 8 Z" fill="#e9c9a3" stroke="#9a6a3a" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.5 2.5 L10.5 7 L12 8 L13.5 7 L15.5 2.5" fill="none" stroke="#9a6a3a" stroke-width="1.1"/><path d="M12 8 V22" stroke="#9a6a3a" stroke-width="1.1"/><path d="M6.9 14 H17.1" stroke="#9a6a3a" stroke-width="1.8"/>`,
+};
+const clothesSvg = (k) => `<svg class="wx-svg" viewBox="0 0 24 24" aria-hidden="true">${CLOTHES_SVG[k]}</svg>`;
 
 // 都道府県（県庁所在地の緯度・経度）
 const PREFS = [
@@ -53,6 +71,10 @@ function readWeatherCache() {
   }
 }
 
+// 降水確率 → 傘マーク（なければ空）
+const umbrellaFor = (p) => (p >= UMBRELLA.big ? { icon: "☂️", label: "傘" } : p >= UMBRELLA.small ? { icon: "🌂", label: "折りたたみ傘" } : null);
+const hourKey = (d) => `${dateKey(d)}T${String(d.getHours()).padStart(2, "0")}:00`;
+
 function drawWeather(w) {
   const el = $("weather");
   if (!el) return;
@@ -60,10 +82,36 @@ function drawWeather(w) {
     el.hidden = true;
     return;
   }
-  const t = Math.round(w.temp);
+  const now = new Date();
+  const tomorrow = now.getHours() >= NIGHT_FROM && w.daily && w.daily.time && w.daily.time.length > 1;
+  let t, code, isDay, rain;
+  if (tomorrow) {
+    // 夜は、明日の天気（マーク・最高気温・服・傘）
+    const i = w.daily.time.indexOf(addDaysKey(dateKey(), 1));
+    const k = i >= 0 ? i : 1;
+    t = Math.round(w.daily.tmax[k]);
+    code = w.daily.code[k];
+    isDay = true;
+    rain = w.daily.pmax[k] ?? 0;
+  } else {
+    // 今の天気と気温。傘は、今日のこれからの時間の降水確率（いちばん高いところ）
+    t = Math.round(w.temp);
+    code = w.code;
+    isDay = w.isDay;
+    const today = dateKey(), from = hourKey(now);
+    rain = 0;
+    (w.hourly?.time || []).forEach((h, i) => {
+      if (h >= from && h.startsWith(today)) rain = Math.max(rain, w.hourly.prob[i] ?? 0);
+    });
+  }
   const c = clothesFor(t);
-  el.innerHTML = `<span class="wx-icon">${weatherIcon(w.code, w.isDay)}</span><b>${t}°</b><span class="wx-clothes">${c.icon}${c.label}</span>`;
-  el.setAttribute("aria-label", `${w.pref}の今の気温 ${t}度。服は${c.label}`);
+  const u = umbrellaFor(rain);
+  el.innerHTML =
+    (tomorrow ? `<span class="wx-tomorrow">明日</span>` : "") +
+    `<span class="wx-icon">${weatherIcon(code, isDay)}</span><b>${t}°</b>` +
+    `<span class="wx-clothes">${clothesSvg(c.icon)}${c.label}</span>` +
+    (u ? `<span class="wx-umbrella">${u.icon}</span>` : "");
+  el.setAttribute("aria-label", `${w.pref}の${tomorrow ? "明日の最高" : "今の"}気温 ${t}度。服は${c.label}${u ? `。${u.label}があると安心` : ""}`);
   el.hidden = false;
 }
 
@@ -71,20 +119,27 @@ let weatherLoading = false;
 async function updateWeather(force = false) {
   const pref = weatherPref();
   const cache = readWeatherCache();
-  const fresh = cache && cache.pref === pref && Date.now() - cache.ts < WEATHER_HOURS * 3600 * 1000;
+  // 前の版で保存した天気（傘・明日のデータがない）は、1回だけ取り直す
+  const fresh = cache && cache.pref === pref && cache.daily && Date.now() - cache.ts < WEATHER_HOURS * 3600 * 1000;
   // 前に取った天気があれば、まずそれを出す（古くても、取り直すまでのあいだ）
   drawWeather(cache && cache.pref === pref ? cache : null);
   if ((fresh && !force) || weatherLoading || !navigator.onLine) return;
   weatherLoading = true;
   try {
     const [, lat, lon] = PREFS.find((p) => p[0] === pref);
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&timezone=Asia%2FTokyo`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,precipitation_probability_max&forecast_days=2&timezone=Asia%2FTokyo`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("weather " + res.status);
     const j = await res.json();
     const cur = j.current || {};
     if (typeof cur.temperature_2m !== "number") throw new Error("no temp");
-    const w = { pref, ts: Date.now(), temp: cur.temperature_2m, code: cur.weather_code, isDay: cur.is_day !== 0 };
+    // 今の天気・今日と明日の1時間ごとの降水確率・明日の天気（1回の通信でまとめて取る）
+    const d = j.daily || {};
+    const w = {
+      pref, ts: Date.now(), temp: cur.temperature_2m, code: cur.weather_code, isDay: cur.is_day !== 0,
+      hourly: { time: j.hourly?.time || [], prob: j.hourly?.precipitation_probability || [] },
+      daily: { time: d.time || [], code: d.weather_code || [], tmax: d.temperature_2m_max || [], pmax: d.precipitation_probability_max || [] },
+    };
     try {
       localStorage.setItem(WEATHER_CACHE, JSON.stringify(w));
     } catch (e) {}
@@ -121,5 +176,7 @@ $("settings-btn").addEventListener("click", () => {
 // アプリを開いたとき・戻ってきたときに（数時間に1回だけ取りに行く）
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) updateWeather();
+setInterval(() => drawWeather(readWeatherCache()?.pref === weatherPref() ? readWeatherCache() : null), 10 * 60 * 1000); // 21時になったら明日の表示に（通信はしない）
 });
 updateWeather();
+setInterval(() => drawWeather(readWeatherCache()?.pref === weatherPref() ? readWeatherCache() : null), 10 * 60 * 1000); // 21時になったら明日の表示に（通信はしない）
