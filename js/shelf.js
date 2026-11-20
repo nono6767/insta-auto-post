@@ -157,7 +157,7 @@ function charmsHtml(bottle, ids, ribbonId = null) {
   const rc = ribbonId && charmById(ribbonId);
   if (rc) {
     const w = Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
-    ribbon = img(rc, "neck ribbon", nx, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);
+    ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);
   }
   return { html: back + svg + front + ribbon, hasTop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
 }

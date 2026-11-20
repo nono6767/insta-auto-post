@@ -97,6 +97,16 @@ const CHARMS = [
   { id: "j02", name: "ラベンダーのリボン", w: 160, h: 143, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
   { id: "j03", name: "ミントのリボン", w: 160, h: 142, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
   { id: "j04", name: "レモン色のリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
+  // ななめに結んだリボン（ベーシック・最初から持っている）。pc：結び目が左から何割のところか
+  { id: "k00", name: "水色のななめリボン", w: 150, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.48, kind: "ribbon" },
+  { id: "k01", name: "さくら色のなびきリボン", w: 153, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.54, kind: "ribbon" },
+  { id: "k02", name: "ラベンダーのロングリボン", w: 110, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.39, kind: "ribbon" },
+  { id: "k03", name: "さくら色のななめリボン", w: 147, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.5, kind: "ribbon" },
+  { id: "k04", name: "ミントのななめリボン", w: 134, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.5, kind: "ribbon" },
+  { id: "k05", name: "水色のなびきリボン", w: 132, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.45, kind: "ribbon" },
+  { id: "k06", name: "ラベンダーのななめリボン", w: 155, h: 157, place: "neck", pw: 58, pa: 0.3, pc: 0.46, kind: "ribbon" },
+  { id: "k07", name: "さくら色のひらひらリボン", w: 155, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.52, kind: "ribbon" },
+  { id: "k08", name: "水色のロングリボン", w: 115, h: 160, place: "neck", pw: 58, pa: 0.3, pc: 0.46, kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
