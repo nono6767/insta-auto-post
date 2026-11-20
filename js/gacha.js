@@ -31,25 +31,17 @@ const GACHA = {
   endedWeight: 0.15,   // ピックアップが終わったシリーズのチャームの出やすさ（ベーシックを1としたとき）
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
   shardsForCharm: 10,  // 好きなチャームと交換するのに使う、かけらの数
+  maxPickups: 2,       // 同時に開催するピックアップガチャの数
 };
 
-// シリーズ（チャームの series に書いた名前）
+// シリーズ（ベーシックライン ＋ js/series.js の SERIES_LIST）
 const SERIES = {
   basic: { name: "ベーシックライン", color: "#e8a3b8" },
-  wanko: { name: "ワンコシリーズ", color: "#c9a07a", catch: "ふわふわのわんこと、キラキラのほね" },
-  ballet: { name: "バレエシリーズ", color: "#e79ab6", catch: "トウシューズとチュチュで、くるっと一回転" },
+  ...Object.fromEntries(SERIES_LIST.map((x) => [x.id, x])),
 };
-
-// ガチャの一覧（★ シリーズを増やしたら、ここに1行足すだけで新しいガチャのタブができる）
-//   id：ガチャの名前（英字） / name：タブに出る名前 / series：ピックアップするシリーズ
-//   start・end：開催する期間 / effect：演出（GACHA_EFFECTS の名前。シリーズごとに変えたいときはここを変える）
-// 期間が終わったガチャのシリーズは、ほかのガチャの「ふつうの中身」に、ひくい確率で入る
-const GACHAS = [
-  { id: "wanko", name: "ワンコガチャ", series: "wanko", start: "2026-11-20", end: "2026-12-31", effect: "jewelBox" },
-  { id: "ballet", name: "バレエガチャ", series: "ballet", start: "2026-11-20", end: "2026-12-31", effect: "jewelBox" },
-];
-// 開催中のガチャがひとつもないときの、いつものガチャ（ピックアップなし）
-const STANDARD_GACHA = { id: "standard", name: "いつものガチャ", series: null, effect: "jewelBox" };
+// ガチャは2種類：ピックアップガチャ（js/series.js の期間で、同時に2つまで）と、常設の「いろいろガチャ」
+// いろいろガチャ：ピックアップが一度終わったシリーズ（ベーシックライン以外）が、ぜんぶ同じ確率で出る
+const MIX_GACHA = { id: "mix", name: "いろいろガチャ", series: null, mix: true, effect: "jewelBox" };
 
 // ---------- データ ----------
 // data.gacha = { coins, shards, owned[ガチャで手に入れたチャーム], freeDay（無料をひいた日）, freeUsed, given{もらったコインの印}, since }
@@ -153,18 +145,38 @@ const freeLeft = () => {
   if (!g) return 0;
   return g.freeDay === dateKey() ? Math.max(0, GACHA.freePerDay - (g.freeUsed || 0)) : GACHA.freePerDay;
 };
-// 開催中のガチャ（なければ、いつものガチャ）
+// 開催中のガチャ：ピックアップ（開始日が早い順に、最大2つ）＋ いろいろガチャ
 const openGachas = () => {
   const t = dateKey();
-  const list = GACHAS.filter((g) => g.start <= t && t <= g.end && CHARMS.some((c) => seriesOf(c) === g.series));
-  return list.length ? list : [STANDARD_GACHA];
+  const pickups = SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && SERIES[p.series])
+    .slice(0, GACHA.maxPickups)
+    .map((p) => {
+      const sr = SERIES[p.series];
+      return { id: `${p.series}-${p.start}`, name: sr.gachaName || sr.name.replace(/シリーズ$/, "") + "ガチャ", series: p.series, start: p.start, end: p.end, revival: p.revival, effect: sr.effect || "jewelBox" };
+    });
+  return [...pickups, MIX_GACHA];
 };
-// 開催期間が終わったシリーズ（ふつうの中身に、ひくい確率で入る）
-const endedSeries = () => {
+// ピックアップが一度終わったシリーズ（いろいろガチャに入る）
+const releasedSeries = () => {
   const t = dateKey();
-  const running = new Set(GACHAS.filter((g) => g.start <= t && t <= g.end).map((g) => g.series));
-  return new Set(GACHAS.filter((g) => g.end < t && !running.has(g.series)).map((g) => g.series));
+  return new Set(SERIES_PICKUPS.filter((p) => p.end < t).map((p) => p.series));
 };
+// ピックアップが終わっていて、いまピックアップ中ではないシリーズ（ピックアップガチャのふつうの中身に、ひくい確率で入る）
+const endedSeries = () => {
+  const running = new Set(openGachas().map((g) => g.series).filter(Boolean));
+  return new Set([...releasedSeries()].filter((x) => !running.has(x)));
+};
+// いろいろガチャの中身
+const mixPool = () => {
+  const rel = releasedSeries();
+  return CHARMS.filter((c) => rel.has(seriesOf(c)));
+};
+// 一度でも始まったシリーズ（かけらで交換できる。まだ始まっていないシリーズは、ないしょ）
+const startedSeries = () => {
+  const t = dateKey();
+  return new Set(SERIES_PICKUPS.filter((p) => p.start <= t).map((p) => p.series));
+};
+const daysLeft = (end) => Math.round((Date.parse(end) - Date.parse(dateKey())) / 86400000) + 1; // 今日をふくめて、あと何日
 let gachaTab = null; // 選んでいるガチャの id
 const currentGacha = () => {
   const list = openGachas();
@@ -181,6 +193,7 @@ function rarityOf(r, gacha) {
 
 // 選んだガチャから1つ出す
 function drawCharm(gacha, forcePickup = false) {
+  if (gacha.mix) return { charm: pick(mixPool()), pickup: false };
   const pickupPool = gacha.series ? CHARMS.filter((c) => seriesOf(c) === gacha.series) : [];
   if (pickupPool.length && (forcePickup || Math.random() < GACHA.pickupRate)) return { charm: pick(pickupPool), pickup: true };
   // ふつうの中身：ベーシックライン ＋ 期間が終わったシリーズ（ひくい確率）
@@ -200,6 +213,7 @@ function drawCharm(gacha, forcePickup = false) {
 function runGacha(kind) {
   const g = ensureGacha();
   const gacha = currentGacha();
+  if (gacha.mix && !mixPool().length) return;
   const n = kind === "multi" ? GACHA.multiCount : 1;
   if (kind === "free") {
     if (freeLeft() <= 0) return;
@@ -257,7 +271,8 @@ function drawGachaScreen() {
   for (const it of list) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = `g-tab g-tab-${it.series || "basic"}`;
+    b.className = `g-tab g-tab-${it.mix ? "mix" : it.series || "basic"}`;
+    if (it.series) b.style.setProperty("--c", SERIES[it.series]?.color || "#f28db0");
     b.setAttribute("role", "tab");
     b.setAttribute("aria-selected", String(it.id === gacha.id));
     b.textContent = it.name;
@@ -272,30 +287,42 @@ function drawGachaScreen() {
   // バナーと、当たるチャームの一覧（選んだガチャのぶんだけ）
   const banner = $("g-banners");
   banner.replaceChildren();
+  const item = (c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}"><img src="${charmSrc(c)}" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`;
   if (gacha.series) {
-    const s = SERIES[gacha.series] || { name: gacha.series };
+    const sr = SERIES[gacha.series] || { name: gacha.series };
     const lineup = CHARMS.filter((c) => seriesOf(c) === gacha.series);
     const have = lineup.filter(isOwned).length;
+    const left = daysLeft(gacha.end);
     const el = document.createElement("section");
     el.className = `g-banner g-banner-${gacha.series}`;
+    el.style.setProperty("--c", sr.color || "#e8a3b8");
     el.innerHTML = `
-      <p class="g-banner-tag">${s.name} 開催中</p>
+      <p class="g-banner-tag">${gacha.revival ? "復刻ピックアップ" : "ピックアップ開催中"}</p>${gacha.revival ? `<span class="g-revival">復刻</span>` : ""}
       <h3 class="g-banner-title">${gacha.name}</h3>
-      <p class="g-banner-sub">${s.catch || ""}</p>
-      <p class="g-banner-date">${shortDate(gacha.end)}まで ・ 集めた ${have} / ${lineup.length}</p>
-      <div class="g-lineup">${lineup
-        .map((c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}"><img src="charms/${c.id}.webp" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`)
-        .join("")}</div>`;
+      <p class="g-banner-sub">${sr.catch || ""}</p>
+      <p class="g-banner-date"><b class="g-days">${left <= 1 ? "今日まで！" : `あと${left}日`}</b>（${shortDate(gacha.end)}まで） ・ 集めた ${have} / ${lineup.length}</p>
+      <div class="g-lineup">${lineup.map(item).join("")}</div>`;
     banner.append(el);
   } else {
-    banner.innerHTML = `<section class="g-banner g-banner-basic"><h3 class="g-banner-title">${gacha.name}</h3><p class="g-banner-sub">いまはピックアップはお休み中だよ</p></section>`;
+    const pool = mixPool();
+    const groups = [...releasedSeries()].map((id) => {
+      const list = pool.filter((c) => seriesOf(c) === id);
+      return `<p class="g-mix-name">${SERIES[id]?.name || id} <small>${list.filter(isOwned).length} / ${list.length}</small></p><div class="g-lineup">${list.map(item).join("")}</div>`;
+    });
+    banner.innerHTML = `<section class="g-banner g-banner-mix">
+      <p class="g-banner-tag">いつでも引ける</p>
+      <h3 class="g-banner-title">${gacha.name}</h3>
+      <p class="g-banner-sub">${pool.length ? "ピックアップが終わったシリーズが、ぜんぶ入っているよ" : "ピックアップが終わったシリーズが、ここに入るよ。お楽しみに！"}</p>
+      ${groups.join("")}</section>`;
   }
   // ボタン
   const free = freeLeft();
   $("g-free").disabled = free <= 0;
   $("g-free").querySelector("small").textContent = free > 0 ? "1日1回・どのガチャでもOK" : "今日はひいたよ。また明日";
-  $("g-one").disabled = g.coins < GACHA.costOne;
-  $("g-multi").disabled = g.coins < GACHA.costMulti;
+  const empty = gacha.mix && !mixPool().length;
+  if (empty) $("g-free").disabled = true;
+  $("g-one").disabled = empty || g.coins < GACHA.costOne;
+  $("g-multi").disabled = empty || g.coins < GACHA.costMulti;
   $("g-one").querySelector("small").textContent = `コイン${GACHA.costOne}枚`;
   $("g-multi").querySelector("small").textContent = `コイン${GACHA.costMulti}枚で${GACHA.multiCount}回`;
   $("g-multi-note").hidden = !gacha.series;
@@ -303,12 +330,14 @@ function drawGachaScreen() {
   // かけら
   $("g-shard-text").textContent = `${g.shards} / ${GACHA.shardsForCharm}`;
   $("g-shard-bar").style.width = `${Math.min(100, (g.shards / GACHA.shardsForCharm) * 100)}%`;
-  $("g-exchange").disabled = !(g.shards >= GACHA.shardsForCharm && CHARMS.some((c) => !isOwned(c)));
+  $("g-exchange").disabled = !(g.shards >= GACHA.shardsForCharm && CHARMS.some((c) => !isOwned(c) && (!isLimited(c) || startedSeries().has(seriesOf(c)))));
   // 確率ともらい方
   const ended = [...endedSeries()].map((s) => SERIES[s]?.name || s);
   $("g-rates").innerHTML = `
-    ${gacha.series ? `<li>${SERIES[gacha.series]?.name}：<b>${Math.round(GACHA.pickupRate * 100)}%</b></li>` : ""}
-    <li>そのほか：ベーシックライン${ended.length ? `・${ended.join("・")}（ひくい確率）` : ""}</li>
+    ${gacha.mix
+      ? `<li>これまでのシリーズ${releasedSeries().size ? `（${[...releasedSeries()].map((x) => SERIES[x]?.name || x).join("・")}）` : ""}のチャームが、どれも同じ確率で出るよ</li>`
+      : `<li>${SERIES[gacha.series]?.name}：<b>${Math.round(GACHA.pickupRate * 100)}%</b>（11連は1個以上確定）</li>
+    <li>そのほか：ベーシックライン${ended.length ? `・${ended.join("・")}（ひくい確率）` : ""}</li>`}
     <li>持っているチャームが出たら、かけら+${GACHA.shardPerDup}</li>
     <li>コインとかけらは、どのガチャでも共通</li>`;
   $("g-earn").innerHTML = `
@@ -327,12 +356,14 @@ function openTrade() {
   tradePick = null;
   const grid = $("trade-grid");
   grid.replaceChildren();
-  const list = CHARMS.filter((c) => !isOwned(c));
+  // どのシリーズでも交換できる（開催期間は関係なし。まだ始まっていないシリーズだけは、ないしょ）
+  const started = startedSeries();
+  const list = CHARMS.filter((c) => !isOwned(c) && (!isLimited(c) || started.has(seriesOf(c))));
   for (const c of list) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "charm-option";
-    b.innerHTML = `<img src="charms/${c.id}.webp" alt="" loading="lazy">`;
+    b.innerHTML = `<img src="${charmSrc(c)}" alt="" loading="lazy">`;
     b.setAttribute("aria-label", c.name);
     b.addEventListener("click", () => {
       tradePick = c;
@@ -396,7 +427,7 @@ function playJewelBox(results, { multi, traded }) {
     const box = document.createElement("div");
     box.className = `jbox r-${r.rarity}`;
     box.style.setProperty("--d", `${(multi ? i * 0.06 : 0).toFixed(2)}s`);
-    box.innerHTML = jewelBoxHtml(`<img class="jb-charm" src="charms/${r.charm.id}.webp" alt="">`);
+    box.innerHTML = jewelBoxHtml(`<img class="jb-charm" src="${charmSrc(r.charm)}" alt="">`);
     wrap.append(box);
     return box;
   });
@@ -560,7 +591,7 @@ function showGachaResults(results, multi, traded) {
     const sName = SERIES[seriesOf(r.charm)]?.name || "";
     card.innerHTML = `
       ${r.isNew ? `<span class="g-new">NEW</span>` : ""}
-      <img src="charms/${r.charm.id}.webp" alt="">
+      <img src="${charmSrc(r.charm)}" alt="">
       <span class="g-card-name">${r.charm.name}</span>
       <span class="g-card-sub">${r.isNew ? sName : `かけら+${GACHA.shardPerDup}`}</span>`;
     grid.append(card);

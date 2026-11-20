@@ -52,7 +52,7 @@ function charmsHtml(bottle, ids) {
   const [nx, ny] = bottle.neck;
   const charms = ids.map(charmById).filter(Boolean);
   const img = (c, cls, left, top, width) =>
-    `<img class="charm ${cls}" src="charms/${c.id}.webp" alt="" width="${c.w}" height="${c.h}"
+    `<img class="charm ${cls}" src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}"
       style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;width:${width.toFixed(1)}%;aspect-ratio:${c.w}/${c.h}">`;
   // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
   const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
@@ -613,7 +613,7 @@ function openCharmPicker(b, justEvolved = false) {
     btn.className = "charm-option";
     btn.dataset.id = c.id;
     btn.setAttribute("aria-label", c.name);
-    btn.innerHTML = `<img src="charms/${c.id}.webp" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
+    btn.innerHTML = `<img src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
     grid.append(btn);
   }
   grid.querySelectorAll(".charm-option").forEach((btn) =>

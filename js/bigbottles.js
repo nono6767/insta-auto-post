@@ -25,7 +25,7 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 //   band：（首に巻く）絵の中の「首に巻くひも・くさり」の [まん中の横の位置, まん中の高さ, 幅]（絵の大きさに対する割合）。ひもの幅を首の太さに合わせて、首にそろえる
 //   fit：（宝石だけのふた）瓶の口の幅の何倍の大きさにするか
 //   pc：（ふた）絵の中で宝石のまん中が左から何割か / pw：置く幅（top は瓶の高さの%、neck は瓶の幅の%） / pa：チャームの絵の上から何割のところを、瓶の口（top）や首（neck）にそろえるか
-// series：ガチャ限定のシリーズ（wanko＝ワンコシリーズ / ballet＝バレエシリーズ）。書いていないものはベーシックライン（最初から持っている）
+// ここにあるのは「ベーシックライン」（最初から持っている）。ガチャのシリーズのチャームは js/series.js
 // 1本の瓶に3個までつけられる
 const CHARMS = [
   { id: "a00", name: "ピンクの宝石", w: 76, h: 96, place: "top", pw: 13, pa: 1, pc: 0.5, fit: 1.25 },
@@ -72,14 +72,6 @@ const CHARMS = [
   { id: "d06", name: "バラの門", w: 96, h: 160, place: "hang" },
   { id: "d07", name: "じょうろ", w: 106, h: 160, place: "hang" },
   { id: "d08", name: "うさぎとバラ", w: 91, h: 160, place: "hang" },
-  { id: "e00", name: "トウシューズ", w: 105, h: 160, place: "hang", series: "ballet" },
-  { id: "e01", name: "ピンクのチュチュ", w: 152, h: 160, place: "hang", series: "ballet" },
-  { id: "e02", name: "ティアラ", w: 133, h: 125, place: "hang", series: "ballet" },
-  { id: "e03", name: "白鳥", w: 122, h: 156, place: "hang", series: "ballet" },
-  { id: "e04", name: "ラベンダーのチュチュ", w: 160, h: 151, place: "hang", series: "ballet" },
-  { id: "e05", name: "バレリーナ", w: 131, h: 192, place: "hang", series: "ballet" },
-  { id: "e06", name: "星と月のトウシューズ", w: 45, h: 160, place: "hang", series: "ballet" },
-  { id: "e07", name: "トウシューズと星", w: 126, h: 160, place: "hang", series: "ballet" },
   { id: "e08", name: "バラのリボン", w: 90, h: 160, place: "hang" },
   { id: "e09", name: "アンティークのかぎ", w: 64, h: 160, place: "hang" },
   { id: "e10", name: "ハートのアンティークかぎ", w: 79, h: 200, place: "hang" },
@@ -97,12 +89,7 @@ const CHARMS = [
   { id: "f09", name: "ギター", w: 77, h: 160, place: "hang" },
   { id: "f10", name: "黒レースの赤いリボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2 },
   { id: "f11", name: "金もようの赤いリボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16 },
-  // わんこのチャーム（追加）
-  { id: "g00", name: "わんこのハート", w: 160, h: 152, place: "hang", series: "wanko" },
-  { id: "g01", name: "宝石の肉球", w: 147, h: 160, place: "hang", series: "wanko" },
-  { id: "g02", name: "クリスタルとほね", w: 103, h: 160, place: "hang", series: "wanko" },
-  { id: "g03", name: "星のほね", w: 156, h: 160, place: "hang", series: "wanko" },
-  { id: "g04", name: "しずくの羽根", w: 86, h: 160, place: "hang", series: "wanko" },
-  { id: "g05", name: "わんこの本", w: 134, h: 160, place: "hang", series: "wanko" },
-  { id: "g06", name: "ほねの小瓶", w: 94, h: 160, place: "hang", series: "wanko" },
 ];
+
+// チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
+const charmSrc = (c) => c.src || `charms/${c.id}.webp`;
