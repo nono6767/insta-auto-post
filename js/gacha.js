@@ -376,14 +376,7 @@ function playJewelBox(results, { multi, traded }) {
     const box = document.createElement("div");
     box.className = `jbox r-${r.rarity}`;
     box.style.setProperty("--d", `${(multi ? i * 0.06 : 0).toFixed(2)}s`);
-    box.innerHTML = `
-      <span class="jb-glow"></span><span class="jb-rays"></span>
-      <img class="jb-charm" src="charms/${r.charm.id}.webp" alt="">
-      <span class="jb-base"><i class="jb-gem"></i></span>
-      <span class="jb-seam"></span>
-      <span class="jb-lid"></span>
-      <span class="jb-ribbon-v"></span><span class="jb-ribbon-h"></span>
-      <span class="jb-bow"><i></i><i></i><b></b></span>`;
+    box.innerHTML = jewelBoxHtml(`<img class="jb-charm" src="charms/${r.charm.id}.webp" alt="">`);
     wrap.append(box);
     return box;
   });
@@ -405,10 +398,12 @@ function playJewelBox(results, { multi, traded }) {
   $("gacha-skip").onclick = finish;
   if (reduceMotionGacha()) return finish();
 
-  const openBox = (box, rise) => {
-    box.classList.add("untie");                    // リボンがほどける
-    later(rise ? 450 : 260, () => box.classList.add("open")); // フタが開いて、光とチャーム
-    if (rise) later(900, () => { for (let k = 0; k < 8; k++) gachaSpark(stage, box); });
+  // 箱が少しゆれる → リボンがほどける → ふたがゆっくり開く → 光があふれて、チャームがふわっと浮かぶ
+  const openBox = (box, single) => {
+    box.classList.add("wobble");
+    later(single ? 700 : 300, () => box.classList.add("untie"));
+    later(single ? 1200 : 560, () => box.classList.add("open"));
+    if (single) later(1700, () => { for (let k = 0; k < 8; k++) gachaSpark(stage, box); });
   };
   stage.onclick = () => {
     if (opened) return finish(); // 開けている途中のタップは、スキップ
@@ -416,12 +411,69 @@ function playJewelBox(results, { multi, traded }) {
     hint.remove();
     if (multi) {
       boxes.forEach((b, i) => later(i * 130, () => openBox(b, false)));
-      later(boxes.length * 130 + 1300, finish);
+      later(boxes.length * 130 + 1700, finish);
     } else {
       openBox(boxes[0], true);
-      later(2500, finish);
+      later(3400, finish);
     }
   };
+}
+
+// ---------- 宝石箱の絵 ----------
+// ★ あとでイラストに差しかえるときは、ここに画像のファイル名を書くだけ（箱の下の部分とふたを、別々の画像にする）
+//   例：{ base: "img/box-base.webp", lid: "img/box-lid.webp" }
+//   画像は「200×200 の正方形」の中に、下の絵と同じ位置で描く（ふたのつなぎ目＝上から47%の高さ）
+const JEWEL_BOX_ART = { base: null, lid: null };
+
+// 箱の下の部分（アイボリー・金のふち・角の飾り・正面のピンクの宝石・中のベルベット）
+const JB_BASE_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs>
+    <linearGradient id="jbIvory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf6"/><stop offset=".55" stop-color="#f6ead3"/><stop offset="1" stop-color="#dcc6a2"/></linearGradient>
+    <linearGradient id="jbRound" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a8865a" stop-opacity=".25"/><stop offset=".22" stop-color="#fff" stop-opacity=".7"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#8a6a40" stop-opacity=".3"/></linearGradient>
+    <linearGradient id="jbGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2bf"/><stop offset=".45" stop-color="#e2b75c"/><stop offset="1" stop-color="#a87a2c"/></linearGradient>
+    <radialGradient id="jbVelvet" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#f4a6c4"/><stop offset=".6" stop-color="#d4648f"/><stop offset="1" stop-color="#9c3a63"/></radialGradient>
+    <linearGradient id="jbGem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#ffb6d0"/><stop offset="1" stop-color="#d9457f"/></linearGradient>
+  </defs>
+  <ellipse cx="100" cy="186" rx="84" ry="8" fill="#2a1020" opacity=".35"/>
+  <path d="M22 96 H178 V170 Q178 184 164 184 H36 Q22 184 22 170 Z" fill="url(#jbIvory)" stroke="#b8904f" stroke-width="2"/>
+  <path d="M22 96 H178 V170 Q178 184 164 184 H36 Q22 184 22 170 Z" fill="url(#jbRound)"/>
+  <ellipse cx="100" cy="97" rx="76" ry="9" fill="url(#jbVelvet)" stroke="url(#jbGold)" stroke-width="3"/>
+  <ellipse cx="100" cy="99" rx="64" ry="5" fill="#8a2d55" opacity=".35"/>
+  <rect x="22" y="100" width="156" height="7" fill="url(#jbGold)"/>
+  <path d="M22 170 Q22 184 36 184 H164 Q178 184 178 170 V166 H22 Z" fill="url(#jbGold)"/>
+  <g fill="none" stroke="url(#jbGold)" stroke-width="3" stroke-linecap="round">
+    <path d="M28 112 q10 2 12 12 M28 160 q10 -2 12 -12"/><path d="M172 112 q-10 2 -12 12 M172 160 q-10 -2 -12 -12"/>
+  </g>
+  <g fill="url(#jbGold)"><circle cx="30" cy="136" r="4"/><circle cx="170" cy="136" r="4"/></g>
+  <ellipse cx="100" cy="138" rx="17" ry="20" fill="url(#jbGold)" stroke="#a87a2c" stroke-width="1"/>
+  <path d="M100 124 L111 136 L100 152 L89 136 Z" fill="url(#jbGem)" stroke="#b03a6a" stroke-width="1.2"/>
+  <path d="M100 124 L104 134 L100 136 L94 133 Z" fill="#fff" opacity=".85"/>
+</svg>`;
+// ふた（ふくらんだドーム型・金のふちと飾り・上のつまみ）
+const JB_LID_SVG = `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs>
+    <linearGradient id="jbLid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffefa"/><stop offset=".6" stop-color="#f5e8cf"/><stop offset="1" stop-color="#e0cba6"/></linearGradient>
+    <linearGradient id="jbGold2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2bf"/><stop offset=".45" stop-color="#e2b75c"/><stop offset="1" stop-color="#a87a2c"/></linearGradient>
+  </defs>
+  <path d="M18 96 V84 C18 34 182 34 182 84 V96 Z" fill="url(#jbLid)" stroke="#b8904f" stroke-width="2"/>
+  <ellipse cx="68" cy="58" rx="30" ry="10" fill="#fff" opacity=".75" transform="rotate(-14 68 58)"/>
+  <path d="M30 80 C40 52 160 52 170 80" fill="none" stroke="url(#jbGold2)" stroke-width="2.5"/>
+  <g fill="url(#jbGold2)"><circle cx="54" cy="64" r="3"/><circle cx="146" cy="64" r="3"/><circle cx="100" cy="54" r="3.5"/></g>
+  <rect x="16" y="86" width="168" height="12" rx="5" fill="url(#jbGold2)" stroke="#a87a2c" stroke-width="1"/>
+  <g fill="#fff6d6" opacity=".9"><circle cx="40" cy="92" r="1.6"/><circle cx="70" cy="92" r="1.6"/><circle cx="130" cy="92" r="1.6"/><circle cx="160" cy="92" r="1.6"/></g>
+</svg>`;
+const jbArt = (part, svg) => (JEWEL_BOX_ART[part] ? `<img src="${JEWEL_BOX_ART[part]}" alt="">` : svg);
+
+// 宝石箱1つぶんの部品（inner：中から浮かぶもの）
+function jewelBoxHtml(inner = "") {
+  return `
+    <span class="jb-glow"></span><span class="jb-rays"></span>
+    <span class="jb-base">${jbArt("base", JB_BASE_SVG)}</span>
+    ${inner}
+    <span class="jb-seam"></span>
+    <span class="jb-lid">${jbArt("lid", JB_LID_SVG)}</span>
+    <span class="jb-ribbon-v"></span><span class="jb-ribbon-h"></span>
+    <span class="jb-bow"><i></i><i></i><b></b></span>`;
 }
 
 // 小さな星のキラキラ（宝石箱のまわり）
@@ -498,6 +550,7 @@ $("g-exchange").addEventListener("click", openTrade);
   };
 }
 
+document.querySelector(".gacha-showcase .jbox").innerHTML = jewelBoxHtml(); // ガチャ画面の飾りの宝石箱
 ensureGacha();
 saveData();
 checkCoinRewards();
