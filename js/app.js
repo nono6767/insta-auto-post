@@ -22,7 +22,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/20-4"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/20-5"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -234,7 +234,7 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix
   return `<div class="bottle small-bottle${overflow ? " overflow" : ""}${mix ? " mixed" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
-    <img class="glass-shine" src="bottles/${bottle.id}-shine.webp" alt="" width="${bottle.w}" height="${bottle.h}">
+    <img class="glass-shine" src="bottles/${bottle.shine || bottle.id + "-shine"}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
     ${sparks}
   </div>`;
 }
