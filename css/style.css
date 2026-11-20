@@ -1602,3 +1602,18 @@ body.gacha-open { overflow: hidden; }
 .charm-tab { flex: 1; min-height: 36px; border: 0; border-radius: 999px; background: none; color: var(--muted); font-size: 13px; font-weight: 700; }
 .charm-tab[aria-selected="true"] { background: var(--surface); color: var(--rose); box-shadow: 0 1px 2px rgb(120 60 80 / .15); }
 .big-bottle .charm.ribbon { z-index: 3; animation: none; filter: drop-shadow(0 1px 1px rgb(90 50 40 / .3)); }
+
+/* ---------- ホームの小さな天気 ---------- */
+.hero { position: relative; }
+.weather-chip {
+  position: absolute; top: 0; left: 0; z-index: 2;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 999px;
+  background: rgb(255 255 255 / .85); box-shadow: 0 1px 2px rgb(150 80 110 / .15);
+  color: var(--ink); font-size: 12px; line-height: 22px; white-space: nowrap;
+}
+.weather-chip[hidden] { display: none; }
+.weather-chip b { font-size: 13px; font-variant-numeric: tabular-nums; }
+.weather-chip .wx-icon { font-size: 14px; }
+.weather-chip .wx-clothes { margin-left: 2px; color: var(--muted); font-size: 11px; }
+.weather-field select { width: 100%; min-height: 44px; padding: 0 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; font-size: 16px; color: var(--ink); }

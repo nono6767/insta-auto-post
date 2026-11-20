@@ -35,6 +35,7 @@
     <!-- ホーム -->
     <section id="page-home" class="page">
       <div class="hero">
+        <div class="weather-chip" id="weather" role="img" hidden></div>
         <div class="n-wrap" id="n-figure"></div>
         <div class="hero-side">
           <p class="bubble" id="n-bubble">今日もいっしょにがんばろ〜</p>
@@ -314,6 +315,10 @@
           <span class="settings-label">キャラクター</span>
           <span class="settings-sub" id="settings-character-sub"></span>
         </button>
+        <button class="settings-item" type="button" id="settings-weather">
+          <span class="settings-label">天気の地域</span>
+          <span class="settings-sub" id="settings-weather-sub">いまは 東京</span>
+        </button>
         <button class="settings-item" type="button" id="settings-savings">
           <span class="settings-label">貯金瓶の設定</span>
           <span class="settings-sub" id="settings-savings-sub">毎週の金額・目標金額・期限</span>
@@ -332,6 +337,19 @@
         <button class="primary-btn" type="button" id="settings-close">閉じる</button>
       </div>
       <input type="file" id="restore-input" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <!-- 天気の地域 -->
+  <div class="modal-backdrop" id="weather-modal" hidden>
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="weather-title">
+      <h3 id="weather-title">天気の地域</h3>
+      <p>ホームに、この地域（県庁所在地）の天気と気温が出るよ</p>
+      <label class="text-field weather-field"><span>都道府県</span><select id="weather-pref-select"></select></label>
+      <div class="modal-actions">
+        <button class="text-btn" type="button" id="weather-cancel">やめる</button>
+        <button class="primary-btn" type="button" id="weather-save">これにする</button>
+      </div>
     </div>
   </div>
 
@@ -634,6 +652,7 @@
   <script src="js/gacha.js"></script>
   <script src="js/quiz.js"></script>
   <script src="js/lines.js"></script>
+  <script src="js/weather.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>
