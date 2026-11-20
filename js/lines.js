@@ -258,9 +258,11 @@ function talk(screen, figEl, bubbleEl, { fresh = false, next = false } = {}) {
   }
   const text = line.text || sayText(line, c);
   const pose = line.pose;
-  const same = slot.lastText === text && slot.lastPose === pose;
+  const who = data.character || "n";
+  const same = slot.lastText === text && slot.lastPose === pose && slot.lastWho === who;
   slot.lastText = text;
   slot.lastPose = pose;
+  slot.lastWho = who;
   if (same && !fresh && !next) return; // 同じなら描き直さない（1文字ずつを、くり返さない）
   figEl.innerHTML = nCharacterHtml(pose);
   const img = figEl.querySelector(".n-char");
