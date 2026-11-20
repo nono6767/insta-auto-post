@@ -155,11 +155,13 @@ function charmsHtml(bottle, ids, ribbonId = null) {
   // 首のリボン：チェーンもチャームも消さずに、いちばん手前に重ねる
   let ribbon = "";
   const rc = ribbonId && charmById(ribbonId);
-  if (rc && rc.band && bottle.mouth) {
-    // 帯の部分（band）を、首の太さ・首の高さにぴったり合わせる（首に巻きついているように）
+  if (rc && rc.band && bottle.waist) {
+    // 帯の部分（band）を、首のくびれ（waist）の太さ・高さにぴったり合わせる（首に巻きついているように）
     const [bx, by, bw] = rc.band;
-    const w = ((bottle.mouth[1] * NECK_BAND) / bw) * (rc.scale || 1);
-    ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, (bottle.wrap ?? ny - 1) + 1), w);
+    const [wy, ww] = bottle.waist;
+    // 大きくなりすぎないように、瓶の幅の7割まで（帯は、くびれの太さのまま）
+    const w = Math.min((ww * 1.12) / bw, Math.max(70, (ww * 1.02) / bw));
+    ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, wy), w);
   } else if (rc) {
     const w = Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
     ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);
