@@ -160,7 +160,7 @@ function charmsHtml(bottle, ids, ribbonId = null) {
     const [bx, by, bw] = rc.band;
     const [wy, ww] = bottle.waist;
     // 大きくなりすぎないように、瓶の幅の7割まで（帯は、くびれの太さのまま）
-    const w = Math.min((ww * 1.12) / bw, Math.max(70, (ww * 1.02) / bw));
+    const w = Math.min((ww * 1.06) / bw, Math.max(70, (ww * 1.0) / bw));
     ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, wy), w);
   } else if (rc) {
     const w = Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
