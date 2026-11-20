@@ -12,6 +12,7 @@ const SPORTS = [
   { id: "walking",  name: "ウォーキング",       color: "#8ed8b8",  presets: [20],     met: 3.5 },
   { id: "stepper",  name: "ツイストステッパー", color: "#b9a3e3",  presets: [20],     met: 4.0 },
   { id: "stretch",  name: "ストレッチ",         color: "#9fd3f0",  presets: [5, 10],  met: 2.3 },
+  { id: "dance",    name: "ダンス",             color: "#ef8fc0",  presets: [15, 30], met: 5.0 },
 ];
 const WEEK_GOAL_MIN = 250;   // 大瓶1本ぶんの分数（小瓶をこれだけ合成すると大瓶になる）
 const BIG_BOTTLE_MIN = WEEK_GOAL_MIN;
@@ -22,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/22-3"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/23-1"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 

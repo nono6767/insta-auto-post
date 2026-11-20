@@ -53,6 +53,12 @@
         </div>
       </div>
 
+      <button class="card quiz-card" type="button" id="quiz-card">
+        <span class="quiz-card-char" id="quiz-card-char" aria-hidden="true"></span>
+        <span class="quiz-card-text"><b id="quiz-card-title">ピラティスクイズ</b><small id="quiz-card-sub"></small></span>
+        <span class="quiz-card-go" aria-hidden="true">›</span>
+      </button>
+
       <h2 class="section-title">どの運動をした？</h2>
       <div class="sports" id="sports"></div>
 
@@ -559,6 +565,20 @@
     </section>
   </div>
 
+  <!-- ピラティスクイズ -->
+  <div class="quiz-screen gacha-screen" id="quiz-screen" role="dialog" aria-modal="true" aria-labelledby="quiz-title" hidden>
+    <div class="gacha-top">
+      <button class="text-btn" type="button" id="quiz-close">‹ もどる</button>
+      <div class="quiz-progress" id="quiz-progress"></div>
+    </div>
+    <h2 class="gacha-title" id="quiz-title"><span id="quiz-name">N</span>のピラティスクイズ</h2>
+    <div class="quiz-talk">
+      <div class="quiz-char" id="quiz-char"></div>
+      <div class="quiz-bubble" id="quiz-bubble" aria-live="polite"></div>
+    </div>
+    <div class="quiz-body" id="quiz-body"></div>
+  </div>
+
   <!-- ガチャの演出 -->
   <div class="gacha-anim" id="gacha-anim" hidden>
     <button class="g-skip" type="button" id="gacha-skip" hidden>スキップ ›</button>
@@ -595,6 +615,7 @@
   <script src="js/shelf.js"></script>
   <script src="js/shake.js"></script>
   <script src="js/gacha.js"></script>
+  <script src="js/quiz.js"></script>
   <script src="js/backup.js"></script>
 </body>
 </html>
