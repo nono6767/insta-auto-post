@@ -35,11 +35,16 @@ const SERIES = {
   ballet: { name: "バレエシリーズ", color: "#e79ab6", catch: "トウシューズとチュチュで、くるっと一回転" },
 };
 
-// ピックアップ（開催する期間。終わったシリーズは、ふつうのガチャにひくい確率で入る）
-const PICKUPS = [
-  { series: "wanko", start: "2026-11-20", end: "2026-12-31" },
-  { series: "ballet", start: "2026-11-20", end: "2026-12-31" },
+// ガチャの一覧（★ シリーズを増やしたら、ここに1行足すだけで新しいガチャのタブができる）
+//   id：ガチャの名前（英字） / name：タブに出る名前 / series：ピックアップするシリーズ
+//   start・end：開催する期間 / effect：演出（GACHA_EFFECTS の名前。シリーズごとに変えたいときはここを変える）
+// 期間が終わったガチャのシリーズは、ほかのガチャの「ふつうの中身」に、ひくい確率で入る
+const GACHAS = [
+  { id: "wanko", name: "ワンコガチャ", series: "wanko", start: "2026-11-20", end: "2026-12-31", effect: "jewelBox" },
+  { id: "ballet", name: "バレエガチャ", series: "ballet", start: "2026-11-20", end: "2026-12-31", effect: "jewelBox" },
 ];
+// 開催中のガチャがひとつもないときの、いつものガチャ（ピックアップなし）
+const STANDARD_GACHA = { id: "standard", name: "いつものガチャ", series: null, effect: "jewelBox" };
 
 // ---------- データ ----------
 // data.gacha = { coins, shards, owned[ガチャで手に入れたチャーム], freeDay（無料をひいた日）, freeUsed, given{もらったコインの印}, since }
@@ -131,22 +136,37 @@ const freeLeft = () => {
   if (!g) return 0;
   return g.freeDay === dateKey() ? Math.max(0, GACHA.freePerDay - (g.freeUsed || 0)) : GACHA.freePerDay;
 };
-const activePickups = () => {
+// 開催中のガチャ（なければ、いつものガチャ）
+const openGachas = () => {
   const t = dateKey();
-  return PICKUPS.filter((p) => p.start <= t && t <= p.end && CHARMS.some((c) => seriesOf(c) === p.series));
+  const list = GACHAS.filter((g) => g.start <= t && t <= g.end && CHARMS.some((c) => seriesOf(c) === g.series));
+  return list.length ? list : [STANDARD_GACHA];
 };
+// 開催期間が終わったシリーズ（ふつうの中身に、ひくい確率で入る）
 const endedSeries = () => {
   const t = dateKey();
-  const active = new Set(activePickups().map((p) => p.series));
-  return new Set(PICKUPS.filter((p) => p.end < t && !active.has(p.series)).map((p) => p.series));
+  const running = new Set(GACHAS.filter((g) => g.start <= t && t <= g.end).map((g) => g.series));
+  return new Set(GACHAS.filter((g) => g.end < t && !running.has(g.series)).map((g) => g.series));
+};
+let gachaTab = null; // 選んでいるガチャの id
+const currentGacha = () => {
+  const list = openGachas();
+  return list.find((g) => g.id === gachaTab) || list[0];
 };
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-function drawCharm(forcePickup = false) {
-  const pickupSeries = new Set(activePickups().map((p) => p.series));
-  const pickupPool = CHARMS.filter((c) => pickupSeries.has(seriesOf(c)));
+// レア度：ピックアップ（虹）／レア＝まだ持っていない・終わったシリーズのチャーム（紫）／ふつう（ピンク）
+function rarityOf(r, gacha) {
+  if (gacha && gacha.series && seriesOf(r.charm) === gacha.series) return "pickup";
+  if (r.isNew || isLimited(r.charm)) return "rare";
+  return "normal";
+}
+
+// 選んだガチャから1つ出す
+function drawCharm(gacha, forcePickup = false) {
+  const pickupPool = gacha.series ? CHARMS.filter((c) => seriesOf(c) === gacha.series) : [];
   if (pickupPool.length && (forcePickup || Math.random() < GACHA.pickupRate)) return { charm: pick(pickupPool), pickup: true };
-  // ふつうの中身：ベーシックライン ＋ ピックアップが終わったシリーズ（ひくい確率）
+  // ふつうの中身：ベーシックライン ＋ 期間が終わったシリーズ（ひくい確率）
   const ended = endedSeries();
   const pool = [];
   for (const c of CHARMS) {
@@ -159,9 +179,10 @@ function drawCharm(forcePickup = false) {
   return { charm: pool[pool.length - 1][0], pickup: false };
 }
 
-// n回ひく。kind: "free" / "one" / "multi"
+// kind: "free" / "one" / "multi"
 function runGacha(kind) {
   const g = ensureGacha();
+  const gacha = currentGacha();
   const n = kind === "multi" ? GACHA.multiCount : 1;
   if (kind === "free") {
     if (freeLeft() <= 0) return;
@@ -172,26 +193,26 @@ function runGacha(kind) {
     if (g.coins < cost) return showToast(`コインが${cost - g.coins}枚たりないよ`);
     g.coins -= cost;
   }
-  const draws = Array.from({ length: n }, () => drawCharm());
-  // 11連：ピックアップのチャームが1個もなかったら、最後の1個をピックアップに
-  if (kind === "multi" && activePickups().length && !draws.some((d) => d.pickup)) draws[n - 1] = drawCharm(true);
+  const draws = Array.from({ length: n }, () => drawCharm(gacha));
+  // 11連：選んだガチャのシリーズが1個もなかったら、最後の1個をそのシリーズに
+  if (kind === "multi" && gacha.series && !draws.some((d) => d.pickup)) draws[n - 1] = drawCharm(gacha, true);
   const results = draws.map(({ charm, pickup }) => {
-    if (isOwned(charm)) {
-      g.shards += GACHA.shardPerDup;
-      return { charm, pickup, isNew: false };
-    }
-    g.owned.push(charm.id);
-    return { charm, pickup, isNew: true };
+    const r = { charm, pickup, isNew: !isOwned(charm) };
+    if (r.isNew) g.owned.push(charm.id);
+    else g.shards += GACHA.shardPerDup;
+    r.rarity = rarityOf(r, gacha);
+    return r;
   });
   saveData();
   updateCoinBadge();
-  playGacha(results, kind === "multi");
+  playGacha(results, kind === "multi", false, gacha);
 }
 
 // ---------- ガチャの画面 ----------
 
 function openGacha() {
   ensureGacha();
+  if (!gachaTab) gachaTab = data.gacha.lastTab || null;
   drawGachaScreen();
   $("gacha-screen").hidden = false;
   $("gacha-screen").scrollTop = 0;
@@ -205,49 +226,71 @@ function closeGacha() {
 
 function drawGachaScreen() {
   const g = ensureGacha();
+  const gacha = currentGacha();
   $("g-coins").textContent = g.coins;
   $("g-shards").textContent = g.shards;
-  // ピックアップのバナーと、当たるチャームの一覧
-  const banners = $("g-banners");
-  banners.replaceChildren();
-  const pickups = activePickups();
-  for (const p of pickups) {
-    const s = SERIES[p.series] || { name: p.series };
-    const list = CHARMS.filter((c) => seriesOf(c) === p.series);
-    const have = list.filter(isOwned).length;
+  // タブ（開催中のガチャ）
+  const tabs = $("g-tabs");
+  tabs.replaceChildren();
+  const list = openGachas();
+  tabs.hidden = list.length < 2;
+  for (const it of list) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `g-tab g-tab-${it.series || "basic"}`;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(it.id === gacha.id));
+    b.textContent = it.name;
+    b.addEventListener("click", () => {
+      gachaTab = it.id;
+      data.gacha.lastTab = it.id;
+      saveData();
+      drawGachaScreen();
+    });
+    tabs.append(b);
+  }
+  // バナーと、当たるチャームの一覧（選んだガチャのぶんだけ）
+  const banner = $("g-banners");
+  banner.replaceChildren();
+  if (gacha.series) {
+    const s = SERIES[gacha.series] || { name: gacha.series };
+    const lineup = CHARMS.filter((c) => seriesOf(c) === gacha.series);
+    const have = lineup.filter(isOwned).length;
     const el = document.createElement("section");
-    el.className = `g-banner g-banner-${p.series}`;
+    el.className = `g-banner g-banner-${gacha.series}`;
     el.innerHTML = `
-      <p class="g-banner-tag">ピックアップ開催中</p>
-      <h3 class="g-banner-title">${s.name}</h3>
+      <p class="g-banner-tag">${s.name} 開催中</p>
+      <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${s.catch || ""}</p>
-      <p class="g-banner-date">${shortDate(p.end)}まで ・ 集めた ${have} / ${list.length}</p>
-      <div class="g-lineup">${list
+      <p class="g-banner-date">${shortDate(gacha.end)}まで ・ 集めた ${have} / ${lineup.length}</p>
+      <div class="g-lineup">${lineup
         .map((c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}"><img src="charms/${c.id}.webp" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`)
         .join("")}</div>`;
-    banners.append(el);
+    banner.append(el);
+  } else {
+    banner.innerHTML = `<section class="g-banner g-banner-basic"><h3 class="g-banner-title">${gacha.name}</h3><p class="g-banner-sub">いまはピックアップはお休み中だよ</p></section>`;
   }
-  if (!pickups.length) banners.innerHTML = `<p class="hint center">いまはピックアップはお休み中だよ</p>`;
   // ボタン
   const free = freeLeft();
   $("g-free").disabled = free <= 0;
-  $("g-free").querySelector("small").textContent = free > 0 ? "今日の1回" : "また明日";
+  $("g-free").querySelector("small").textContent = free > 0 ? "1日1回・どのガチャでもOK" : "今日はひいたよ。また明日";
   $("g-one").disabled = g.coins < GACHA.costOne;
   $("g-multi").disabled = g.coins < GACHA.costMulti;
   $("g-one").querySelector("small").textContent = `コイン${GACHA.costOne}枚`;
   $("g-multi").querySelector("small").textContent = `コイン${GACHA.costMulti}枚で${GACHA.multiCount}回`;
-  $("g-multi-note").hidden = !pickups.length;
+  $("g-multi-note").hidden = !gacha.series;
+  if (gacha.series) $("g-multi-note").textContent = `${SERIES[gacha.series]?.name || ""}1個確定！`;
   // かけら
   $("g-shard-text").textContent = `${g.shards} / ${GACHA.shardsForCharm}`;
   $("g-shard-bar").style.width = `${Math.min(100, (g.shards / GACHA.shardsForCharm) * 100)}%`;
-  const canTrade = g.shards >= GACHA.shardsForCharm && CHARMS.some((c) => !isOwned(c));
-  $("g-exchange").disabled = !canTrade;
+  $("g-exchange").disabled = !(g.shards >= GACHA.shardsForCharm && CHARMS.some((c) => !isOwned(c)));
   // 確率ともらい方
   const ended = [...endedSeries()].map((s) => SERIES[s]?.name || s);
   $("g-rates").innerHTML = `
-    <li>ピックアップ中のシリーズ：<b>${Math.round(GACHA.pickupRate * 100)}%</b>${pickups.length ? "" : "（いまはなし）"}</li>
+    ${gacha.series ? `<li>${SERIES[gacha.series]?.name}：<b>${Math.round(GACHA.pickupRate * 100)}%</b></li>` : ""}
     <li>そのほか：ベーシックライン${ended.length ? `・${ended.join("・")}（ひくい確率）` : ""}</li>
-    <li>持っているチャームが出たら、かけら+${GACHA.shardPerDup}</li>`;
+    <li>持っているチャームが出たら、かけら+${GACHA.shardPerDup}</li>
+    <li>コインとかけらは、どのガチャでも共通</li>`;
   $("g-earn").innerHTML = `
     <li>運動のノルマ達成 <b>+${COIN_RULES.quota}</b>（1日1回）</li>
     <li>食事の記録 <b>+${COIN_RULES.meal}</b>（1日1回）</li>
@@ -292,100 +335,104 @@ $("trade-ok").addEventListener("click", () => {
   g.owned.push(tradePick.id);
   saveData();
   $("trade-modal").hidden = true;
-  playGacha([{ charm: tradePick, pickup: isLimited(tradePick), isNew: true }], false, true);
+  playGacha([{ charm: tradePick, pickup: false, isNew: true, rarity: "rare" }], false, true, null);
 });
 
+
 // ---------- ガチャの演出 ----------
+// 演出は名前で選べる（GACHAS の effect）。シリーズごとに変えたいときは、ここに演出を足して名前を書く
+const GACHA_EFFECTS = {
+  jewelBox: playJewelBox, // リボンのかかった宝石箱
+};
+function playGacha(results, multi, traded, gacha) {
+  results.forEach((r) => (r.rarity = r.rarity || rarityOf(r, gacha)));
+  const fx = GACHA_EFFECTS[(gacha && gacha.effect) || "jewelBox"] || playJewelBox;
+  fx(results, { multi, traded, gacha });
+}
 
 const reduceMotionGacha = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 let gachaTimers = [];
+const later = (ms, fn) => gachaTimers.push(setTimeout(fn, ms));
 
-function playGacha(results, multi, traded = false) {
+// 宝石箱：出てくる → タップでリボンがほどけて、フタがゆっくり開く → 光があふれて、チャームがふわっと浮かぶ
+// フタが開く前の光の色で、レア度がわかる（ふつう＝ピンク・レア＝むらさき・ピックアップ＝虹色）
+function playJewelBox(results, { multi, traded }) {
   const ov = $("gacha-anim");
   const stage = $("gacha-stage");
   const out = $("gacha-results");
   gachaTimers.forEach(clearTimeout);
   gachaTimers = [];
   stage.replaceChildren();
+  stage.onclick = null;
   out.replaceChildren();
   out.hidden = true;
   $("gacha-anim-ok").hidden = true;
-  ov.classList.toggle("multi", multi);
+  $("gacha-skip").hidden = false;
   ov.hidden = false;
-  const rare = results.some((r) => r.pickup);
-  const anyNew = results.some((r) => r.isNew);
 
-  // カプセル（ピックアップが入っているときは、虹色に光る）
-  const cap = document.createElement("div");
-  cap.className = "capsule" + (rare ? " rare" : "") + (multi ? " big" : "");
-  cap.innerHTML = `<span class="cap-top"></span><span class="cap-band"></span><span class="cap-bottom"></span><span class="cap-shine"></span>`;
-  stage.append(cap);
+  const wrap = document.createElement("div");
+  wrap.className = "jb-wrap" + (multi ? " multi" : "");
+  const boxes = results.map((r, i) => {
+    const box = document.createElement("div");
+    box.className = `jbox r-${r.rarity}`;
+    box.style.setProperty("--d", `${(multi ? i * 0.06 : 0).toFixed(2)}s`);
+    box.innerHTML = `
+      <span class="jb-glow"></span><span class="jb-rays"></span>
+      <img class="jb-charm" src="charms/${r.charm.id}.webp" alt="">
+      <span class="jb-base"><i class="jb-gem"></i></span>
+      <span class="jb-seam"></span>
+      <span class="jb-lid"></span>
+      <span class="jb-ribbon-v"></span><span class="jb-ribbon-h"></span>
+      <span class="jb-bow"><i></i><i></i><b></b></span>`;
+    wrap.append(box);
+    return box;
+  });
+  stage.append(wrap);
   const hint = document.createElement("p");
   hint.className = "gacha-hint";
-  hint.textContent = traded ? "かけらが、チャームに変わるよ…" : multi ? `${results.length}連ガチャ！` : "なにが出るかな…";
+  hint.textContent = traded ? "タップして開けてね" : multi ? "タップして、まとめて開けよう" : "タップして開けてね";
   stage.append(hint);
 
-  const show = () => {
+  let opened = false;
+  const finish = () => {
+    gachaTimers.forEach(clearTimeout);
+    gachaTimers = [];
+    stage.onclick = null;
+    $("gacha-skip").hidden = true;
     stage.replaceChildren();
     showGachaResults(results, multi, traded);
   };
-  if (reduceMotionGacha()) return show();
+  $("gacha-skip").onclick = finish;
+  if (reduceMotionGacha()) return finish();
 
-  // 1) 落ちてくる → 2) ゆれる（だんだん強く）→ 3) ぱかっと開いて光る
-  cap.animate(
-    [
-      { transform: "translateY(-120vh) rotate(-20deg)" },
-      { transform: "translateY(0) rotate(8deg)", offset: 0.7 },
-      { transform: "translateY(-6%) rotate(-4deg)", offset: 0.85 },
-      { transform: "translateY(0) rotate(0deg)" },
-    ],
-    { duration: 700, easing: "ease-in" }
-  );
-  const shakeAt = 750;
-  gachaTimers.push(setTimeout(() => cap.classList.add("shaking"), shakeAt));
-  gachaTimers.push(setTimeout(() => cap.classList.add("glowing"), shakeAt + 700));
-  for (let i = 0; i < 12; i++) gachaTimers.push(setTimeout(() => gachaSpark(stage, rare), shakeAt + 200 + i * 110));
-  const openAt = shakeAt + 1500 + (rare ? 400 : 0);
-  gachaTimers.push(
-    setTimeout(() => {
-      cap.classList.remove("shaking");
-      cap.classList.add("open");
-      const flash = document.createElement("div");
-      flash.className = "gacha-flash" + (rare ? " rare" : "");
-      stage.append(flash);
-      for (let i = 0; i < 22; i++) gachaBurst(stage, i, rare);
-    }, openAt)
-  );
-  gachaTimers.push(setTimeout(show, openAt + 650));
-  // 演出中にタップすると、すぐ結果へ
+  const openBox = (box, rise) => {
+    box.classList.add("untie");                    // リボンがほどける
+    later(rise ? 450 : 260, () => box.classList.add("open")); // フタが開いて、光とチャーム
+    if (rise) later(900, () => { for (let k = 0; k < 8; k++) gachaSpark(stage, box); });
+  };
   stage.onclick = () => {
-    if (out.hidden) {
-      gachaTimers.forEach(clearTimeout);
-      show();
+    if (opened) return finish(); // 開けている途中のタップは、スキップ
+    opened = true;
+    hint.remove();
+    if (multi) {
+      boxes.forEach((b, i) => later(i * 130, () => openBox(b, false)));
+      later(boxes.length * 130 + 1300, finish);
+    } else {
+      openBox(boxes[0], true);
+      later(2500, finish);
     }
   };
-  if (anyNew) ov.dataset.new = "1";
 }
 
-function gachaSpark(stage, rare) {
+// 小さな星のキラキラ（宝石箱のまわり）
+function gachaSpark(stage, box) {
+  const r = box.getBoundingClientRect(), s0 = stage.getBoundingClientRect();
   const s = document.createElement("span");
   s.className = "g-spark";
-  s.style.left = 30 + Math.random() * 40 + "%";
-  s.style.top = 30 + Math.random() * 30 + "%";
-  if (rare) s.style.background = ["#fff6c8", "#ffd1e3", "#c9f1ff", "#e2d4ff"][Math.floor(Math.random() * 4)];
+  s.style.left = r.left - s0.left + r.width * (0.1 + Math.random() * 0.8) + "px";
+  s.style.top = r.top - s0.top - r.height * (0.6 + Math.random() * 0.6) + "px";
   stage.append(s);
   setTimeout(() => s.remove(), 1200);
-}
-function gachaBurst(stage, i, rare) {
-  const s = document.createElement("span");
-  s.className = "g-burst";
-  const a = (i / 22) * Math.PI * 2;
-  const r = 120 + Math.random() * 90;
-  s.style.setProperty("--dx", `${Math.cos(a) * r}px`);
-  s.style.setProperty("--dy", `${Math.sin(a) * r}px`);
-  s.style.background = rare ? ["#ffe08a", "#ffb3cf", "#b8ecff", "#d9c8ff"][i % 4] : i % 2 ? "#fff" : "#ffd6e4";
-  stage.append(s);
-  setTimeout(() => s.remove(), 1300);
 }
 
 function showGachaResults(results, multi, traded) {
@@ -401,8 +448,8 @@ function showGachaResults(results, multi, traded) {
   grid.className = "g-result-grid" + (multi ? " multi" : "");
   results.forEach((r, i) => {
     const card = document.createElement("div");
-    card.className = "g-card" + (r.pickup ? " pickup" : "") + (r.isNew ? " is-new" : "");
-    card.style.animationDelay = `${multi ? i * 0.08 : 0}s`;
+    card.className = `g-card r-${r.rarity}` + (r.isNew ? " is-new" : "");
+    card.style.animationDelay = `${multi ? i * 0.05 : 0}s`;
     const sName = SERIES[seriesOf(r.charm)]?.name || "";
     card.innerHTML = `
       ${r.isNew ? `<span class="g-new">NEW</span>` : ""}

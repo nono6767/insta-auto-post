@@ -1282,27 +1282,6 @@ body.gacha-open { overflow: hidden; }
 .g-item:not(.owned) img { filter: saturate(.9); }
 .g-item.owned::after { content: "✓"; position: absolute; top: 2px; right: 5px; color: #e0668f; font-size: 12px; font-weight: 700; }
 
-/* ガチャマシン（飾り） */
-.gacha-machine { position: relative; width: 150px; height: 170px; margin: 6px auto 4px; }
-.machine-dome {
-  position: absolute; left: 10px; right: 10px; top: 0; height: 110px; border-radius: 50% 50% 12px 12px;
-  background: radial-gradient(circle at 35% 25%, rgb(255 255 255 / .95), rgb(255 255 255 / .35) 45%, rgb(255 220 235 / .45));
-  border: 3px solid #f6b9cf; overflow: hidden;
-  box-shadow: inset 0 -8px 16px rgb(240 150 180 / .25);
-}
-.machine-dome span { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(#ff9fc0 50%, #fff 50%); box-shadow: inset 0 0 0 2px rgb(200 90 130 / .35); animation: cap-bob 3s ease-in-out infinite; }
-.machine-dome span:nth-child(1) { left: 8px; bottom: 4px; }
-.machine-dome span:nth-child(2) { left: 38px; bottom: 2px; background: linear-gradient(#c8b2ff 50%, #fff 50%); animation-delay: -.5s; }
-.machine-dome span:nth-child(3) { left: 68px; bottom: 6px; background: linear-gradient(#ffd27a 50%, #fff 50%); animation-delay: -1s; }
-.machine-dome span:nth-child(4) { left: 22px; bottom: 30px; background: linear-gradient(#9fe0f0 50%, #fff 50%); animation-delay: -1.5s; }
-.machine-dome span:nth-child(5) { left: 52px; bottom: 32px; animation-delay: -2s; }
-.machine-dome span:nth-child(6) { left: 82px; bottom: 30px; background: linear-gradient(#b8e8c8 50%, #fff 50%); animation-delay: -2.5s; }
-@keyframes cap-bob { 50% { transform: translateY(-3px) rotate(8deg); } }
-.machine-body { position: absolute; left: 0; right: 0; bottom: 0; height: 66px; border-radius: 16px 16px 20px 20px; background: linear-gradient(#ff9dbd, #f07aa0); box-shadow: inset 0 3px 0 rgb(255 255 255 / .45), 0 4px 10px rgb(200 80 120 / .3); }
-.machine-slot { position: absolute; left: 18px; bottom: 12px; width: 40px; height: 26px; border-radius: 8px; background: #b84a72; box-shadow: inset 0 3px 4px rgb(0 0 0 / .3); }
-.machine-knob { position: absolute; right: 22px; top: 14px; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff, #ffe08a 40%, #e7a93a); box-shadow: 0 2px 3px rgb(120 60 20 / .3); }
-.machine-knob::after { content: ""; position: absolute; left: 50%; top: 4px; bottom: 4px; width: 6px; translate: -50% 0; border-radius: 3px; background: #d29a3a; }
-
 .gacha-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px auto 14px; }
 .g-btn {
   position: relative; display: grid; justify-items: center; gap: 1px;
@@ -1339,30 +1318,6 @@ body.gacha-open { overflow: hidden; }
 .gacha-stage { position: relative; width: 100%; height: 100%; min-height: 260px; display: grid; place-items: center; }
 .gacha-hint { position: absolute; bottom: 8%; margin: 0; font-weight: 700; color: #b2557a; letter-spacing: .1em; animation: hint-blink 1.2s ease-in-out infinite; }
 @keyframes hint-blink { 50% { opacity: .45; } }
-.capsule { position: relative; width: 120px; height: 120px; filter: drop-shadow(0 8px 14px rgb(160 60 100 / .3)); }
-.capsule.big { width: 150px; height: 150px; }
-.cap-top, .cap-bottom { position: absolute; left: 0; right: 0; height: 50%; transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); }
-.cap-top { top: 0; border-radius: 999px 999px 0 0; background: radial-gradient(circle at 35% 30%, #ffe1ec, #ff8fb4 60%, #e8608d); }
-.cap-bottom { bottom: 0; border-radius: 0 0 999px 999px; background: radial-gradient(circle at 40% 10%, #fff, #f6eef2 70%, #e2d2da); }
-.cap-band { position: absolute; left: -2%; right: -2%; top: 46%; height: 8%; border-radius: 4px; background: linear-gradient(#fff7d6, #f1c766); z-index: 1; }
-.cap-shine { position: absolute; left: 18%; top: 12%; width: 22%; height: 16%; border-radius: 50%; background: rgb(255 255 255 / .75); transform: rotate(-30deg); }
-.capsule.rare .cap-top { background: conic-gradient(from 0deg, #ff9fc0, #ffd27a, #b8ecff, #d9c8ff, #ff9fc0); }
-.capsule.shaking { animation: cap-shake .32s ease-in-out infinite; }
-@keyframes cap-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg) translateX(-4px); } 75% { transform: rotate(12deg) translateX(4px); } }
-.capsule.glowing { filter: drop-shadow(0 0 14px #fff) drop-shadow(0 0 30px rgb(255 190 215 / .95)); }
-.capsule.rare.glowing { filter: drop-shadow(0 0 14px #fff) drop-shadow(0 0 30px rgb(255 214 120 / 1)) drop-shadow(0 0 50px rgb(190 210 255 / .9)); animation: cap-shake .26s ease-in-out infinite, rainbow-hue 1.2s linear infinite; }
-@keyframes rainbow-hue { to { filter: drop-shadow(0 0 14px #fff) drop-shadow(0 0 34px rgb(255 160 210 / 1)) drop-shadow(0 0 54px rgb(170 230 255 / .9)) hue-rotate(360deg); } }
-.capsule.open .cap-top { transform: translateY(-80%) rotate(-28deg); opacity: 0; transition: transform .45s ease-out, opacity .45s .15s; }
-.capsule.open .cap-bottom { transform: translateY(40%); opacity: 0; transition: transform .45s ease-out, opacity .45s .15s; }
-.capsule.open .cap-band, .capsule.open .cap-shine { opacity: 0; }
-.gacha-flash { position: absolute; left: 50%; top: 50%; width: 80px; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, #fff 0%, rgb(255 236 245 / .9) 40%, transparent 70%); animation: g-flash .8s ease-out forwards; }
-.gacha-flash.rare { background: radial-gradient(circle, #fff 0%, rgb(255 236 180 / .95) 35%, rgb(200 220 255 / .6) 55%, transparent 72%); }
-@keyframes g-flash { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(9); opacity: 0; } }
-.g-spark { position: absolute; width: 16px; aspect-ratio: 1; translate: -50% -50%; background: #fff6c8; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: g-spark 1.1s ease-out forwards; }
-@keyframes g-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
-.g-burst { position: absolute; left: 50%; top: 50%; width: 10px; aspect-ratio: 1; border-radius: 50%; box-shadow: 0 0 8px #fff; animation: g-burst 1.2s cubic-bezier(.2, .8, .3, 1) forwards; }
-@keyframes g-burst { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); opacity: 0; } }
-
 .gacha-results { width: 100%; max-width: 520px; max-height: 72vh; overflow-y: auto; padding: 8px 6px; text-align: center; }
 .gacha-anim:has(.gacha-results:not([hidden])) { grid-template-rows: 0 1fr auto; }
 .g-result-title { margin: 6px 0 12px; font-size: 22px; color: #c2507d; text-shadow: 0 2px 0 #fff; letter-spacing: .06em; }
@@ -1383,9 +1338,109 @@ body.gacha-open { overflow: hidden; }
 .g-card-sub { font-size: 11px; color: var(--muted); }
 .g-result-grid.multi .g-card-sub { font-size: 9px; }
 /* ピックアップのチャームは、金と虹のふち＋光 */
-.g-card.pickup { background: linear-gradient(#fff, #fff7e4); box-shadow: 0 0 0 2px #f3cf7a, 0 0 14px rgb(255 214 120 / .8); }
-.g-card.pickup::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .8) 48%, transparent 60%) no-repeat; background-size: 300% 100%; animation: shimmer-occasional 3s ease-in-out infinite; pointer-events: none; }
+.g-card.r-pickup { background: linear-gradient(#fff, #fff7e4); box-shadow: 0 0 0 2px #f3cf7a, 0 0 14px rgb(255 214 120 / .8); }
+.g-card.r-pickup::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .8) 48%, transparent 60%) no-repeat; background-size: 300% 100%; animation: shimmer-occasional 3s ease-in-out infinite; pointer-events: none; }
 .g-new { position: absolute; top: -6px; left: -4px; z-index: 1; padding: 1px 7px; border-radius: 999px; background: linear-gradient(90deg, #ff6f9f, #ffaa5c); color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 2px 4px rgb(200 80 120 / .35); animation: new-color-pop .7s cubic-bezier(.2, 1.6, .4, 1) both; }
 .g-result-grid.multi .g-new { font-size: 9px; padding: 0 5px; }
 .g-result-note { margin: 10px 0 0; font-size: 12px; color: #8d6070; }
 #gacha-anim-ok { margin-top: 14px; min-width: 180px; }
+
+/* ---------- ガチャのタブ ---------- */
+.g-tabs { display: flex; gap: 6px; margin-bottom: 10px; padding: 4px; border-radius: 999px; background: rgb(255 255 255 / .7); box-shadow: 0 1px 3px rgb(180 80 120 / .12); }
+.g-tabs[hidden] { display: none; }
+.g-tab { flex: 1; min-height: 42px; border: 0; border-radius: 999px; background: none; color: var(--muted); font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+.g-tab[aria-selected="true"] { color: #fff; box-shadow: 0 2px 6px rgb(200 80 120 / .3); }
+.g-tab-wanko[aria-selected="true"] { background: linear-gradient(90deg, #d9a77d, #f0a5b9); }
+.g-tab-ballet[aria-selected="true"] { background: linear-gradient(90deg, #f28db0, #c7a6f0); }
+.g-tab-basic[aria-selected="true"] { background: linear-gradient(90deg, #f28db0, #ffb86b); }
+.g-banner-basic { background: linear-gradient(135deg, #fff0f6, #fde2ea); }
+.gacha-showcase { display: grid; place-items: center; height: 170px; margin: 4px auto; }
+.g-card.r-rare { background: linear-gradient(#fff, #f6f0ff); box-shadow: 0 0 0 2px #c9b0ff, 0 0 12px rgb(170 130 255 / .55); }
+.g-skip { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 14px; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: rgb(255 255 255 / .75); color: #b2557a; font-weight: 700; }
+.g-skip[hidden] { display: none; }
+
+/* ---------- 宝石箱（ガチャの演出） ----------
+   ふたが開く前に、すき間から光がもれる。色でレア度がわかる（ふつう＝ピンク・レア＝むらさき・ピックアップ＝虹色）
+   動きは「transform（動き・大きさ）」と「opacity（すける）」だけで、スマホでも軽く動く */
+.jb-wrap { display: grid; place-items: center; }
+.jb-wrap.multi { grid-template-columns: repeat(4, 72px); gap: 26px 14px; padding-top: 30px; }
+.jbox { --glow: 255 140 190; position: relative; width: 150px; height: 128px; animation: jb-in .55s cubic-bezier(.3, 1.5, .5, 1) var(--d, 0s) both; }
+.jb-wrap.multi .jbox { width: 72px; height: 62px; }
+.jbox.r-rare { --glow: 175 125 255; }
+.jbox.r-pickup { --glow: 255 200 120; }
+@keyframes jb-in { from { transform: translateY(40px) scale(.4); opacity: 0; } }
+.jbox > * { position: absolute; display: block; }
+.jb-glow {
+  left: -45%; right: -45%; top: -55%; bottom: -35%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 55%, rgb(var(--glow) / .85), rgb(var(--glow) / .35) 35%, transparent 65%);
+  animation: jb-pulse 1.4s ease-in-out infinite;
+}
+.jbox.r-pickup .jb-glow { background: conic-gradient(from 0deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff, #ff9fc0); -webkit-mask-image: radial-gradient(circle at 50% 55%, #000 10%, transparent 62%); mask-image: radial-gradient(circle at 50% 55%, #000 10%, transparent 62%); opacity: .85; animation: jb-pulse 1.4s ease-in-out infinite, jb-spin 4s linear infinite; }
+@keyframes jb-pulse { 50% { scale: 1.12; opacity: .7; } }
+@keyframes jb-spin { to { rotate: 360deg; } }
+.jb-rays {
+  left: -60%; right: -60%; top: -110%; bottom: 10%;
+  background: repeating-conic-gradient(from 0deg at 50% 100%, rgb(255 255 255 / .85) 0deg 6deg, transparent 6deg 18deg);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 100%, #000 15%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 50% 100%, #000 15%, transparent 70%);
+  opacity: 0; transform: scaleY(.2); transform-origin: 50% 100%;
+  transition: opacity .5s, transform .9s cubic-bezier(.2, .8, .3, 1);
+}
+.jb-charm {
+  left: 50%; bottom: 28%; width: 66%; height: auto; max-width: none;
+  transform: translate(-50%, 10%) scale(.3); opacity: 0;
+  transition: transform 1.1s cubic-bezier(.2, .9, .3, 1.15) .25s, opacity .4s .25s;
+  filter: drop-shadow(0 0 6px rgb(255 255 255 / .95));
+}
+.jb-base {
+  left: 4%; right: 4%; bottom: 0; height: 58%;
+  border-radius: 10px 10px 16px 16px;
+  background: linear-gradient(160deg, #fff4f8 0%, #f9cfdf 45%, #efadc6 100%);
+  box-shadow: inset 0 0 0 2.5px #e9c682, inset 0 -8px 0 rgb(170 70 110 / .1), 0 6px 12px rgb(150 60 100 / .25);
+}
+.jb-gem {
+  position: absolute; left: 50%; top: 52%; width: 16%; aspect-ratio: 1; translate: -50% -50%; rotate: 45deg;
+  border-radius: 3px; background: linear-gradient(135deg, #fff, #ffc2d8 45%, #e0709b); box-shadow: 0 0 0 2px #e9c682;
+}
+.jb-seam { left: 6%; right: 6%; top: 40%; height: 5%; border-radius: 4px; background: rgb(var(--glow)); box-shadow: 0 0 10px 3px rgb(var(--glow) / .9); opacity: .9; animation: jb-seam 1s ease-in-out infinite; }
+.jbox.r-pickup .jb-seam { background: linear-gradient(90deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff); }
+@keyframes jb-seam { 50% { opacity: .55; } }
+.jb-lid {
+  left: 0; right: 0; top: 18%; height: 26%;
+  border-radius: 16px 16px 6px 6px;
+  background: linear-gradient(170deg, #fffafc 0%, #fbd9e6 50%, #f3b7cd 100%);
+  box-shadow: inset 0 0 0 2.5px #e9c682, inset 0 3px 0 rgb(255 255 255 / .8), 0 3px 6px rgb(150 60 100 / .2);
+  transform-origin: 50% 0;
+  transition: transform 1s cubic-bezier(.4, .1, .3, 1), opacity .6s .5s;
+}
+.jb-ribbon-v { left: 44%; width: 12%; top: 18%; bottom: 0; background: linear-gradient(90deg, #f06d9b, #ff9fbf 50%, #f06d9b); transform-origin: 50% 0; transition: transform .45s ease-in, opacity .45s; }
+.jb-ribbon-h { left: 0; right: 0; top: 27%; height: 9%; background: linear-gradient(#f06d9b, #ff9fbf 50%, #f06d9b); transition: transform .45s ease-in, opacity .45s; }
+.jb-bow { left: 50%; top: 2%; width: 46%; height: 26%; translate: -50% 0; }
+.jb-bow i, .jb-bow b { position: absolute; transition: transform .5s cubic-bezier(.4, 0, .6, 1), opacity .5s; }
+.jb-bow i { top: 0; width: 46%; height: 100%; border: 3.5px solid #f06d9b; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: rgb(255 170 200 / .55); }
+.jb-wrap.multi .jb-bow i { border-width: 2px; }
+.jb-bow i:first-child { left: 2%; rotate: -24deg; }
+.jb-bow i:nth-child(2) { right: 2%; rotate: 24deg; }
+.jb-bow b { left: 50%; top: 35%; width: 20%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: #e8558a; box-shadow: inset 0 1px 0 rgb(255 255 255 / .5); }
+/* リボンがほどける */
+.jbox.untie .jb-bow i:first-child { transform: translate(-70%, -60%) rotate(-50deg) scale(.6); opacity: 0; }
+.jbox.untie .jb-bow i:nth-child(2) { transform: translate(70%, -60%) rotate(50deg) scale(.6); opacity: 0; }
+.jbox.untie .jb-bow b { transform: scale(0); opacity: 0; }
+.jbox.untie .jb-ribbon-v { transform: scaleY(0); opacity: 0; }
+.jbox.untie .jb-ribbon-h { transform: scaleX(0); opacity: 0; }
+/* フタがゆっくり開いて、光があふれ、チャームがふわっと浮かぶ */
+.jbox.open .jb-lid { transform: translateY(-60%) perspective(260px) rotateX(78deg); opacity: .0; }
+.jbox.open .jb-seam { opacity: 0; animation: none; }
+.jbox.open .jb-rays { opacity: 1; transform: scaleY(1); }
+.jbox.open .jb-glow { scale: 1.5; }
+.jbox.open .jb-charm { transform: translate(-50%, -78%) scale(1); opacity: 1; animation: jb-float 2.4s ease-in-out 1.4s infinite; }
+.jb-wrap.multi .jbox.open .jb-charm { width: 90%; transform: translate(-50%, -70%) scale(1); }
+@keyframes jb-float { 50% { translate: 0 -6px; } }
+/* 待っているあいだの宝石箱（ガチャ画面の飾り） */
+.jbox.idle { animation: jb-idle 3s ease-in-out infinite; }
+@keyframes jb-idle { 50% { transform: translateY(-5px); } }
+.gacha-stage .gacha-hint { bottom: 10%; }
+.g-spark { position: absolute; width: 16px; aspect-ratio: 1; translate: -50% -50%; background: #fff6c8; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: g-spark 1.1s ease-out forwards; pointer-events: none; }
+@keyframes g-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
+.jb-wrap.multi .jbox.open .jb-charm { width: 80%; }
