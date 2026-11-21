@@ -219,7 +219,9 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       if (isLong) base = Math.max(base, len.drop * (s.list.length > 1 ? 0.6 : 1), minDrop);
       // 瓶ごとに、リボンをつけたときの長さを決めているとき（js/bigbottles.js の ribbonDrops）：リボンの下のはしから数える
       if (ribbonId && bottle.ribbonDrops) {
-        base = Math.max(0, ribbonClear - p.y - extra) + (bottle.ribbonDrops[chainAt[s.key]] ?? bottle.ribbonDrops.normal);
+        // 数えはじめは、首に巻いたリボンの帯の下のふち（bottle.ribbonLine：瓶の高さの%）
+        const line = bottle.ribbonLine != null ? Y(bottle.ribbonLine) : ribbonClear;
+        base = Math.max(0, line - p.y - extra) + (bottle.ribbonDrops[chainAt[s.key]] ?? bottle.ribbonDrops.normal);
         minDrop = base; // チェーンは短くしない（瓶に入らないときは、チャームを小さくする）
       }
       // 瓶の底からはみ出しそうなら、まずいちばん上のチェーンを短くして、それでもだめなら小さくする
