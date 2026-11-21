@@ -109,7 +109,8 @@ function chainAtOf(b) {
 const STACK_SCALE = { 2: 0.9, 3: 0.8 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
 const STACK_DROP = { 2: 0.7, 3: 0.45 }; // ★ 縦につなげたときの、いちばん上のチェーンの長さ（1個のときを1として）
 const MIN_DROP = 2.5; // いちばん上のチェーンの、いちばん短い長さ
-const LINK_GAP = 3.2; // 縦につなげるときの、チャームとチャームのあいだの短いチェーン（瓶の横幅の%）
+const LINK_GAP = 3.2;
+const RIBBON_KNOT = 0.3; // リボンの結び目の下のはし（帯の位置から、リボンの絵の高さの何割下か） // 縦につなげるときの、チャームとチャームのあいだの短いチェーン（瓶の横幅の%）
 
 function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
@@ -171,6 +172,17 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
 
   // ---------- 首に巻いた細いチェーンと、そこから下がるチャーム ----------
   // 座標は「瓶の幅を100」としたもの（縦も同じ目もりなので、チェーンの輪がつぶれない）
+  // リボンの結び目の下のはし（目もり）。チャームはここより下に下げる
+  let ribbonClear = 0;
+  {
+    const rc = ribbonId && charmById(ribbonId);
+    if (rc && rc.band && bottle.waist) {
+      const [, by, bw] = rc.band;
+      const w = bottle.waist[1] / bw;
+      const hPct = (w / k) * (rc.h / rc.w); // リボンの絵の高さ（瓶の高さの%）
+      ribbonClear = ((topAt(rc, w, by, bottle.waist[0]) + hPct * Math.min(1, by + RIBBON_KNOT)) * 100 * k) / 100;
+    }
+  }
   let svg = "";
   if (cols.length) {
     const H = 100 * k;                         // 瓶の高さ（幅100の目もりで）
@@ -200,7 +212,8 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       const len = CHAIN_LENGTHS[chainAt[s.key]] || CHAIN_LENGTHS.normal; // チェーンの長さ（場所ごとに選べる）
       // チェーンの長さ：縦につなげるときは、いちばん上のチェーンを短めに（STACK_DROP）
       let base = len.drop * (STACK_DROP[s.list.length] || 1) + (!s.side && cols.length === 3 ? 3 : 0);
-      const extra = ribbonId ? bottle.charmDrop || 0 : 0; // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
+      // リボンをつけているときは、チャームがリボンの結び目にかくれないように、その下から下げる（細長い瓶は charmDrop でさらに下げる）
+      const extra = ribbonId ? Math.max(bottle.charmDrop || 0, ribbonClear - p.y) : 0;
       // 瓶の底からはみ出しそうなら、まずいちばん上のチェーンを短くして、それでもだめなら小さくする
       const height = () => s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
       const bottomLimit = Y(bottle.bottom) - 3;
