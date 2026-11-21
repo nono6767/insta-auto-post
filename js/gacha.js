@@ -31,7 +31,6 @@ const GACHA = {
   multiCount: 11,      // 11連で出る数
   freePerDay: 1,       // 1日に無料でひける回数
   pickupRate: 0.5,     // ピックアップ中のシリーズが出る確率（0.5 ＝ 50%）
-  endedWeight: 0.15,   // ピックアップが終わったシリーズのチャームの出やすさ（ベーシックを1としたとき）
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
   ribbonCostOne: 1,    // リボンのガチャ：1回ひくのに使うコイン
   ribbonCostMulti: 5,  // リボンのガチャ：11連に使うコイン（チャームより安く）
@@ -265,15 +264,14 @@ function drawCharm(gacha, forcePickup = false) {
   if (gacha.cat === "ribbon") return { charm: pickByGrade(poolOf(gacha)), pickup: true }; // リボンのピックアップは、そのリボンだけ
   const pickupPool = gacha.series ? poolOf(gacha) : [];
   if (pickupPool.length && (forcePickup || Math.random() < GACHA.pickupRate)) return { charm: pickByGrade(pickupPool), pickup: true };
-  // ふつうの中身：ベーシックライン ＋ 期間が終わったシリーズ（ひくい確率）
+  // そのほかの中身：ピックアップが終わったシリーズ（ベーシック＝最初から持っているものは出ない）
   const ended = endedSeries();
   const pool = [];
   for (const c of CHARMS) {
-    const s = seriesOf(c);
     if (isRibbon(c)) continue; // チャームのガチャには、リボンは入れない
-    if (s === "basic") pool.push([c, 1]);
-    else if (ended.has(s)) pool.push([c, GACHA.endedWeight * gradeWeight(c)]);
+    if (ended.has(seriesOf(c))) pool.push([c, gradeWeight(c)]);
   }
+  if (!pool.length) return { charm: pickByGrade(pickupPool), pickup: true }; // まだ終わったシリーズがないときは、ピックアップから
   let r = Math.random() * pool.reduce((t, [, w]) => t + w, 0);
   for (const [c, w] of pool) if ((r -= w) <= 0) return { charm: c, pickup: false };
   return { charm: pool[pool.length - 1][0], pickup: false };
@@ -491,7 +489,7 @@ function drawGachaScreen() {
       : ribbonMode
       ? `<li>${SERIES[gacha.series]?.name || ""}のリボンだけが出るよ</li>`
       : `<li>${SERIES[gacha.series]?.name || ""} <b>${Math.round(GACHA.pickupRate * 100)}%</b>（11連は1個以上確定）</li>
-    <li>そのほか <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b></li>`}
+    <li>これまでのシリーズ <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b></li>`}
     <li>SR・Rは出にくい ／ かぶったら かけら+${GACHA.shardPerDup}</li>`;
   $("g-earn").innerHTML = `
     <li>ノルマ達成 <b>+${COIN_RULES.quota}</b>（そのあと${COIN_RULES.overMin}分ごとに <b>+${COIN_RULES.over}</b>）</li>

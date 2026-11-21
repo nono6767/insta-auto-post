@@ -125,6 +125,20 @@ const SERIES_LIST = [
   },
 
   {
+    // ドン・キホーテのリボン（公開ずみ。いろいろリボンで引ける）
+    id: "qribbon",
+    type: "ribbon",
+    name: "情熱のドン・キホーテリボン",
+    gachaName: "ドン・キホーテリボン",
+    catch: "キトリの情熱をまとう、深紅のリボン",
+    color: "#c9575a",
+    pickups: [{ start: "2026-11-13", end: "2026-11-19" }],
+    charms: [
+      { id: "f10", name: "キトリの黒レースリボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2, kind: "ribbon", grade: "rare" },
+      { id: "f11", name: "ドゥルシネアの金刺繍リボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16, kind: "ribbon", grade: "rare" },
+    ],
+  },
+  {
     // リボンのシリーズ（type: "ribbon"）：ガチャ画面の「リボン」のほうに出る。チャームのガチャには入らない
     id: "vribbon",
     type: "ribbon",

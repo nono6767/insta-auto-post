@@ -65,8 +65,6 @@ const CHARMS = [
   { id: "e10", name: "ハートのアンティークかぎ", w: 79, h: 200, place: "hang" },
   { id: "e11", name: "レースリボン", w: 160, h: 139, place: "neck", pw: 58, pa: 0.21, kind: "ribbon" },
   // スペインのチャーム（追加）
-  { id: "f10", name: "黒レースの赤リボン", w: 154, h: 160, place: "neck", pw: 60, pa: 0.2, kind: "ribbon" },
-  { id: "f11", name: "金もようの赤リボン", w: 107, h: 160, place: "neck", pw: 54, pa: 0.16, kind: "ribbon" },
   // パステルのリボン（ベーシック・最初から持っている）
   { id: "j00", name: "そらいろリボン", w: 160, h: 126, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
   { id: "j01", name: "さくらリボン", w: 160, h: 128, place: "neck", pw: 56, pa: 0.25, kind: "ribbon" },
