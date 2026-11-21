@@ -1736,3 +1736,8 @@ body.gacha-open { overflow: hidden; }
   90% { opacity: 1; scale: 1; }
   94% { opacity: 0; scale: .6; }
 }
+/* 公開ずみのシリーズ（復刻したときのバナーとタブ） */
+.g-banner-rosegarden { background: linear-gradient(135deg, #fff5f7, #f9d3dd 55%, #e9f1dc); }
+.g-banner-quixote { background: linear-gradient(135deg, #fff4ea, #f6c9b8 55%, #e9a7a5); }
+.g-tab-rosegarden[aria-selected="true"] { background: linear-gradient(90deg, #e79ab0, #a9c98f); }
+.g-tab-quixote[aria-selected="true"] { background: linear-gradient(90deg, #c9575a, #e7a35b); }
