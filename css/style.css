@@ -1826,3 +1826,6 @@ body.gacha-open { overflow: hidden; }
 /* 宝石箱の飾りは、どのガチャでも出さない（引いたときの演出はそのまま） */
 .gacha-screen .gacha-showcase { display: none; }
 .gacha-screen .gacha-buttons { margin-top: 10px; }
+/* 写真が1枚だけのとき：1枚を見る・消す */
+.compare.single .compare-grid { grid-template-columns: 1fr; }
+.compare.single .compare-col:last-child { display: none; }

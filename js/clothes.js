@@ -6,10 +6,10 @@
 // =========================================================
 
 // 写真は見くらべ画面でも縦320pxくらいでしか出ないので、その2倍くらいの大きさで保存する
-const PHOTO_MAX_PX = 800;         // 写真の長い辺をこの大きさまで小さくして保存
-const PHOTO_JPEG_QUALITY = 0.72;  // JPEG の画質（iPhone はこちら）
-const PHOTO_WEBP_QUALITY = 0.7;   // WebP の画質（WebP で保存できるスマホはこちら。さらに軽い）
-const PHOTO_SIZE_VERSION = 2;     // 前の設定で保存した写真を小さくし直したかの目印
+const PHOTO_MAX_PX = 640;         // 写真の長い辺をこの大きさまで小さくして保存
+const PHOTO_JPEG_QUALITY = 0.62;  // JPEG の画質（iPhone はこちら）
+const PHOTO_WEBP_QUALITY = 0.6;   // WebP の画質（WebP で保存できるスマホはこちら。さらに軽い）
+const PHOTO_SIZE_VERSION = 3;     // 前の設定で保存した写真を小さくし直したかの目印
 
 // ---------- 写真の保存場所（IndexedDB） ----------
 
@@ -247,7 +247,8 @@ async function renderClothes() {
       ? `前回：${shortDateLong(photos[0].date)}（写真${photos.length}枚）${done ? "・今月チェック済み" : ""}`
       : "写真を撮ってみよう";
     const compareBtn = card.querySelector('[data-act="compare"]');
-    compareBtn.disabled = photos.length < 2;
+    compareBtn.disabled = photos.length < 1;
+    if (photos.length === 1) compareBtn.textContent = "写真を見る"; // 1枚だけのときも、見る・消すができる
     compareBtn.addEventListener("click", () => openCompare(c, photos));
     card.querySelector('[data-act="shoot"]').addEventListener("click", () => takePhoto(c));
     card.querySelector(".fix-btn").addEventListener("click", () => openClothModal(c));
@@ -303,7 +304,9 @@ function openCompare(cloth, photos) {
   const options = photos.map((p, i) => `<option value="${i}">${shortDateLong(p.date)}${i === 0 ? "（今回）" : i === 1 ? "（前回）" : ""}</option>`).join("");
   $("compare-left").innerHTML = options;
   $("compare-right").innerHTML = options;
-  $("compare-left").value = "1";   // 左：前回
+  const single = photos.length < 2; // 1枚だけのときは、1枚を大きく（右がわはかくす）
+  document.querySelector("#compare-modal .compare").classList.toggle("single", single);
+  $("compare-left").value = single ? "0" : "1";   // 左：前回
   $("compare-right").value = "0";  // 右：今回
   showComparePhotos();
   $("compare-modal").hidden = false;
