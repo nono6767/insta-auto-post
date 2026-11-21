@@ -363,9 +363,9 @@ function drawGachaScreen() {
     el.style.setProperty("--c", sr.color || "#e8a3b8");
     el.innerHTML = `
       <button class="g-notice-strip" type="button" aria-expanded="${open}">
-        <span class="g-notice-tag">${p.revival ? "復刻予告" : "予告"}</span>
+        <span class="g-notice-tag">予告</span>
         <b class="g-notice-days">${n === 1 ? "明日から！" : `あと${n}日`}</b>
-        <span class="g-notice-name"></span>
+        <span class="g-notice-kind ${p.revival ? "revival" : "new"}">${p.revival ? "復刻" : "新"}</span><span class="g-notice-name"></span>
         <span class="g-notice-arrow" aria-hidden="true">▾</span>
       </button>
       ${sr.catch ? `<p class="g-notice-catch"></p>` : ""}
