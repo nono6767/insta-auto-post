@@ -115,9 +115,9 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
   const [nx, ny] = bottle.neck;
   const charms = ids.map(charmById).filter(Boolean);
-  const img = (c, cls, left, top, width) =>
+  const img = (c, cls, left, top, width, ring = null) =>
     `<img class="charm ${cls}" src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}"
-      style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;width:${width.toFixed(1)}%;aspect-ratio:${c.w}/${c.h}">`;
+      style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;width:${width.toFixed(1)}%;aspect-ratio:${c.w}/${c.h}${ring != null && ring !== 0.5 ? `;transform-origin:${(ring * 100).toFixed(0)}% 0` : ""}">`;
   // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
   const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
 
@@ -220,7 +220,9 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       paths += ring(p.x, p.y);
       s.list.forEach((c, i) => {
         const top = y - 0.006 * H; // 絵の上のはし（目もり）
-        front += img(c, "hang", x, (y / H) * 100 - 0.6, widths[i]);
+        // マルカン（上の輪）がチェーンの先に来るように、ずらす（js/series.js の ring）
+        const r = c.ring ?? 0.5;
+        front += img(c, "hang", x + (0.5 - r) * widths[i], (y / H) * 100 - 0.6, widths[i], r);
         if (i < s.list.length - 1) {
           // 下のはしから、短いチェーンで次のチャームへ
           const bottom = top + widths[i] * (c.h / c.w);
