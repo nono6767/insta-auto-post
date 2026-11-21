@@ -202,6 +202,7 @@ const upcomingPickups = () => {
 const daysUntil = (start) => Math.round((Date.parse(start) - Date.parse(dateKey())) / 86400000);
 const daysLeft = (end) => Math.round((Date.parse(end) - Date.parse(dateKey())) / 86400000) + 1; // 今日をふくめて、あと何日
 let gachaTab = null; // 選んでいるガチャの id
+const noticeOpen = new Set(); // くわしい予告を開いているもの
 const currentGacha = () => {
   const list = openGachas();
   return list.find((g) => g.id === gachaTab) || list[0];
@@ -347,23 +348,41 @@ function drawGachaScreen() {
       <p class="g-banner-sub">${pool.length ? "ピックアップが終わったシリーズが、ぜんぶ入っているよ" : "ピックアップが終わったシリーズが、ここに入るよ。お楽しみに！"}</p>
       ${groups.join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
   }
-  // 予告：もうすぐ始まるピックアップ（チャームはシルエットで、ちらっと見せる）
+  // 予告：いちばん上の細い帯。シルエットが横に流れる。タップすると、くわしい予告が開く
   const notice = $("g-notice");
   notice.replaceChildren();
-  // いろいろガチャのタブには出さない（ピックアップガチャのタブだけ）
-  for (const p of gacha.mix ? [] : upcomingPickups()) {
+  for (const p of upcomingPickups()) {
     const sr = SERIES[p.series];
     const lineup = CHARMS.filter((c) => seriesOf(c) === p.series);
     const n = daysUntil(p.start);
+    const imgs = lineup.map((c) => (p.revival ? `<img src="${charmSrc(c)}" alt="" loading="lazy">` : `<img class="silhouette" src="${charmSrc(c)}" alt="" loading="lazy">`)).join("");
+    const key = p.series + p.start;
+    const open = noticeOpen.has(key);
     const el = document.createElement("section");
-    el.className = "g-notice";
+    el.className = "g-notice" + (open ? " open" : "");
     el.style.setProperty("--c", sr.color || "#e8a3b8");
     el.innerHTML = `
-      <p class="g-notice-tag">${p.revival ? "復刻予告" : "ピックアップ予告"}</p>
-      <h3 class="g-notice-title">${sr.name}</h3>
-      <p class="g-notice-date"><b>${n === 1 ? "明日から！" : `あと${n}日`}</b>（${shortDate(p.start)}〜${shortDate(p.end)}）</p>
-      ${sr.catch ? `<p class="g-notice-sub">${sr.catch}</p>` : ""}
-      <div class="g-notice-lineup">${lineup.map((c) => (p.revival ? `<img src="${charmSrc(c)}" alt="${c.name}" loading="lazy">` : `<img class="silhouette" src="${charmSrc(c)}" alt="" loading="lazy">`)).join("")}</div>`;
+      <button class="g-notice-strip" type="button" aria-expanded="${open}">
+        <span class="g-notice-tag">${p.revival ? "復刻予告" : "予告"}</span>
+        <b class="g-notice-days">${n === 1 ? "明日から！" : `あと${n}日`}</b>
+        <span class="g-notice-name"></span>
+        <span class="g-notice-arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="g-notice-flow" aria-hidden="true"><div class="g-notice-track" style="--n:${lineup.length}">${imgs}${imgs}</div></div>
+      <div class="g-notice-detail"${open ? "" : " hidden"}>
+        <h3 class="g-notice-title"></h3>
+        <p class="g-notice-date">${shortDate(p.start)}〜${shortDate(p.end)}　${p.revival ? "もう一度会えるよ" : "なにが出るかは、始まってからのお楽しみ"}</p>
+        ${sr.catch ? `<p class="g-notice-sub"></p>` : ""}
+        <div class="g-notice-lineup">${imgs}</div>
+      </div>`;
+    el.querySelector(".g-notice-name").textContent = sr.name;
+    el.querySelector(".g-notice-title").textContent = sr.name;
+    if (sr.catch) el.querySelector(".g-notice-sub").textContent = sr.catch;
+    el.querySelector(".g-notice-strip").addEventListener("click", () => {
+      if (noticeOpen.has(key)) noticeOpen.delete(key);
+      else noticeOpen.add(key);
+      drawGachaScreen();
+    });
     notice.append(el);
   }
   // ボタン

@@ -1624,19 +1624,30 @@ body.gacha-open { overflow: hidden; }
 
 /* ---------- ピックアップの予告 ---------- */
 .g-notice {
-  position: relative; margin-bottom: 12px; padding: 12px 14px; border-radius: 18px;
-  border: 2px dashed color-mix(in srgb, var(--c, #e8a3b8) 70%, #fff);
+  position: relative; margin: 2px 0 8px; padding: 6px 10px 6px; border-radius: 16px;
+  border: 1.5px dashed color-mix(in srgb, var(--c, #e8a3b8) 70%, #fff);
   background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--c, #e8a3b8) 18%, #fff));
-  color: #5a3442;
+  color: #5a3442; overflow: hidden;
 }
-.g-notice-tag { display: inline-block; margin: 0; padding: 1px 10px; border-radius: 999px; background: #5a3442; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
-.g-notice-title { margin: 6px 0 0; font-size: 18px; }
+.g-notice-strip { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 30px; padding: 0; border: 0; background: none; color: inherit; text-align: left; }
+.g-notice-tag { flex: none; display: inline-block; margin: 0; padding: 1px 8px; border-radius: 999px; background: #5a3442; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.g-notice-days { flex: none; font-size: 12px; color: #e0668f; }
+.g-notice-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
+.g-notice-arrow { flex: none; font-size: 12px; color: #8d6070; transition: rotate .2s; }
+.g-notice.open .g-notice-arrow { rotate: 180deg; }
+/* シルエットが、ゆっくり横に流れる */
+.g-notice-flow { overflow: hidden; margin-top: 2px; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.g-notice-track { display: flex; gap: 8px; width: max-content; animation: notice-flow calc(var(--n, 8) * 3s) linear infinite; }
+.g-notice-track img { flex: none; width: 30px; height: 30px; object-fit: contain; }
+@keyframes notice-flow { to { transform: translateX(calc(-50% - 4px)); } }
+.g-notice.open .g-notice-flow { display: none; }
+.g-notice-detail[hidden] { display: none; }
+.g-notice-title { margin: 6px 0 0; font-size: 17px; }
 .g-notice-date { margin: 2px 0 0; font-size: 12px; color: #8d6070; }
-.g-notice-date b { color: #e0668f; }
 .g-notice-sub { margin: 2px 0 0; font-size: 12px; color: #8d6070; }
-.g-notice-lineup { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+.g-notice-lineup { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .g-notice-lineup img { flex: none; width: 44px; height: 44px; object-fit: contain; }
-.g-notice-lineup img.silhouette { filter: brightness(0) opacity(.35); }
+.g-notice img.silhouette { filter: brightness(0) opacity(.35); }
 
 /* チェーンの長さ */
 .chain-rows { display: grid; gap: 4px; margin: 0 0 8px; padding: 8px 10px; border-radius: 14px; background: #fdf3f7; text-align: left; }
