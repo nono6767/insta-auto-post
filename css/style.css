@@ -1819,3 +1819,7 @@ body.gacha-open { overflow: hidden; }
 .g-banner-vribbon { background: linear-gradient(135deg, #fff7fa, #fbe0ea 55%, #f1e6d2); }
 .g-notice-extra { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: #8d6070; letter-spacing: .02em; }
 .g-notice-extra b { color: #6b3e52; font-weight: 700; }
+/* 貯金瓶の着せ替えボタン（右上。瓶のタップとは別） */
+.savings-hero { position: relative; }
+.savings-deco-btn { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / .9); color: var(--rose); font-size: 12px; font-weight: 700; box-shadow: 0 1px 3px rgb(180 80 120 / .12); }
+.savings-deco-btn::before { content: "🎀"; font-size: 13px; }

@@ -726,8 +726,8 @@ function openCharmPicker(b, justEvolved = false) {
   ribbonChoice = ribbonOf(b);
   charmTab = "charm";
   pickNote = "";
-  $("charm-title").textContent = justEvolved ? "チャームとリボンを選んでつけよう" : "チャームとリボンを付け替える";
-  $("charm-sub").textContent = `${shortDate(b.date)}に進化した大瓶`;
+  $("charm-title").textContent = b.savings ? "貯金瓶の着せ替え" : justEvolved ? "チャームとリボンを選んでつけよう" : "チャームとリボンを付け替える";
+  $("charm-sub").textContent = b.savings ? "貯金瓶" : `${shortDate(b.date)}に進化した大瓶`;
   drawCharmGrid();
   updateCharmPreview();
   $("charm-modal").hidden = false;
@@ -935,7 +935,8 @@ function drawPlacePanel() {
   }
 }
 $("charm-save").addEventListener("click", () => {
-  const b = (data.bigBottles || []).find((x) => x.id === charmTarget.id);
+  // 貯金瓶のときは data.savings.deco に、大瓶のときはその大瓶に記録する
+  const b = charmTarget.savings ? savingsDeco() : (data.bigBottles || []).find((x) => x.id === charmTarget.id);
   const all = allChoice();
   if (b) {
     b.charms = all;
@@ -949,7 +950,8 @@ $("charm-save").addEventListener("click", () => {
   }
   saveData();
   $("charm-modal").hidden = true;
-  drawShelf();
+  if (charmTarget.savings) renderSavingsJar();
+  else drawShelf();
   const parts = [all.length ? `チャームを${all.length}個` : "", ribbonChoice ? "リボン" : ""].filter(Boolean);
   showToast(parts.length ? `${parts.join("と")}をつけたよ` : "飾りをはずしたよ");
 });

@@ -79,7 +79,7 @@ function ensureGacha() {
     g.overStart = today;
   }
   // すでに大瓶につけているチャームは、持っているものとして扱う
-  for (const b of data.bigBottles || []) {
+  for (const b of [...(data.bigBottles || []), ...(data.savings && data.savings.deco ? [data.savings.deco] : [])]) {
     for (const id of [...(b.charms || []), b.ribbon].filter(Boolean)) if (!g.owned.includes(id) && charmById(id) && isLimited(charmById(id)) && !isTrial(charmById(id))) g.owned.push(id);
   }
   return g;

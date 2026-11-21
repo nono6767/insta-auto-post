@@ -50,7 +50,7 @@ function loadMaskGrid() {
       resolve(maskGrid);
     };
     img.onerror = () => resolve(null);
-    img.src = `bottles/${SAVINGS_BOTTLE_ID}-mask.webp`;
+    img.src = `big/${SAVINGS_BOTTLE_ID}-mask.webp`;
   });
 }
 
@@ -102,10 +102,27 @@ function coinHtml(dep, slot, r, g, isNew) {
     style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%;width:${size.toFixed(2)}%;--tilt:${tilt}deg"></span>`;
 }
 
+// 貯金瓶の飾り（チャーム・リボン）。大瓶と同じ形 { charms, hang, chainAt, ribbon }
+function savingsDeco() {
+  const s = savings();
+  if (!s.deco) s.deco = { charms: [] };
+  return s.deco;
+}
+// 着せ替え：大瓶と同じ画面を開く
+function openSavingsDeco() {
+  if (typeof openCharmPicker !== "function") return;
+  const d = savingsDeco();
+  openCharmPicker({ ...d, id: SAVINGS_DECO_ID, bottle: SAVINGS_BOTTLE_ID, layers: [], flowers: 0, savings: true });
+}
+const SAVINGS_DECO_ID = "savings-jar";
+
 let lastCoinCount = null;
 async function renderSavingsJar() {
+  // 瓶とチャームのしくみ（js/bigbottles.js・js/shelf.js）を読みこんでから描く
+  if (typeof bigBottleById !== "function" || typeof charmsHtml !== "function") return void setTimeout(renderSavingsJar, 0);
   const s = savings();
-  const bottle = bottleById(SAVINGS_BOTTLE_ID);
+  // 瓶の絵は、大瓶の「まんまる」（チャームとリボンをつけられる形）。大きさは今までと同じ高さ270px
+  const bottle = bigBottleById(SAVINGS_BOTTLE_ID);
   const g = await loadMaskGrid();
   const deps = [...s.deposits].sort((a, b) => a.ts - b.ts);
   let coins = "";
@@ -118,12 +135,16 @@ async function renderSavingsJar() {
     });
   }
   lastCoinCount = deps.length;
-  const mask = `url(bottles/${bottle.id}-mask.webp)`;
+  const mask = `url(big/${bottle.id}-mask.webp)`;
   // 幅もピクセルで指定しておく（iPhone の Safari で幅が0になって瓶が見えなくなるのを防ぐ）
   const jarWidth = ((270 * bottle.w) / bottle.h).toFixed(1);
-  $("savings-jar").innerHTML = `<div class="bottle" style="aspect-ratio:${bottle.w}/${bottle.h};width:${jarWidth}px" role="img" aria-label="貯金瓶（コイン${deps.length}枚）">
+  // チャームとリボン（大瓶と同じしくみ。記録は data.savings.deco）
+  const deco = savingsDeco();
+  const ch = typeof charmsHtml === "function" ? charmsHtml(bottle, charmsOf(deco), ribbonOf(deco), hangsOf(deco), chainAtOf(deco)) : { html: "", hasTop: false };
+  $("savings-jar").innerHTML = `<div class="bottle big-bottle savings-bottle" style="aspect-ratio:${bottle.w}/${bottle.h};width:${jarWidth}px" role="img" aria-label="貯金瓶（コイン${deps.length}枚）">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${coins}</div>
-    <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">
+    <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${ch.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
+    ${ch.html}
   </div>`;
 }
 
@@ -169,6 +190,10 @@ function bounceCoins() {
   });
 }
 $("savings-jar").addEventListener("click", bounceCoins);
+$("savings-deco").addEventListener("click", (e) => {
+  e.stopPropagation();
+  openSavingsDeco();
+});
 $("savings-jar").addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
