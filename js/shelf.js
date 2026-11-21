@@ -964,5 +964,21 @@ document.addEventListener("pagechange", (e) => {
     drawShelf();
   }
 });
+// 確認用に試しで使えたシリーズ（trial）を戻したとき：まだガチャで手に入れていないチャームは、大瓶からはずす
+const TRIAL_ENDED = ["versailles"];
+function removeTrialCharms() {
+  const owned = (data.gacha && data.gacha.owned) || [];
+  let changed = false;
+  for (const b of data.bigBottles || []) {
+    const keep = (id) => !(charmById(id) && TRIAL_ENDED.includes(charmById(id).series)) || owned.includes(id);
+    const ids = Array.isArray(b.charms) ? b.charms : [];
+    if (ids.every(keep)) continue;
+    b.charms = ids.filter(keep);
+    if (b.hang) for (const k in b.hang) b.hang[k] = (b.hang[k] || []).filter(keep);
+    changed = true;
+  }
+  if (changed) saveData();
+}
+removeTrialCharms();
 migrateRibbons();
 drawShelf();
