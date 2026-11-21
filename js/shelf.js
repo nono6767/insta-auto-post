@@ -212,13 +212,16 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       const len = CHAIN_LENGTHS[chainAt[s.key]] || CHAIN_LENGTHS.normal; // チェーンの長さ（場所ごとに選べる）
       // チェーンの長さ：縦につなげるときは、いちばん上のチェーンを短めに（STACK_DROP）
       let base = len.drop * (STACK_DROP[s.list.length] || 1) + (!s.side && cols.length === 3 ? 3 : 0);
-      // リボンをつけているときは、チャームがリボンの結び目にかくれないように、その下から下げる（細長い瓶は charmDrop でさらに下げる）
-      const extra = ribbonId ? Math.max(bottle.charmDrop || 0, ribbonClear - p.y) : 0;
+      const extra = ribbonId ? bottle.charmDrop || 0 : 0; // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
+      // 「長い」のときは、リボンの結び目より下まで、ちゃんと長くする（瓶の底に入らないときは、チェーンではなくチャームを小さくする）
+      const isLong = len === CHAIN_LENGTHS.long;
+      const minDrop = isLong && ribbonId ? Math.max(0, ribbonClear - p.y - extra) : 0;
+      if (isLong) base = Math.max(base, len.drop * (s.list.length > 1 ? 0.6 : 1), minDrop);
       // 瓶の底からはみ出しそうなら、まずいちばん上のチェーンを短くして、それでもだめなら小さくする
       const height = () => s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
       const bottomLimit = Y(bottle.bottom) - 3;
       let over = p.y + base + extra + height() - bottomLimit;
-      if (over > 0) base -= Math.min(over, Math.max(0, base - MIN_DROP));
+      if (over > 0) base -= Math.min(over, Math.max(0, base - Math.max(MIN_DROP, minDrop)));
       over = p.y + base + extra + height() - bottomLimit;
       if (over > 0) {
         const gaps = LINK_GAP * (s.list.length - 1);
