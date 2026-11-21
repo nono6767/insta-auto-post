@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/29-17"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/29-18"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -150,12 +150,12 @@ function hanamaruSvg(cls = "hanamaru") {
 
 // ---------- 瓶に浮かぶ小さな星（おやつを食べなかった日の数だけ） ----------
 // 淡いゴールドの星を、液体の中にふんわり散らす。ゆっくり上下にゆれて、ときどき1つずつキラッと光る
-const STAR_SHOW_MAX = 15; // 1本の瓶に描く星の数の上限（多くても、ごちゃごちゃしないように）
+const STAR_SHOW_MAX = 12; // 1本の瓶に描く星の数の上限（多くても、ごちゃごちゃしないように）
 function starSvg() {
   // 下の星（少しこいゴールド）に、明るい星を左上へずらして重ね、ふちにツヤを入れて立体感を出す
   const d = "M12 2.6l2.55 6.05 6.5.5-4.95 4.25 1.55 6.35L12 16.3l-5.65 3.45 1.55-6.35L2.95 9.15l6.5-.5z";
   return `<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">
-    <path d="${d}" fill="#e2bf74" stroke="#b8924a" stroke-width=".9" stroke-linejoin="round"/>
+    <path d="${d}" fill="#e2bf74" stroke="#8f6a26" stroke-width="1.35" stroke-linejoin="round"/>
     <path d="${d}" fill="#f8e6b0" transform="translate(11.2 10.9) scale(.8) translate(-12 -12)"/>
     <path d="M9.6 9.2 12 3.9l1.1 2.6" fill="none" stroke="#fffaf0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
     <circle cx="10.3" cy="10.6" r="1.05" fill="#fff" opacity=".85"/>
@@ -278,10 +278,10 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix
   }
 
   const mask = `url(bottles/${bottle.id}-mask.webp)`;
-  // おやつを食べなかった日の星（液体の中に浮かぶ。星の大きさ：瓶の高さの9%）
+  // おやつを食べなかった日の星（液体の中に浮かぶ。星の大きさ：瓶の高さの18%）
   const fillPct = total > 0 ? Math.max(Math.min(1, total / capacity) * SMALL_FULL_LEVEL, 30) : 30;
   const liquidTop = bottle.bottom - (fillPct / 100) * range;
-  const flowers = starsHtml(bottle, flowerCount, liquidTop, 9, seedOf(bottle.id + flowerCount));
+  const flowers = starsHtml(bottle, flowerCount, liquidTop, 18, seedOf(bottle.id + flowerCount));
   // 満タンをこえた日は、瓶のまわりにキラキラ
   const sparks = overflow
     ? [[8, 30], [92, 40], [14, 72], [88, 78], [50, 6], [96, 62]]
