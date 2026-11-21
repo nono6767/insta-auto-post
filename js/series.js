@@ -18,6 +18,8 @@
 //
 // チャーム1つの書き方
 //   { id: "h00", name: "チャームの名前" }
+//   ・レア度（grade）：書かないと「ノーマル」。grade: "super"（スーパーレア・いちばんレア）／ grade: "rare"（レア）
+//     レアほどガチャで出にくい（出やすさは下の GRADES の weight）。付け替え画面やガチャの一覧で、背景の色と★でわかる
 //   ・画像は charms/シリーズのid/ の「id.webp」（ちがう名前なら file: "xxx.webp"）
 //   ・つけ方（place）を書かないと「首のチェーンから下げる」。リボンは place: "neck", pw: 58, pa: 0.2
 //   ・w・h（画像の大きさ）は書かなくてもOK（アプリが読みこんだときに測る）
@@ -38,10 +40,10 @@ const SERIES_LIST = [
       { id: "d02", name: "まっ赤な約束のバラ", w: 92, h: 160 },
       { id: "d03", name: "バラ園の金のハート", w: 113, h: 160 },
       { id: "d04", name: "のびやかなバラのつる", w: 62, h: 160 },
-      { id: "d05", name: "思い出のバラのロケット", w: 118, h: 160 },
-      { id: "d06", name: "ひみつの花園の門", w: 96, h: 160 },
+      { id: "d05", name: "思い出のバラのロケット", w: 118, h: 160, grade: "rare" },
+      { id: "d06", name: "ひみつの花園の門", w: 96, h: 160, grade: "rare" },
       { id: "d07", name: "うさぎのじょうろ", w: 106, h: 160 },
-      { id: "d08", name: "バラ園の白うさぎ", w: 91, h: 160 },
+      { id: "d08", name: "バラ園の白うさぎ", w: 91, h: 160, grade: "super" },
       { id: "e08", name: "バラとリボンのしずく", w: 90, h: 160 },
     ],
   },
@@ -53,12 +55,12 @@ const SERIES_LIST = [
     color: "#c9575a",
     pickups: [{ start: "2026-11-13", end: "2026-11-19" }], // 公開ずみ（いろいろガチャで引ける）
     charms: [
-      { id: "f00", name: "キトリの情熱の扇", w: 143, h: 160 },
+      { id: "f00", name: "キトリの情熱の扇", w: 143, h: 160, grade: "super" },
       { id: "f01", name: "広場のタンバリン", w: 115, h: 160 },
       { id: "f02", name: "恋のカスタネット", w: 114, h: 160 },
-      { id: "f03", name: "キトリのバラの髪かざり", w: 160, h: 154 },
+      { id: "f03", name: "キトリのバラの髪かざり", w: 160, h: 154, grade: "rare" },
       { id: "f04", name: "騎士の誓いの剣", w: 46, h: 160 },
-      { id: "f05", name: "ドゥルシネアの赤いハート", w: 84, h: 146 },
+      { id: "f05", name: "ドゥルシネアの赤いハート", w: 84, h: 146, grade: "rare" },
       { id: "f06", name: "ドン・キホーテのかぶと", w: 97, h: 160 },
       { id: "f07", name: "バルセロナのショール", w: 127, h: 160 },
       { id: "f08", name: "ラ・マンチャの風車", w: 90, h: 160 },
@@ -73,10 +75,10 @@ const SERIES_LIST = [
     color: "#c9a07a",
     pickups: [{ start: "2026-11-20", end: "2026-11-26" }],
     charms: [
-      { id: "g00", name: "わんこのハートロケット", w: 160, h: 152, scale: 1.12 }, // 目玉なので少し大きめ
-      { id: "g01", name: "きらめく宝石の肉球", w: 147, h: 160, scale: 0.78 }, // 小ぶりに
+      { id: "g00", name: "わんこのハートロケット", w: 160, h: 152, grade: "super", scale: 1.12 }, // 目玉なので少し大きめ
+      { id: "g01", name: "きらめく宝石の肉球", w: 147, h: 160, grade: "rare", scale: 0.78 }, // 小ぶりに
       { id: "g02", name: "星空クリスタルのほね", w: 103, h: 160 },
-      { id: "g03", name: "流れ星のほね", w: 156, h: 160 },
+      { id: "g03", name: "流れ星のほね", w: 156, h: 160, grade: "rare" },
       { id: "g04", name: "天使のしずく羽根", w: 86, h: 160 },
       { id: "g05", name: "わんこの思い出アルバム", w: 134, h: 160 },
       { id: "g06", name: "ないしょのほね小瓶", w: 94, h: 160 },
@@ -92,10 +94,10 @@ const SERIES_LIST = [
     charms: [
       { id: "e00", name: "はじめてのトウシューズ", w: 105, h: 160 },
       { id: "e01", name: "さくら色のチュチュ", w: 152, h: 160 },
-      { id: "e02", name: "プリマのティアラ", w: 133, h: 125 },
-      { id: "e03", name: "白鳥の湖", w: 122, h: 156 },
+      { id: "e02", name: "プリマのティアラ", w: 133, h: 125, grade: "rare" },
+      { id: "e03", name: "白鳥の湖", w: 122, h: 156, grade: "rare" },
       { id: "e04", name: "ラベンダーの夢チュチュ", w: 160, h: 151 },
-      { id: "e05", name: "くるくるプリマ", w: 131, h: 192 },
+      { id: "e05", name: "くるくるプリマ", w: 131, h: 192, grade: "super" },
       { id: "e06", name: "月夜のトウシューズ", w: 45, h: 160 },
       { id: "e07", name: "星に願うトウシューズ", w: 126, h: 160 },
     ],
@@ -112,9 +114,9 @@ const SERIES_LIST = [
       { id: "i01", name: "宮殿の黄金ハープ", w: 61, h: 160 },
       { id: "i02", name: "舞踏会のロココ扇", w: 160, h: 120 },
       { id: "i03", name: "王妃の空色ドレス", w: 160, h: 148 },
-      { id: "i04", name: "セーヴル焼きの宝石箱", w: 96, h: 160 },
-      { id: "i05", name: "王妃のパールネックレス", w: 127, h: 160 },
-      { id: "i06", name: "王妃のカメオ", w: 93, h: 160 },
+      { id: "i04", name: "セーヴル焼きの宝石箱", w: 96, h: 160, grade: "rare" },
+      { id: "i05", name: "王妃のパールネックレス", w: 127, h: 160, grade: "super" },
+      { id: "i06", name: "王妃のカメオ", w: 93, h: 160, grade: "rare" },
       { id: "i07", name: "ヴェルサイユの椅子", w: 95, h: 160 },
     ],
   },
@@ -135,6 +137,15 @@ const SERIES_LIST = [
 ];
 
 // ---------- ここから下は、しくみ（ふだんは直さなくてOK） ----------
+
+// ★ レア度（出やすさ weight は、ノーマルを1としたとき）
+const GRADES = {
+  super: { label: "スーパーレア", stars: "★★★", weight: 0.35 },
+  rare: { label: "レア", stars: "★★", weight: 0.65 },
+};
+const gradeOf = (c) => (c && GRADES[c.grade] ? c.grade : null);
+const gradeWeight = (c) => (gradeOf(c) ? GRADES[c.grade].weight : 1);
+const gradeBadge = (c) => (gradeOf(c) ? `<span class="grade-badge grade-${c.grade}" aria-label="${GRADES[c.grade].label}">${GRADES[c.grade].stars}</span>` : "");
 
 const PICKUP_DAYS = 7; // end を書かないときの期間
 function addDaysKey(key, n) {

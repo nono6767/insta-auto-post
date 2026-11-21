@@ -207,6 +207,14 @@ const currentGacha = () => {
   return list.find((g) => g.id === gachaTab) || list[0];
 };
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+// レア度の見かた（バナーの下に出す）
+const GRADE_LEGEND = `<p class="g-grade-legend"><span class="grade-badge grade-super">★★★</span>スーパーレア <span class="grade-badge grade-rare">★★</span>レア <small>（レアほど出にくい）</small></p>`;
+// レア度で重みをつけて1つ選ぶ（スーパーレア・レアは出にくい。js/series.js の GRADES）
+function pickByGrade(arr) {
+  let r = Math.random() * arr.reduce((t, c) => t + gradeWeight(c), 0);
+  for (const c of arr) if ((r -= gradeWeight(c)) <= 0) return c;
+  return arr[arr.length - 1];
+}
 
 // レア度：ピックアップ（虹）／レア＝まだ持っていない・終わったシリーズのチャーム（紫）／ふつう（ピンク）
 function rarityOf(r, gacha) {
@@ -217,16 +225,16 @@ function rarityOf(r, gacha) {
 
 // 選んだガチャから1つ出す
 function drawCharm(gacha, forcePickup = false) {
-  if (gacha.mix) return { charm: pick(mixPool()), pickup: false };
+  if (gacha.mix) return { charm: pickByGrade(mixPool()), pickup: false };
   const pickupPool = gacha.series ? CHARMS.filter((c) => seriesOf(c) === gacha.series) : [];
-  if (pickupPool.length && (forcePickup || Math.random() < GACHA.pickupRate)) return { charm: pick(pickupPool), pickup: true };
+  if (pickupPool.length && (forcePickup || Math.random() < GACHA.pickupRate)) return { charm: pickByGrade(pickupPool), pickup: true };
   // ふつうの中身：ベーシックライン ＋ 期間が終わったシリーズ（ひくい確率）
   const ended = endedSeries();
   const pool = [];
   for (const c of CHARMS) {
     const s = seriesOf(c);
     if (s === "basic") pool.push([c, 1]);
-    else if (ended.has(s)) pool.push([c, GACHA.endedWeight]);
+    else if (ended.has(s)) pool.push([c, GACHA.endedWeight * gradeWeight(c)]);
   }
   let r = Math.random() * pool.reduce((t, [, w]) => t + w, 0);
   for (const [c, w] of pool) if ((r -= w) <= 0) return { charm: c, pickup: false };
@@ -311,7 +319,7 @@ function drawGachaScreen() {
   // バナーと、当たるチャームの一覧（選んだガチャのぶんだけ）
   const banner = $("g-banners");
   banner.replaceChildren();
-  const item = (c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}"><img src="${charmSrc(c)}" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`;
+  const item = (c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}${gradeOf(c) ? " grade-" + c.grade : ""}">${gradeBadge(c)}<img src="${charmSrc(c)}" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`;
   if (gacha.series) {
     const sr = SERIES[gacha.series] || { name: gacha.series };
     const lineup = CHARMS.filter((c) => seriesOf(c) === gacha.series);
@@ -325,7 +333,7 @@ function drawGachaScreen() {
       <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${sr.catch || ""}</p>
       <p class="g-banner-date"><b class="g-days">${left <= 1 ? "今日まで！" : `あと${left}日`}</b>（${shortDate(gacha.end)}まで） ・ 集めた ${have} / ${lineup.length}</p>
-      <div class="g-lineup">${lineup.map(item).join("")}</div>`;
+      <div class="g-lineup">${lineup.map(item).join("")}</div>${GRADE_LEGEND}`;
     banner.append(el);
   } else {
     const pool = mixPool();
@@ -337,7 +345,7 @@ function drawGachaScreen() {
       <p class="g-banner-tag">いつでも引ける</p>
       <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${pool.length ? "ピックアップが終わったシリーズが、ぜんぶ入っているよ" : "ピックアップが終わったシリーズが、ここに入るよ。お楽しみに！"}</p>
-      ${groups.join("")}</section>`;
+      ${groups.join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
   }
   // 予告：もうすぐ始まるピックアップ（チャームはシルエットで、ちらっと見せる）
   const notice = $("g-notice");
@@ -404,8 +412,8 @@ function openTrade() {
   for (const c of list) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "charm-option";
-    b.innerHTML = `<img src="${charmSrc(c)}" alt="" loading="lazy">`;
+    b.className = "charm-option" + (gradeOf(c) ? ` grade-${c.grade}` : "");
+    b.innerHTML = `${gradeBadge(c)}<img src="${charmSrc(c)}" alt="" loading="lazy">`;
     b.setAttribute("aria-label", c.name);
     b.addEventListener("click", () => {
       tradePick = c;
@@ -628,12 +636,12 @@ function showGachaResults(results, multi, traded) {
   grid.className = "g-result-grid" + (multi ? " multi" : "");
   results.forEach((r, i) => {
     const card = document.createElement("div");
-    card.className = `g-card r-${r.rarity}` + (r.isNew ? " is-new" : "");
+    card.className = `g-card r-${r.rarity}` + (r.isNew ? " is-new" : "") + (gradeOf(r.charm) ? ` grade-${r.charm.grade}` : "");
     card.style.animationDelay = `${multi ? i * 0.05 : 0}s`;
     const sName = SERIES[seriesOf(r.charm)]?.name || "";
     card.innerHTML = `
       ${r.isNew ? `<span class="g-new">NEW</span>` : ""}
-      <img src="${charmSrc(r.charm)}" alt="">
+      ${gradeBadge(r.charm)}<img src="${charmSrc(r.charm)}" alt="">
       <span class="g-card-name">${r.charm.name}</span>
       <span class="g-card-sub">${r.isNew ? sName : `かけら+${GACHA.shardPerDup}`}</span>`;
     grid.append(card);

@@ -1741,3 +1741,31 @@ body.gacha-open { overflow: hidden; }
 .g-banner-quixote { background: linear-gradient(135deg, #fff4ea, #f6c9b8 55%, #e9a7a5); }
 .g-tab-rosegarden[aria-selected="true"] { background: linear-gradient(90deg, #e79ab0, #a9c98f); }
 .g-tab-quixote[aria-selected="true"] { background: linear-gradient(90deg, #c9575a, #e7a35b); }
+
+/* ---------- レア度（スーパーレア・レア）：背景の色と★ ---------- */
+.charm-option.grade-super, .g-item.grade-super, .g-card.grade-super {
+  background: linear-gradient(160deg, #fff8dc, #ffe4a8 58%, #ffd3df);
+  border-color: #e2b456;
+}
+.charm-option.grade-rare, .g-item.grade-rare, .g-card.grade-rare {
+  background: linear-gradient(160deg, #f8f2ff, #e7dbfb);
+  border-color: #bca3e8;
+}
+.charm-option.grade-super[aria-pressed="true"], .charm-option.grade-rare[aria-pressed="true"] { border-color: var(--rose); box-shadow: 0 0 0 2px var(--rose) inset; }
+.g-item, .g-card { position: relative; }
+.g-item.grade-super, .g-item.grade-rare { border: 1.5px solid; border-radius: 14px; }
+.g-item.grade-super { border-color: #e2b456; }
+.g-item.grade-rare { border-color: #bca3e8; }
+.grade-badge {
+  position: absolute; left: 3px; bottom: 2px; z-index: 1;
+  font-size: 9px; line-height: 1; letter-spacing: -1px; pointer-events: none;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff;
+}
+.grade-badge.grade-super { color: #d49a1f; }
+.grade-badge.grade-rare { color: #9a7ad6; }
+.g-item .grade-badge, .g-card .grade-badge { left: 6px; top: 5px; bottom: auto; font-size: 11px; }
+.g-card.grade-super { box-shadow: 0 0 10px rgb(255 205 110 / .6); }
+.g-card .grade-badge { left: auto; right: 7px; top: 7px; }
+.g-grade-legend { margin: 8px 0 0; font-size: 11px; color: #8d6070; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.g-grade-legend .grade-badge { position: static; font-size: 11px; }
+.g-grade-legend small { font-size: 10px; }
