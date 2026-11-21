@@ -66,7 +66,7 @@ function chainPath(d, behind = false) {
 }
 
 // ★ チャームの大きさとチェーンの長さ（あとで調整するときはここ）
-const CHARM_SIZE = 25;   // チェーンで下げるチャーム1個の大きさ（瓶の横幅の%）。絵の形がちがっても同じくらいに見えるように、たて×よこの平均で合わせる
+const CHARM_SIZE = 28;   // チェーンで下げるチャーム1個の大きさ（瓶の横幅の%）。絵の形がちがっても同じくらいに見えるように、たて×よこの平均で合わせる
 const CHARM_MAX_SIDE = 1.35; // 細長いチャームが長くなりすぎないように（CHARM_SIZE の何倍まで）
 const NECK_CHARM_SCALE = 1; // 首にかけるもの（ティアラ・ガラスのくつ・ネックレスなど）は、もとの大きさのまま
 const CHAIN_LENGTHS = { short: { label: "短い", drop: 5 }, normal: { label: "ふつう", drop: 11 }, long: { label: "長い", drop: 18 } }; // 下げるチェーンの長さ（瓶の横幅の%）
