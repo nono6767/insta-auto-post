@@ -1647,3 +1647,18 @@ body.gacha-open { overflow: hidden; }
 .chain-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ink); }
 .chain-btn { flex: none; min-height: 30px; padding: 0 9px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 700; }
 .chain-btn[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); color: var(--rose); }
+
+/* チャームを下げる場所（左・真ん中・右）と、縦につなげる順番 */
+.place-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
+.place-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--muted); line-height: 1.2; }
+.place-btn b { font-size: 14px; }
+.place-btn span { font-size: 11px; }
+.place-btn[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); color: var(--rose); }
+.stack-no { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--rose); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.order-btn { min-width: 32px; min-height: 28px; padding: 0 6px; }
+.order-btn:disabled { opacity: .35; }
+.other-row { flex-wrap: wrap; }
+.other-chip { display: inline-flex; align-items: center; gap: 2px; min-height: 30px; padding: 0 8px 0 4px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 700; }
+.other-chip img { width: 22px; height: 22px; object-fit: contain; }
+.charm-num { font-size: 12px; }
+.charm-option.here { box-shadow: 0 0 0 2px var(--rose) inset; }

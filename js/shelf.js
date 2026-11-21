@@ -25,7 +25,15 @@ const charmById = (id) => CHARMS.find((c) => c.id === id) || null;
 
 // （パステルの色は js/app.js の pastel）
 
-const CHARM_MAX = 3; // 1本の瓶につけられるチャームの数
+const CHARM_MAX = 5;   // ★ 1本の瓶につけられるチャームの数（ぜんぶで。あとで変えるときはここ）
+const STACK_MAX = 3;   // ★ 1か所に、縦につなげられるチャームの数
+// チェーンから下げる場所（t：首のチェーンの左はし0〜右はし1のどこか、side：外がわへ出す向き）
+const HANG_SPOTS = [
+  { key: "left", label: "左", short: "左", t: 0.16, side: -1 },
+  { key: "center", label: "真ん中", short: "中", t: 0.5, side: 0 },
+  { key: "right", label: "右", short: "右", t: 0.84, side: 1 },
+];
+const isHangCharm = (c) => !!c && (c.place || "hang") === "hang";
 
 // その大瓶のチャーム（前の版の「1個だけ」の記録もそのまま読む）
 const isRibbon = (c) => !!c && c.kind === "ribbon";
@@ -70,9 +78,37 @@ const CHARM_SIZE = 28;   // チェーンで下げるチャーム1個の大きさ
 const CHARM_MAX_SIDE = 1.35; // 細長いチャームが長くなりすぎないように（CHARM_SIZE の何倍まで）
 const NECK_CHARM_SCALE = 1; // 首にかけるもの（ティアラ・ガラスのくつ・ネックレスなど）は、もとの大きさのまま
 const CHAIN_LENGTHS = { short: { label: "短い", drop: 5 }, normal: { label: "ふつう", drop: 11 }, long: { label: "長い", drop: 18 } }; // 下げるチェーンの長さ（瓶の横幅の%）
-const chainOf = (b, id) => (b && b.chains && CHAIN_LENGTHS[b.chains[id]] ? b.chains[id] : "normal");
 
-function charmsHtml(bottle, ids, ribbonId = null, chains = {}) {
+// 下げる場所ごとのチャーム {left:[上から順], center:[…], right:[…]}
+// 前の版の記録（場所がない）は、前と同じ並べ方で左・真ん中・右にふりわける（データはそのまま）
+function hangsOf(b) {
+  const ids = charmsOf(b).filter((id) => isHangCharm(charmById(id)));
+  const out = { left: [], center: [], right: [] };
+  if (b.hang) {
+    for (const k in out) out[k] = (b.hang[k] || []).filter((id) => ids.includes(id));
+    const placed = new Set(Object.values(out).flat());
+    for (const id of ids) if (!placed.has(id)) out.center.push(id);
+  } else {
+    const order = ids.length === 1 ? ["center"] : ids.length === 2 ? ["right", "left"] : ["right", "left", "center"];
+    ids.forEach((id, i) => out[order[i] || "center"].push(id));
+  }
+  return out;
+}
+// 場所ごとのチェーンの長さ {left:"short", …}（前の版の「チャームごと」の記録は、その場所のいちばん上のチャームのものを使う）
+function chainAtOf(b) {
+  if (b.chainAt) return { ...b.chainAt };
+  const out = {};
+  const h = hangsOf(b);
+  for (const k in h) {
+    const v = h[k][0] && b.chains && b.chains[h[k][0]];
+    if (CHAIN_LENGTHS[v]) out[k] = v;
+  }
+  return out;
+}
+
+const LINK_GAP = 3.2; // 縦につなげるときの、チャームとチャームのあいだの短いチェーン（瓶の横幅の%）
+
+function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   const k = bottle.h / bottle.w; // 「瓶の高さの%」を「瓶の幅の%」にするかけ算
   const [nx, ny] = bottle.neck;
   const charms = ids.map(charmById).filter(Boolean);
@@ -119,15 +155,21 @@ function charmsHtml(bottle, ids, ribbonId = null, chains = {}) {
       // 瓶の下の台：瓶より少し広く、底のところに
       const w = 118;
       back += img(c, "base", 50, bottle.bottom - (w / k) * (c.h / c.w) * 0.55, w);
-    } else {
-      hangs.push(c); // 首のチェーンから下げるもの（あとでまとめて並べる）
+    } else if (!hang) {
+      hangs.push(c); // 場所の指定がないとき（見本など）は、前と同じ並べ方
     }
   }
+  if (!hang) {
+    const order = hangs.length === 1 ? ["center"] : hangs.length === 2 ? ["right", "left"] : ["right", "left", "center"];
+    hang = { left: [], center: [], right: [] };
+    hangs.forEach((c, i) => hang[order[i] || "center"].push(c.id));
+  }
+  const cols = HANG_SPOTS.map((s) => ({ ...s, list: (hang[s.key] || []).map(charmById).filter(isHangCharm) })).filter((s) => s.list.length);
 
   // ---------- 首に巻いた細いチェーンと、そこから下がるチャーム ----------
   // 座標は「瓶の幅を100」としたもの（縦も同じ目もりなので、チェーンの輪がつぶれない）
   let svg = "";
-  if (hangs.length) {
+  if (cols.length) {
     const H = 100 * k;                         // 瓶の高さ（幅100の目もりで）
     const Y = (pctH) => (pctH * H) / 100;      // 「瓶の高さの%」→ 目もり
     const nw = (bottle.mouth ? bottle.mouth[1] : 30) * 1.08; // 首の太さ
@@ -137,31 +179,38 @@ function charmsHtml(bottle, ids, ribbonId = null, chains = {}) {
     // 首のチェーン：うしろ側（細く・うすく）と、前側（たるんだカーブ）
     let paths = chainPath(`M${L} ${cy} Q${nx} ${cy - sag * 0.55} ${R} ${cy}`, true);
     paths += chainPath(`M${L} ${cy} Q${nx} ${cy + sag * 2} ${R} ${cy}`);
-    // 下げる場所：1個＝まん中 / 2個＝右と左 / 3個＝右・左・まん中
     const at = (t) => ({ x: L + (R - L) * t, y: cy + sag * 2 * 2 * t * (1 - t) }); // 前側のカーブの上の点
-    const spots = hangs.length === 1 ? [0.5] : hangs.length === 2 ? [0.82, 0.18] : [0.84, 0.16, 0.5];
-    hangs.forEach((c, i) => {
-      const t = spots[i];
-      const p = at(t);
-      const side = t > 0.6 ? 1 : t < 0.4 ? -1 : 0;
-      // 大きさ：たて×よこの平均が CHARM_SIZE になるように（細長いものは CHARM_MAX_SIDE 倍まで）
+    // 大きさ：たて×よこの平均が CHARM_SIZE になるように（細長いものは CHARM_MAX_SIDE 倍まで）
+    const sizeOf = (c) => {
       let width = CHARM_SIZE * Math.sqrt(c.w / c.h);
       const tall = width * (c.h / c.w);
       if (Math.max(width, tall) > CHARM_SIZE * CHARM_MAX_SIDE) width *= (CHARM_SIZE * CHARM_MAX_SIDE) / Math.max(width, tall);
-      width *= (c.scale || 1) * (bottle.charmScale || 1);
-      // 短いチェーンで、少し外がわ・下へ（長く引きのばさない）
-      // 2個・3個のときは、左右のチャームを少し外がわへ。まん中は少し下に（重ならないように）
-      const many = hangs.length;
-      const out = side ? width * (many === 3 ? 0.42 : many === 2 ? 0.3 : 0.15) : 0;
-      // チェーンの長さ（付け替え画面で、チャームごとに選べる）。3個のときのまん中は、少し長めに
-      const len = CHAIN_LENGTHS[chains[c.id]] || CHAIN_LENGTHS.normal;
-      const drop = len.drop + (!side && many === 3 ? 3 : 0) + (ribbonId ? bottle.charmDrop || 0 : 0); // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
-      const ex = p.x + side * out, ey = p.y + drop;
+      return width * (c.scale || 1) * (bottle.charmScale || 1);
+    };
+    const ring = (x, y) => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.05" fill="none" stroke="#b39a6a" stroke-width=".7"/>`; // つなぎの輪
+    for (const s of cols) {
+      const p = at(s.t);
+      const widths = s.list.map(sizeOf);
+      // 左右は少し外がわへ（3か所ぜんぶのときは広めに）。真ん中は、左右があるとき少し下に
+      const out = s.side ? Math.max(...widths) * (cols.length === 3 ? 0.42 : cols.length === 2 ? 0.3 : 0.15) : 0;
+      const len = CHAIN_LENGTHS[chainAt[s.key]] || CHAIN_LENGTHS.normal; // チェーンの長さ（場所ごとに選べる）
+      const drop = len.drop + (!s.side && cols.length === 3 ? 3 : 0) + (ribbonId ? bottle.charmDrop || 0 : 0); // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
+      const x = p.x + s.side * out;
+      let y = p.y + drop;
       // たるんだカーブ（まん中が少し下にふくらむ）
-      paths += chainPath(`M${p.x} ${p.y} Q${(p.x + ex) / 2} ${Math.max(p.y, ey) + 1.6} ${ex} ${ey}`);
-      paths += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="1.05" fill="none" stroke="#b39a6a" stroke-width=".7"/>`; // つなぎの輪
-      front += img(c, "hang", ex, (ey / H) * 100 - 0.6, width);
-    });
+      paths += chainPath(`M${p.x} ${p.y} Q${(p.x + x) / 2} ${Math.max(p.y, y) + 1.6} ${x} ${y}`);
+      paths += ring(p.x, p.y);
+      s.list.forEach((c, i) => {
+        const top = y - 0.006 * H; // 絵の上のはし（目もり）
+        front += img(c, "hang", x, (y / H) * 100 - 0.6, widths[i]);
+        if (i < s.list.length - 1) {
+          // 下のはしから、短いチェーンで次のチャームへ
+          const bottom = top + widths[i] * (c.h / c.w);
+          paths += chainPath(`M${x} ${bottom - 1.4} L${x} ${bottom + LINK_GAP + 0.8}`);
+          y = bottom + LINK_GAP;
+        }
+      });
+    }
     svg = `<svg class="charm-string" viewBox="0 0 100 ${H.toFixed(2)}" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
   }
   // 首のリボン：チェーンもチャームも消さずに、いちばん手前に重ねる
@@ -213,7 +262,7 @@ function bigBottleHtml(b) {
     .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
     .join("");
   const mask = `url(big/${bottle.id}-mask.webp)`;
-  const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), b.chains || {});
+  const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), hangsOf(b), chainAtOf(b));
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
@@ -418,7 +467,7 @@ function mergeSmallBottles() {
     bottle: pick.id,
     flowers: Math.min(7, new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size),
     days: used.map((u) => u.day),
-    charms: [], // 進化したあとに、好きなチャームを3個まで選んでつける
+    charms: [], // 進化したあとに、好きなチャームを CHARM_MAX 個まで選んでつける
     uses,
     ts: Date.now(),
   };
@@ -634,15 +683,23 @@ $("merge-ok").addEventListener("click", () => {
 // ---------- チャームを選ぶ・付け替える ----------
 
 let charmTarget = null;
-let charmChoice = []; // 選んだ順（3個まで）
+let hangChoice = { left: [], center: [], right: [] }; // 下げる場所ごとのチャーム（上から順）
+let otherChoice = [];  // 首・ふた・台など、下げないチャーム
+let chainAtChoice = {}; // 場所ごとのチェーンの長さ
+let placeSel = "center"; // いま選んでいる場所
 let ribbonChoice = null; // 首のリボン（1つ・なしもOK）
-let charmTab = "charm";
-let chainChoice = {};    // チャームごとのチェーンの長さ  // いま選んでいるタブ（"charm" / "ribbon"）
+let charmTab = "charm";  // いま選んでいるタブ（"charm" / "ribbon"）
+const allChoice = () => [...hangChoice.left, ...hangChoice.center, ...hangChoice.right, ...otherChoice];
+const placeOfChoice = (id) => HANG_SPOTS.find((s) => hangChoice[s.key].includes(id));
+
 function openCharmPicker(b, justEvolved = false) {
   charmTarget = b;
-  charmChoice = [...charmsOf(b)];
+  const h = hangsOf(b);
+  hangChoice = { left: [...h.left], center: [...h.center], right: [...h.right] };
+  otherChoice = charmsOf(b).filter((id) => !isHangCharm(charmById(id)));
+  chainAtChoice = chainAtOf(b);
+  placeSel = HANG_SPOTS.find((s) => hangChoice[s.key].length)?.key || "center";
   ribbonChoice = ribbonOf(b);
-  chainChoice = { ...(b.chains || {}) };
   charmTab = "charm";
   $("charm-title").textContent = justEvolved ? "チャームとリボンを選んでつけよう" : "チャームとリボンを付け替える";
   $("charm-sub").textContent = `${shortDate(b.date)}に進化した大瓶`;
@@ -650,7 +707,7 @@ function openCharmPicker(b, justEvolved = false) {
   updateCharmPreview();
   $("charm-modal").hidden = false;
 }
-// タブ：チャーム（3個まで）／リボン（1個）
+// タブ：チャーム（場所を選んで、縦につなげる）／リボン（1個）
 function drawCharmGrid() {
   document.querySelectorAll(".charm-tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === charmTab)));
   const ribbonMode = charmTab === "ribbon";
@@ -663,9 +720,10 @@ function drawCharmGrid() {
   none.innerHTML = ribbonMode ? `<span>リボン<br>なし</span>` : `<span>ぜんぶ<br>はずす</span>`;
   grid.append(none);
   // 持っているものだけ（ガチャ限定のシリーズは、ガチャで手に入れると出てくる）
+  const chosenNow = allChoice();
   for (const c of CHARMS) {
     if (isRibbon(c) !== ribbonMode) continue;
-    const chosen = ribbonMode ? ribbonChoice === c.id : charmChoice.includes(c.id);
+    const chosen = ribbonMode ? ribbonChoice === c.id : chosenNow.includes(c.id);
     if (typeof isOwned === "function" && !isOwned(c) && !chosen) continue;
     const btn = document.createElement("button");
     btn.type = "button";
@@ -675,20 +733,42 @@ function drawCharmGrid() {
     btn.innerHTML = `<img src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
     grid.append(btn);
   }
-  grid.querySelectorAll(".charm-option").forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      if (ribbonMode) {
-        ribbonChoice = !id || ribbonChoice === id ? null : id; // もう一度押すとはずす
-      } else if (!id) charmChoice = [];                                      // ぜんぶはずす
-      else if (charmChoice.includes(id)) charmChoice = charmChoice.filter((x) => x !== id); // もう一度押すとはずす
-      else if (charmChoice.length >= CHARM_MAX) {
-        showToast(`チャームは${CHARM_MAX}個までだよ。どれかをはずしてね`);
-        return;
-      } else charmChoice = [...charmChoice, id];
-      updateCharmPreview();
-    })
-  );
+  grid.querySelectorAll(".charm-option").forEach((btn) => btn.addEventListener("click", () => pickCharm(btn.dataset.id)));
+}
+// チャームのマスを押したとき
+function pickCharm(id) {
+  if (charmTab === "ribbon") {
+    ribbonChoice = !id || ribbonChoice === id ? null : id; // もう一度押すとはずす
+    updateCharmPreview();
+    return;
+  }
+  if (!id) {
+    // ぜんぶはずす
+    hangChoice = { left: [], center: [], right: [] };
+    otherChoice = [];
+    updateCharmPreview();
+    return;
+  }
+  const c = charmById(id);
+  const label = HANG_SPOTS.find((s) => s.key === placeSel).label;
+  if (!isHangCharm(c)) {
+    // 首・ふた・台につけるものは、場所はえらばない（もう一度押すとはずす）
+    if (otherChoice.includes(id)) otherChoice = otherChoice.filter((x) => x !== id);
+    else if (allChoice().length >= CHARM_MAX) return showToast(`チャームはぜんぶで${CHARM_MAX}個までだよ。どれかをはずしてね`);
+    else otherChoice = [...otherChoice, id];
+    updateCharmPreview();
+    return;
+  }
+  const from = placeOfChoice(id);
+  if (from && from.key === placeSel) {
+    hangChoice[placeSel] = hangChoice[placeSel].filter((x) => x !== id); // 同じ場所でもう一度押すとはずす
+  } else {
+    if (hangChoice[placeSel].length >= STACK_MAX) return showToast(`${label}には${STACK_MAX}個までつなげられるよ`);
+    if (!from && allChoice().length >= CHARM_MAX) return showToast(`チャームはぜんぶで${CHARM_MAX}個までだよ。どれかをはずしてね`);
+    if (from) hangChoice[from.key] = hangChoice[from.key].filter((x) => x !== id); // ほかの場所から、ここへうつす
+    hangChoice[placeSel] = [...hangChoice[placeSel], id]; // いちばん下につなげる
+  }
+  updateCharmPreview();
 }
 document.querySelectorAll(".charm-tab").forEach((t) =>
   t.addEventListener("click", () => {
@@ -699,14 +779,15 @@ document.querySelectorAll(".charm-tab").forEach((t) =>
 );
 function updateCharmPreview() {
   // プレビュー：チャームとリボンを、両方つけた形で
-  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: null, charms: charmChoice, ribbon: ribbonChoice, chains: chainChoice });
-  drawChainRows();
+  const all = allChoice();
+  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: null, charms: all, hang: hangChoice, chainAt: chainAtChoice, chains: null, ribbon: ribbonChoice });
+  drawPlacePanel();
   const bottle = bigBottleById(charmTarget.bottle);
   $("charm-preview").style.width = `${(150 * bottle.w) / bottle.h}px`;
-  const cText = charmChoice.length ? charmChoice.map((id) => charmById(id).name).join("・") + `（${charmChoice.length}/${CHARM_MAX}）` : "チャームなし";
+  const cText = all.length ? `チャーム ${all.length}/${CHARM_MAX}個` : "チャームなし";
   const rText = ribbonChoice ? charmById(ribbonChoice).name : "リボンなし";
-  $("charm-name").textContent = charmTab === "ribbon" ? `${rText} ／ ${cText}` : `${cText} ／ ${rText}`;
-  $("charm-tab-charm").textContent = `チャーム（${charmChoice.length}/${CHARM_MAX}）`;
+  $("charm-name").textContent = `${cText} ／ ${rText}`;
+  $("charm-tab-charm").textContent = `チャーム（${all.length}/${CHARM_MAX}）`;
   $("charm-tab-ribbon").textContent = `リボン（${ribbonChoice ? 1 : 0}/1）`;
   $("charm-grid").querySelectorAll(".charm-option").forEach((btn) => {
     const id = btn.dataset.id;
@@ -715,29 +796,77 @@ function updateCharmPreview() {
       btn.setAttribute("aria-pressed", String(id ? ribbonChoice === id : !ribbonChoice));
       if (num) num.textContent = id && ribbonChoice === id ? "✓" : "";
     } else {
-      const n = charmChoice.indexOf(id);
-      btn.setAttribute("aria-pressed", String(id ? n >= 0 : charmChoice.length === 0));
-      if (num) num.textContent = n >= 0 ? "①②③"[n] : "";
+      const spot = id && placeOfChoice(id);
+      const on = id ? !!spot || otherChoice.includes(id) : all.length === 0;
+      btn.setAttribute("aria-pressed", String(on));
+      btn.classList.toggle("here", !!spot && spot.key === placeSel);
+      if (num) num.textContent = spot ? spot.short + (hangChoice[spot.key].indexOf(id) + 1) : otherChoice.includes(id) ? "✓" : "";
     }
   });
 }
-// チェーンの長さ：下げるチャームごとに「短い・ふつう・長い」
-function drawChainRows() {
+// 場所（左・真ん中・右）を選んで、つなげる順番とチェーンの長さを決める
+function drawPlacePanel() {
   const box = $("chain-rows");
-  const hangs = charmChoice.map(charmById).filter((c) => c && (c.place || "hang") === "hang");
-  box.hidden = charmTab !== "charm" || !hangs.length;
+  box.hidden = charmTab !== "charm";
   box.replaceChildren();
   if (box.hidden) return;
-  const title = document.createElement("p");
-  title.className = "chain-title";
-  title.textContent = "チェーンの長さ";
-  box.append(title);
-  for (const c of hangs) {
+  const tabs = document.createElement("div");
+  tabs.className = "place-tabs";
+  for (const s of HANG_SPOTS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "place-btn";
+    b.setAttribute("aria-pressed", String(s.key === placeSel));
+    b.innerHTML = `<b></b><span>${hangChoice[s.key].length}/${STACK_MAX}</span>`;
+    b.firstChild.textContent = s.label;
+    b.addEventListener("click", () => {
+      placeSel = s.key;
+      updateCharmPreview();
+    });
+    tabs.append(b);
+  }
+  box.append(tabs);
+  const label = HANG_SPOTS.find((s) => s.key === placeSel).label;
+  const list = hangChoice[placeSel];
+  const hint = document.createElement("p");
+  hint.className = "chain-title";
+  hint.textContent = list.length ? `${label}：上から順につながっているよ` : `下のチャームを押すと、${label}に下がるよ（${STACK_MAX}個までつなげられる）`;
+  box.append(hint);
+  list.forEach((id, i) => {
+    const c = charmById(id);
+    const row = document.createElement("div");
+    row.className = "chain-row stack-row";
+    row.innerHTML = `<span class="stack-no">${i + 1}</span><img src="${charmSrc(c)}" alt=""><span class="chain-name"></span>`;
+    row.querySelector(".chain-name").textContent = c.name;
+    const btn = (text, aria, disabled, fn) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chain-btn order-btn";
+      b.textContent = text;
+      b.setAttribute("aria-label", `${c.name}を${aria}`);
+      b.disabled = disabled;
+      b.addEventListener("click", fn);
+      row.append(b);
+    };
+    const move = (d) => () => {
+      const a = [...list];
+      [a[i], a[i + d]] = [a[i + d], a[i]];
+      hangChoice[placeSel] = a;
+      updateCharmPreview();
+    };
+    btn("↑", "上へ", i === 0, move(-1));
+    btn("↓", "下へ", i === list.length - 1, move(1));
+    btn("✕", "はずす", false, () => {
+      hangChoice[placeSel] = list.filter((x) => x !== id);
+      updateCharmPreview();
+    });
+    box.append(row);
+  });
+  if (list.length) {
     const row = document.createElement("div");
     row.className = "chain-row";
-    row.innerHTML = `<img src="${charmSrc(c)}" alt=""><span class="chain-name"></span>`;
-    row.querySelector(".chain-name").textContent = c.name;
-    const now = chainChoice[c.id] || "normal";
+    row.innerHTML = `<span class="chain-name">チェーンの長さ</span>`;
+    const now = chainAtChoice[placeSel] || "normal";
     for (const [key, v] of Object.entries(CHAIN_LENGTHS)) {
       const b = document.createElement("button");
       b.type = "button";
@@ -745,7 +874,27 @@ function drawChainRows() {
       b.textContent = v.label;
       b.setAttribute("aria-pressed", String(key === now));
       b.addEventListener("click", () => {
-        chainChoice[c.id] = key;
+        chainAtChoice[placeSel] = key;
+        updateCharmPreview();
+      });
+      row.append(b);
+    }
+    box.append(row);
+  }
+  // 首・ふたにつけるもの（場所はえらばない）
+  if (otherChoice.length) {
+    const row = document.createElement("div");
+    row.className = "chain-row other-row";
+    row.innerHTML = `<span class="chain-name">首・ふたにつけるもの</span>`;
+    for (const id of otherChoice) {
+      const c = charmById(id);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "other-chip";
+      b.setAttribute("aria-label", `${c.name}をはずす`);
+      b.innerHTML = `<img src="${charmSrc(c)}" alt="">✕`;
+      b.addEventListener("click", () => {
+        otherChoice = otherChoice.filter((x) => x !== id);
         updateCharmPreview();
       });
       row.append(b);
@@ -755,10 +904,13 @@ function drawChainRows() {
 }
 $("charm-save").addEventListener("click", () => {
   const b = (data.bigBottles || []).find((x) => x.id === charmTarget.id);
+  const all = allChoice();
   if (b) {
-    b.charms = [...charmChoice];
-    b.chains = Object.fromEntries(charmChoice.filter((id) => chainChoice[id] && chainChoice[id] !== "normal").map((id) => [id, chainChoice[id]]));
-    if (!Object.keys(b.chains).length) delete b.chains;
+    b.charms = all;
+    b.hang = { left: [...hangChoice.left], center: [...hangChoice.center], right: [...hangChoice.right] };
+    b.chainAt = Object.fromEntries(HANG_SPOTS.map((s) => s.key).filter((k) => hangChoice[k].length && chainAtChoice[k] && chainAtChoice[k] !== "normal").map((k) => [k, chainAtChoice[k]]));
+    if (!Object.keys(b.chainAt).length) delete b.chainAt;
+    delete b.chains; // 前の版の「チャームごと」の長さは、場所ごとの長さにうつした
     if (ribbonChoice) b.ribbon = ribbonChoice;
     else delete b.ribbon;
     delete b.charm; // 前の版の「1個だけ」の記録は、新しい形にうつしたので消す
@@ -766,7 +918,7 @@ $("charm-save").addEventListener("click", () => {
   saveData();
   $("charm-modal").hidden = true;
   drawShelf();
-  const parts = [charmChoice.length ? `チャームを${charmChoice.length}個` : "", ribbonChoice ? "リボン" : ""].filter(Boolean);
+  const parts = [all.length ? `チャームを${all.length}個` : "", ribbonChoice ? "リボン" : ""].filter(Boolean);
   showToast(parts.length ? `${parts.join("と")}をつけたよ` : "飾りをはずしたよ");
 });
 $("charm-cancel").addEventListener("click", () => {
