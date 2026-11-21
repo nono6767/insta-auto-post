@@ -190,7 +190,7 @@ function talkContext() {
     pickupTotal: lineup.length,
     newPickup: newPickup ? { id: newPickup.id, label: SERIES[newPickup.series]?.name || newPickup.name } : null,
     lastDraw: talkState.lastDraw,
-    upcoming: (() => { const u = typeof upcomingPickups === "function" ? upcomingPickups()[0] : null; return u ? { name: SERIES[u.series].name, date: shortDate(u.start) } : null; })(),
+    upcoming: (() => { const u = typeof upcomingPickups === "function" ? upcomingPickups().filter((p) => SERIES[p.series]?.type !== "ribbon")[0] : null; return u ? { name: SERIES[u.series].name, date: shortDate(u.start) } : null; })(),
     wx: typeof weatherFacts === "function" ? weatherFacts() : null,
   };
 }

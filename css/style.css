@@ -1817,3 +1817,5 @@ body.gacha-open { overflow: hidden; }
 .g-cats button[aria-selected="true"] { background: linear-gradient(90deg, #f6a2bf, #c9a8ee); color: #fff; box-shadow: 0 1px 4px rgb(180 90 140 / .25); }
 .g-tab-vribbon[aria-selected="true"] { background: linear-gradient(90deg, #e9a8bd, #d8b878); }
 .g-banner-vribbon { background: linear-gradient(135deg, #fff7fa, #fbe0ea 55%, #f1e6d2); }
+.g-notice-extra { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 2px; padding: 8px 10px; border-radius: 12px; background: rgb(255 255 255 / .75); font-size: 12px; line-height: 1.5; color: #5a3442; }
+.g-notice-extra b { color: #c0507a; }

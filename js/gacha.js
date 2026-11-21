@@ -31,6 +31,8 @@ const GACHA = {
   pickupRate: 0.5,     // ピックアップ中のシリーズが出る確率（0.5 ＝ 50%）
   endedWeight: 0.15,   // ピックアップが終わったシリーズのチャームの出やすさ（ベーシックを1としたとき）
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
+  ribbonCostOne: 1,    // リボンのガチャ：1回ひくのに使うコイン
+  ribbonCostMulti: 5,  // リボンのガチャ：11連に使うコイン（チャームより安く）
   shardsForCharm: 10,  // 好きなチャームと交換するのに使う、かけらの数
   maxPickups: 2,       // 同時に開催するピックアップガチャの数
   noticeDays: 14,      // ピックアップの予告を出すのは、開始の何日前から
@@ -172,6 +174,8 @@ const ribbonFreeLeft = () => {
   if (!g || !openGachas("ribbon").some((x) => poolOf(x).length)) return 0;
   return g.ribbonFreeDay === dateKey() ? Math.max(0, RIBBON_FREE_PER_DAY - (g.ribbonFreeUsed || 0)) : RIBBON_FREE_PER_DAY;
 };
+// 値段（リボンはチャームより安い）
+const costOf = (kind, cat) => (cat === "ribbon" ? (kind === "multi" ? GACHA.ribbonCostMulti : GACHA.ribbonCostOne) : kind === "multi" ? GACHA.costMulti : GACHA.costOne);
 const freeLeftFor = (cat) => (cat === "ribbon" ? ribbonFreeLeft() : freeLeft());
 // 開催中のガチャ：ピックアップ（開始日が早い順に、最大2つ）＋ いろいろガチャ（チャームとリボンで別々）
 const openGachas = (cat = gachaCat) => {
@@ -274,7 +278,7 @@ function runGacha(kind) {
       g.freeUsed = (g.freeUsed || 0) + 1;
     }
   } else {
-    const cost = kind === "multi" ? GACHA.costMulti : GACHA.costOne;
+    const cost = costOf(kind === "multi" ? "multi" : "one", gacha.cat);
     if (g.coins < cost) return showToast(`コインが${cost - g.coins}枚たりないよ`);
     g.coins -= cost;
   }
@@ -399,8 +403,14 @@ function drawGachaScreen() {
   // 予告：いちばん上の細い帯。シルエットが横に流れる。タップすると、くわしい予告が開く
   const notice = $("g-notice");
   notice.replaceChildren();
-  for (const p of upcomingPickups()) {
+  // リボンの予告は、同じころに始まるチャームの予告の中で「リボンも登場」と知らせる（それがないときだけ、リボン単体で出す）
+  const ups = upcomingPickups();
+  const charmUps = ups.filter((p) => catOfSeries(p.series) === "charm");
+  const near = (a, b) => Math.abs(daysUntil(a.start) - daysUntil(b.start)) <= 3;
+  const extrasOf = (p) => ups.filter((r) => catOfSeries(r.series) === "ribbon" && near(r, p) && charmUps.find((c) => near(r, c)) === p);
+  for (const p of ups.filter((x) => catOfSeries(x.series) === "charm" || !charmUps.some((c) => near(x, c)))) {
     const sr = SERIES[p.series];
+    const extras = extrasOf(p);
     const lineup = CHARMS.filter((c) => seriesOf(c) === p.series);
     const n = daysUntil(p.start);
     const imgs = lineup.map((c) => (p.revival ? `<img src="${charmSrc(c)}" alt="" loading="lazy">` : `<img class="silhouette" src="${charmSrc(c)}" alt="" loading="lazy">`)).join("");
@@ -422,6 +432,7 @@ function drawGachaScreen() {
         <h3 class="g-notice-title"></h3>
         <p class="g-notice-date">${shortDate(p.start)}〜${shortDate(p.end)}　${p.revival ? "もう一度会えるよ" : "なにが出るかは、始まってからのお楽しみ"}</p>
         <div class="g-notice-lineup">${imgs}</div>
+        ${extras.map((r) => `<p class="g-notice-extra"><span class="g-notice-kind ${r.revival ? "revival" : "new"}">${r.revival ? "復刻" : "新"}</span><span>同じ期間に、リボンガチャで<b>「${SERIES[r.series].name}」</b>${r.revival ? "がもう一度" : "も追加"}だよ！（${shortDate(r.start)}〜${shortDate(r.end)}）</span></p>`).join("")}
       </div>`;
     el.querySelector(".g-notice-name").textContent = sr.name;
     el.querySelector(".g-notice-title").textContent = sr.name;
@@ -444,10 +455,11 @@ function drawGachaScreen() {
     $("g-free").disabled = true;
     $("g-free").querySelector("small").textContent = `まだ引ける${ribbonMode ? "リボン" : "チャーム"}がないよ。お楽しみに`;
   }
-  $("g-one").disabled = empty || g.coins < GACHA.costOne;
-  $("g-multi").disabled = empty || g.coins < GACHA.costMulti;
-  $("g-one").querySelector("small").textContent = `コイン${GACHA.costOne}枚`;
-  $("g-multi").querySelector("small").textContent = `コイン${GACHA.costMulti}枚で${GACHA.multiCount}回`;
+  const one = costOf("one", gacha.cat), multi = costOf("multi", gacha.cat);
+  $("g-one").disabled = empty || g.coins < one;
+  $("g-multi").disabled = empty || g.coins < multi;
+  $("g-one").querySelector("small").textContent = `コイン${one}枚`;
+  $("g-multi").querySelector("small").textContent = `コイン${multi}枚で${GACHA.multiCount}回`;
   $("g-multi-note").hidden = !gacha.series;
   if (gacha.series) $("g-multi-note").textContent = ribbonMode ? "ピックアップのリボンだけ！" : `${SERIES[gacha.series]?.name || ""}1個確定！`;
   // かけら
@@ -499,7 +511,7 @@ function openTrade() {
     });
     grid.append(b);
   }
-  $("trade-sub").textContent = `かけら${GACHA.shardsForCharm}個で、まだ持っていないチャームを1つもらえるよ`;
+  $("trade-sub").textContent = `かけら${GACHA.shardsForCharm}個で、まだ持っていないチャームかリボンを1つもらえるよ`;
   $("trade-name").textContent = "チャームを選んでね";
   $("trade-ok").disabled = true;
   $("trade-modal").hidden = false;
