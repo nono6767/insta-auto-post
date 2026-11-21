@@ -274,8 +274,8 @@ function bigBottleHtml(b) {
   });
   const fillH = range * BIG_FILL;
   const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
-  // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの13%）
-  const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 13, seedOf(b.id || b.bottle));
+  // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの8.5%）
+  const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 8.5, seedOf(b.id || b.bottle));
   const mask = `url(big/${bottle.id}-mask.webp)`;
   const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), hangsOf(b), chainAtOf(b));
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
