@@ -55,15 +55,13 @@ const CHARMS = [
   { id: "b10", name: "麻ひものリボン", w: 160, h: 138, place: "neck", pw: 58, pa: 0.15, kind: "ribbon" },
   { id: "c00", name: "ハートのリボン", w: 160, h: 135, place: "neck", pw: 54, pa: 0.3, kind: "ribbon" },
   { id: "c01", name: "ふたつのハート", w: 160, h: 118, place: "hang" },
-  { id: "c02", name: "恋の矢", w: 160, h: 157, place: "hang" },
   { id: "c03", name: "クリスタル", w: 98, h: 160, place: "hang" },
   { id: "c04", name: "きらめく星", w: 143, h: 160, place: "hang" },
   { id: "c05", name: "オーロラのしずく", w: 87, h: 160, place: "hang" },
   { id: "c06", name: "魔法の本", w: 139, h: 160, place: "hang" },
   { id: "c07", name: "魔法の小瓶", w: 95, h: 160, place: "hang" },
-  { id: "c08", name: "黒い宝石の杖", w: 112, h: 160, place: "hang" },
   { id: "c09", name: "月と黒ねこ", w: 135, h: 160, place: "hang" },
-  { id: "c10", name: "肉球", w: 150, h: 160, place: "hang" },
+  { id: "c10", name: "肉球", w: 150, h: 160, place: "hang", scale: 0.78 }, // 小ぶりに
   { id: "c11", name: "黒ねことハート", w: 104, h: 160, place: "hang" },
   // バラ・バレエのチャーム（追加）
   { id: "d00", name: "バラのメダル", w: 115, h: 160, place: "hang" },
