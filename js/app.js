@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/29-16"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/29-17"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -138,7 +138,7 @@ function bottleForWeek(start) {
 }
 let newBottleThisVisit = null;
 
-// 花まるの絵（ごはんタブのカレンダーと、瓶に浮かぶお花で使う）
+// 花まるの絵（ごはんタブのカレンダーと、今は ごはんタブのカレンダーだけ。瓶の中は starsHtml の星）
 function hanamaruSvg(cls = "hanamaru") {
   const inBottle = cls === "flower-svg"; // 瓶の中では白いふちどりで目立たせる
   const petals = [0, 72, 144, 216, 288]
@@ -148,7 +148,65 @@ function hanamaruSvg(cls = "hanamaru") {
   return `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${outline}<g fill="${inBottle ? "#ff8fb3" : "#f6a5bd"}">${petals}</g><circle cx="12" cy="12" r="3.2" fill="#f2b544"/></svg>`;
 }
 
-// その週の「おやつ・つまみ食いをしなかった日」の数（＝瓶に浮かぶお花の数）
+// ---------- 瓶に浮かぶ小さな星（おやつを食べなかった日の数だけ） ----------
+// 淡いゴールドの星を、液体の中にふんわり散らす。ゆっくり上下にゆれて、ときどき1つずつキラッと光る
+const STAR_SHOW_MAX = 15; // 1本の瓶に描く星の数の上限（多くても、ごちゃごちゃしないように）
+function starSvg() {
+  // 下の星（少しこいゴールド）に、明るい星を左上へずらして重ね、ふちにツヤを入れて立体感を出す
+  const d = "M12 2.6l2.55 6.05 6.5.5-4.95 4.25 1.55 6.35L12 16.3l-5.65 3.45 1.55-6.35L2.95 9.15l6.5-.5z";
+  return `<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">
+    <path d="${d}" fill="#e2bf74" stroke="#b8924a" stroke-width=".9" stroke-linejoin="round"/>
+    <path d="${d}" fill="#f8e6b0" transform="translate(11.2 10.9) scale(.8) translate(-12 -12)"/>
+    <path d="M9.6 9.2 12 3.9l1.1 2.6" fill="none" stroke="#fffaf0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+    <circle cx="10.3" cy="10.6" r="1.05" fill="#fff" opacity=".85"/>
+  </svg>`;
+}
+// 星をおく場所：瓶の中だとわかっている点（flowers）と、そのあいだの点から、
+// 液体の中にあるものだけを選び、いちばん離れた場所から順にとっていく（かたまらないように）
+function starSpots(bottle, count, liquidTop, seed = 1) {
+  const base = bottle.flowers || [];
+  if (!base.length || count <= 0) return [];
+  let r = seed % 2147483647 || 1;
+  const rand = () => ((r = (r * 48271) % 2147483647) / 2147483647);
+  const cand = [];
+  for (const p of base) cand.push(p);
+  for (let i = 0; i < base.length; i++)
+    for (let j = i + 1; j < base.length; j++)
+      for (const t of [0.33, 0.5, 0.67]) cand.push([base[i][0] + (base[j][0] - base[i][0]) * t, base[i][1] + (base[j][1] - base[i][1]) * t]);
+  const bottomY = Math.max(...base.map((p) => p[1]));
+  const lo = Math.min(liquidTop + 4, bottomY - 6); // 液体の表面より少し下から
+  let pool = cand.filter((p) => p[1] >= lo && p[1] <= bottomY - 1);
+  if (pool.length < count) pool = cand.filter((p) => p[1] <= bottomY - 1);
+  pool = pool.map(([x, y]) => [x + (rand() - 0.5) * 4, y + (rand() - 0.5) * 3]);
+  const k = bottle.h / bottle.w; // 縦と横の目もりをそろえる
+  const dist = (a, b) => Math.hypot(a[0] - b[0], (a[1] - b[1]) * k);
+  const out = [pool[Math.floor(rand() * pool.length)]];
+  while (out.length < Math.min(count, pool.length)) {
+    let best = null, bd = -1;
+    for (const p of pool) {
+      const d = Math.min(...out.map((q) => dist(p, q)));
+      if (d > bd) (bd = d), (best = p);
+    }
+    out.push(best);
+  }
+  return out;
+}
+// sizeH：星の大きさ（瓶の高さの%）
+function starsHtml(bottle, count, liquidTop, sizeH, seed) {
+  const n = Math.min(count, STAR_SHOW_MAX);
+  const spots = starSpots(bottle, n, liquidTop, seed);
+  const period = Math.max(7, spots.length * 2.2); // キラッと光るのは、1つずつ順番に
+  return spots
+    .map(([x, y], i) => {
+      const size = (sizeH * (0.82 + ((i * 37) % 5) * 0.07) * bottle.h) / bottle.w;
+      const dur = 4.6 + ((i * 53) % 7) * 0.35;
+      return `<span class="bottle-star" style="width:${size.toFixed(1)}%;left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--float:${dur.toFixed(2)}s;--float-delay:${(-i * 1.3).toFixed(1)}s;--glint:${period.toFixed(1)}s;--glint-delay:${(i * 2.2 + 1).toFixed(1)}s">${starSvg()}</span>`;
+    })
+    .join("");
+}
+const seedOf = (text) => [...String(text)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 2147483647, 7);
+
+// その週の「おやつ・つまみ食いをしなかった日」の数（＝瓶に浮かぶ星の数）
 function weekFlowerCount(start) {
   let n = 0;
   for (let i = 0; i < 7; i++) {
@@ -166,7 +224,7 @@ function pastel(hex, mix = 0.3) {
   return `rgb(${c.join(",")})`;
 }
 
-// 小瓶の絵：淡いパステルの中身（瓶の形で切り抜き）とお花の上に、瓶の画像を重ねる
+// 小瓶の絵：淡いパステルの中身（瓶の形で切り抜き）と星の上に、瓶の画像を重ねる
 // capacity：何分で満タンに見えるか（小瓶は36分）
 // ・満タンまでは、運動した分だけたまる
 // ・満タンをこえた日は、その日の全部の運動の割合で層を分け直して、瓶のまわりがキラキラする
@@ -220,18 +278,17 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix
   }
 
   const mask = `url(bottles/${bottle.id}-mask.webp)`;
-  const spots = (bottle.flowers || []).slice(0, Math.min(flowerCount, 7));
-  const size = ((11 * bottle.h) / bottle.w).toFixed(1); // お花の大きさ：瓶の高さの11%
-  const flowers = spots
-    .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
-    .join("");
+  // おやつを食べなかった日の星（液体の中に浮かぶ。星の大きさ：瓶の高さの9%）
+  const fillPct = total > 0 ? Math.max(Math.min(1, total / capacity) * SMALL_FULL_LEVEL, 30) : 30;
+  const liquidTop = bottle.bottom - (fillPct / 100) * range;
+  const flowers = starsHtml(bottle, flowerCount, liquidTop, 9, seedOf(bottle.id + flowerCount));
   // 満タンをこえた日は、瓶のまわりにキラキラ
   const sparks = overflow
     ? [[8, 30], [92, 40], [14, 72], [88, 78], [50, 6], [96, 62]]
         .map(([x, y], i) => `<span class="bottle-spark" style="left:${x}%;top:${y}%;animation-delay:${(i * 0.37).toFixed(2)}s"></span>`)
         .join("")
     : "";
-  const label = `${bottle.name}${mix ? "（シェイクずみ）" : ""}${overflow ? "（満タン！）" : ""}${flowerCount > 0 ? `（お花${spots.length}つ）` : ""}`;
+  const label = `${bottle.name}${mix ? "（シェイクずみ）" : ""}${overflow ? "（満タン！）" : ""}${flowerCount > 0 ? `（星${Math.min(flowerCount, STAR_SHOW_MAX)}つ）` : ""}`;
   return `<div class="bottle small-bottle${overflow ? " overflow" : ""}${mix ? " mixed" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}" role="img" aria-label="${label}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="bottles/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}">

@@ -49,7 +49,7 @@ const LINES = {
   ],
   meals: [
     { when: (c) => c.mealsDone === 3, pose: "hands", say: "今日のごはん、ぜんぶ記録できたね。えらい！" },
-    { when: (c) => c.snackNone, pose: "hands", say: "おやつなしで花まる！小瓶にお花が浮かぶよ" },
+    { when: (c) => c.snackNone, pose: "hands", say: "おやつなしで花まる！小瓶に星がひとつ浮かぶよ" },
     { when: (c) => c.mealsDone > 0, pose: "hands", say: (c) => `ごはん記録ありがとう！今日はあと${3 - c.mealsDone}食だよ` },
     { when: (c) => c.tod === "morning" && !c.mealDone.breakfast, pose: "pointSide", say: "おはよう！朝ごはん、なに食べた？下から記録してね" },
     { when: (c) => c.tod === "day" && !c.mealDone.lunch, pose: "pointSide", say: "お昼ごはんの記録、わすれずにね" },

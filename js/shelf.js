@@ -15,7 +15,7 @@ const SHELF_COL_X = [178, 358, 538, 718]; // 左右の側板の内側を4等分�
 
 let shelfPage = null; // 表示中の棚（null＝いちばん新しい棚）
 
-// ---------- 大瓶（チャームなしの瓶のイラスト ＋ 中身 ＋ お花 ＋ チャーム） ----------
+// ---------- 大瓶（チャームなしの瓶のイラスト ＋ 中身 ＋ 星 ＋ チャーム） ----------
 
 const BIG_FILL = 0.8;  // 中身は体の8割まで（上にすき間）
 const BIG_BLUR = 2.2; // 層の境目のぼかしの幅（中身の高さの%）
@@ -274,11 +274,8 @@ function bigBottleHtml(b) {
   });
   const fillH = range * BIG_FILL;
   const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
-  const size = ((10 * bottle.h) / bottle.w).toFixed(1);
-  const flowers = bottle.flowers
-    .slice(0, Math.min(b.flowers || 0, 7))
-    .map(([x, y], i) => `<span class="flower" style="width:${size}%;left:${x}%;top:${y}%;animation-delay:${(i * -0.7).toFixed(1)}s">${hanamaruSvg("flower-svg")}</span>`)
-    .join("");
+  // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの6.5%）
+  const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 6.5, seedOf(b.id || b.bottle));
   const mask = `url(big/${bottle.id}-mask.webp)`;
   const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), hangsOf(b), chainAtOf(b));
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
@@ -483,7 +480,7 @@ function mergeSmallBottles() {
     date: dateKey(),
     layers,
     bottle: pick.id,
-    flowers: Math.min(7, new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size),
+    flowers: new Set(used.filter((u) => daySnackFree(u.day)).map((u) => u.day)).size, // おやつを食べなかった日の合計（星の数）
     days: used.map((u) => u.day),
     charms: [], // 進化したあとに、好きなチャームを CHARM_MAX 個まで選んでつける
     uses,
