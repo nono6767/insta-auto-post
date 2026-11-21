@@ -109,12 +109,12 @@ const CHARMS = [
   { id: "k07", name: "さくら色のひらひらリボン", w: 155, h: 160, place: "neck", band: [0.27, 0.32, 0.49], kind: "ribbon" },
   { id: "k08", name: "水色のロングリボン", w: 115, h: 160, place: "neck", band: [0.28, 0.28, 0.54], scale: 0.82, kind: "ribbon" },
   // 金のレースのふちどりリボン
-  { id: "l00", name: "水色のレースリボン", w: 170, h: 153, place: "neck", band: [0.718, 0.303, 0.409], kind: "ribbon" },
-  { id: "l01", name: "さくら色のレースリボン", w: 166, h: 151, place: "neck", band: [0.735, 0.244, 0.462], kind: "ribbon" },
-  { id: "l02", name: "クリームのレースリボン", w: 156, h: 143, place: "neck", band: [0.715, 0.253, 0.435], kind: "ribbon" },
-  { id: "l03", name: "水色の花がらレースリボン", w: 170, h: 150, place: "neck", band: [0.662, 0.246, 0.479], kind: "ribbon" },
-  { id: "l04", name: "バラがらのレースリボン", w: 170, h: 151, place: "neck", band: [0.703, 0.296, 0.402], kind: "ribbon" },
-  { id: "l05", name: "ローズのレースリボン", w: 170, h: 150, place: "neck", band: [0.656, 0.19, 0.44], kind: "ribbon" },
+  { id: "l00", name: "水色のレースリボン", w: 170, h: 155, place: "neck", band: [0.717, 0.3, 0.402], kind: "ribbon" },
+  { id: "l01", name: "さくら色のレースリボン", w: 163, h: 147, place: "neck", band: [0.73, 0.21, 0.47], kind: "ribbon" },
+  { id: "l02", name: "クリームのレースリボン", w: 155, h: 143, place: "neck", band: [0.713, 0.252, 0.438], kind: "ribbon" },
+  { id: "l03", name: "水色の花がらレースリボン", w: 170, h: 152, place: "neck", band: [0.666, 0.244, 0.482], kind: "ribbon" },
+  { id: "l04", name: "バラがらのレースリボン", w: 170, h: 151, place: "neck", band: [0.708, 0.291, 0.405], kind: "ribbon" },
+  { id: "l05", name: "ローズのレースリボン", w: 170, h: 152, place: "neck", band: [0.659, 0.198, 0.435], kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
