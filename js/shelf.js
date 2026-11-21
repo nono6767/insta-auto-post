@@ -707,6 +707,7 @@ let chainAtChoice = {}; // 場所ごとのチェーンの長さ
 let placeSel = "center"; // いま選んでいる場所
 let ribbonChoice = null; // 首のリボン（1つ・なしもOK）
 let charmTab = "charm";  // いま選んでいるタブ（"charm" / "ribbon"）
+let pickNote = ""; // さっき押したチャームの名前（「〜をつけたよ」）
 const allChoice = () => [...hangChoice.left, ...hangChoice.center, ...hangChoice.right, ...otherChoice];
 const placeOfChoice = (id) => HANG_SPOTS.find((s) => hangChoice[s.key].includes(id));
 
@@ -719,6 +720,7 @@ function openCharmPicker(b, justEvolved = false) {
   placeSel = HANG_SPOTS.find((s) => hangChoice[s.key].length)?.key || "center";
   ribbonChoice = ribbonOf(b);
   charmTab = "charm";
+  pickNote = "";
   $("charm-title").textContent = justEvolved ? "チャームとリボンを選んでつけよう" : "チャームとリボンを付け替える";
   $("charm-sub").textContent = `${shortDate(b.date)}に進化した大瓶`;
   drawCharmGrid();
@@ -754,9 +756,12 @@ function drawCharmGrid() {
   grid.querySelectorAll(".charm-option").forEach((btn) => btn.addEventListener("click", () => pickCharm(btn.dataset.id)));
 }
 // チャームのマスを押したとき
+const q = (c) => `「${c.name}」`;
 function pickCharm(id) {
+  pickNote = "";
   if (charmTab === "ribbon") {
     ribbonChoice = !id || ribbonChoice === id ? null : id; // もう一度押すとはずす
+    if (id) pickNote = ribbonChoice ? `${q(charmById(id))}を結んだよ` : `${q(charmById(id))}をほどいたよ`;
     updateCharmPreview();
     return;
   }
@@ -771,20 +776,22 @@ function pickCharm(id) {
   const label = HANG_SPOTS.find((s) => s.key === placeSel).label;
   if (!isHangCharm(c)) {
     // 首・ふた・台につけるものは、場所はえらばない（もう一度押すとはずす）
-    if (otherChoice.includes(id)) otherChoice = otherChoice.filter((x) => x !== id);
+    if (otherChoice.includes(id)) (otherChoice = otherChoice.filter((x) => x !== id)), (pickNote = `${q(c)}をはずしたよ`);
     else if (allChoice().length >= CHARM_MAX) return showToast(`チャームはぜんぶで${CHARM_MAX}個までだよ。どれかをはずしてね`);
-    else otherChoice = [...otherChoice, id];
+    else (otherChoice = [...otherChoice, id]), (pickNote = `${q(c)}をつけたよ`);
     updateCharmPreview();
     return;
   }
   const from = placeOfChoice(id);
   if (from && from.key === placeSel) {
     hangChoice[placeSel] = hangChoice[placeSel].filter((x) => x !== id); // 同じ場所でもう一度押すとはずす
+    pickNote = `${q(c)}をはずしたよ`;
   } else {
     if (hangChoice[placeSel].length >= STACK_MAX) return showToast(`${label}には${STACK_MAX}個までつなげられるよ`);
     if (!from && allChoice().length >= CHARM_MAX) return showToast(`チャームはぜんぶで${CHARM_MAX}個までだよ。どれかをはずしてね`);
     if (from) hangChoice[from.key] = hangChoice[from.key].filter((x) => x !== id); // ほかの場所から、ここへうつす
     hangChoice[placeSel] = [...hangChoice[placeSel], id]; // いちばん下につなげる
+    pickNote = `${q(c)}を${label}の${hangChoice[placeSel].length}番目につけたよ`;
   }
   updateCharmPreview();
 }
@@ -804,7 +811,7 @@ function updateCharmPreview() {
   $("charm-preview").style.width = `${(150 * bottle.w) / bottle.h}px`;
   const cText = all.length ? `チャーム ${all.length}/${CHARM_MAX}個` : "チャームなし";
   const rText = ribbonChoice ? charmById(ribbonChoice).name : "リボンなし";
-  $("charm-name").textContent = `${cText} ／ ${rText}`;
+  $("charm-name").textContent = pickNote || `${cText} ／ ${rText}`;
   $("charm-tab-charm").textContent = `チャーム（${all.length}/${CHARM_MAX}）`;
   $("charm-tab-ribbon").textContent = `リボン（${ribbonChoice ? 1 : 0}/1）`;
   $("charm-grid").querySelectorAll(".charm-option").forEach((btn) => {
@@ -854,8 +861,8 @@ function drawPlacePanel() {
     const c = charmById(id);
     const row = document.createElement("div");
     row.className = "chain-row stack-row";
-    row.innerHTML = `<span class="stack-no">${i + 1}</span><img src="${charmSrc(c)}" alt="">`;
-    row.setAttribute("aria-label", `${i + 1}番目：${c.name}`);
+    row.innerHTML = `<span class="stack-no">${i + 1}</span><img src="${charmSrc(c)}" alt=""><span class="stack-name"></span>`;
+    row.querySelector(".stack-name").textContent = c.name;
     const btn = (text, aria, disabled, fn) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -876,6 +883,7 @@ function drawPlacePanel() {
     btn("↓", "下へ", i === list.length - 1, move(1));
     btn("✕", "はずす", false, () => {
       hangChoice[placeSel] = list.filter((x) => x !== id);
+      pickNote = `「${c.name}」をはずしたよ`;
       updateCharmPreview();
     });
     box.append(row);
@@ -910,7 +918,8 @@ function drawPlacePanel() {
       b.type = "button";
       b.className = "other-chip";
       b.setAttribute("aria-label", `${c.name}をはずす`);
-      b.innerHTML = `<img src="${charmSrc(c)}" alt="">✕`;
+      b.innerHTML = `<img src="${charmSrc(c)}" alt=""><span class="other-name"></span>✕`;
+      b.querySelector(".other-name").textContent = c.name;
       b.addEventListener("click", () => {
         otherChoice = otherChoice.filter((x) => x !== id);
         updateCharmPreview();
