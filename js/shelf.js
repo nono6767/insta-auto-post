@@ -148,14 +148,14 @@ function charmsHtml(bottle, ids, ribbonId = null, chains = {}) {
       let width = CHARM_SIZE * Math.sqrt(c.w / c.h);
       const tall = width * (c.h / c.w);
       if (Math.max(width, tall) > CHARM_SIZE * CHARM_MAX_SIDE) width *= (CHARM_SIZE * CHARM_MAX_SIDE) / Math.max(width, tall);
-      width *= c.scale || 1;
+      width *= (c.scale || 1) * (bottle.charmScale || 1);
       // 短いチェーンで、少し外がわ・下へ（長く引きのばさない）
       // 2個・3個のときは、左右のチャームを少し外がわへ。まん中は少し下に（重ならないように）
       const many = hangs.length;
       const out = side ? width * (many === 3 ? 0.42 : many === 2 ? 0.3 : 0.15) : 0;
       // チェーンの長さ（付け替え画面で、チャームごとに選べる）。3個のときのまん中は、少し長めに
       const len = CHAIN_LENGTHS[chains[c.id]] || CHAIN_LENGTHS.normal;
-      const drop = len.drop + (!side && many === 3 ? 3 : 0);
+      const drop = len.drop + (!side && many === 3 ? 3 : 0) + (ribbonId ? bottle.charmDrop || 0 : 0); // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
       const ex = p.x + side * out, ey = p.y + drop;
       // たるんだカーブ（まん中が少し下にふくらむ）
       paths += chainPath(`M${p.x} ${p.y} Q${(p.x + ex) / 2} ${Math.max(p.y, ey) + 1.6} ${ex} ${ey}`);
