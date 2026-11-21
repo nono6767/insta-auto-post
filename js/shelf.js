@@ -106,6 +106,7 @@ function chainAtOf(b) {
   return out;
 }
 
+const STACK_SCALE = { 2: 0.85, 3: 0.72 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
 const LINK_GAP = 3.2; // 縦につなげるときの、チャームとチャームのあいだの短いチェーン（瓶の横幅の%）
 
 function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
@@ -190,11 +191,19 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     const ring = (x, y) => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.05" fill="none" stroke="#b39a6a" stroke-width=".7"/>`; // つなぎの輪
     for (const s of cols) {
       const p = at(s.t);
-      const widths = s.list.map(sizeOf);
+      // 縦につなげるときは、少し小さく（2個＝STACK_SCALE[2]、3個＝STACK_SCALE[3]）
+      let widths = s.list.map((c) => sizeOf(c) * (STACK_SCALE[s.list.length] || 1));
       // 左右は少し外がわへ（3か所ぜんぶのときは広めに）。真ん中は、左右があるとき少し下に
       const out = s.side ? Math.max(...widths) * (cols.length === 3 ? 0.42 : cols.length === 2 ? 0.3 : 0.15) : 0;
       const len = CHAIN_LENGTHS[chainAt[s.key]] || CHAIN_LENGTHS.normal; // チェーンの長さ（場所ごとに選べる）
       const drop = len.drop + (!s.side && cols.length === 3 ? 3 : 0) + (ribbonId ? bottle.charmDrop || 0 : 0); // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
+      // それでも瓶の底からはみ出しそうなら、はみ出さない大きさまで小さくする
+      const room = Y(bottle.bottom) - 3 - (p.y + drop);
+      const need = s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
+      if (need > room) {
+        const f = Math.max(0.5, (room - LINK_GAP * (s.list.length - 1)) / (need - LINK_GAP * (s.list.length - 1)));
+        widths = widths.map((w) => w * f);
+      }
       const x = p.x + s.side * out;
       let y = p.y + drop;
       // たるんだカーブ（まん中が少し下にふくらむ）
