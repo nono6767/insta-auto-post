@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/29-19"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/29-20"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -149,14 +149,14 @@ function hanamaruSvg(cls = "hanamaru") {
 }
 
 // ---------- 瓶に浮かぶ小さな星（おやつを食べなかった日の数だけ） ----------
-// 淡いゴールドのキラキラ（✦）を、液体の中にふんわり散らす。ゆっくり上下にゆれて、ときどき1つずつキラッと光る
+// 淡いピンクのキラキラ（✦）を、液体の中に散らす。液体の中をゆっくり漂って、ときどき1つずつキラッと光る
 const STAR_SHOW_MAX = 12; // 1本の瓶に描く星の数の上限（多くても、ごちゃごちゃしないように）
 function starSvg() {
-  // 4本の光がのびるキラキラ（✦）。ふちどりはなし。淡いゴールドの上に、白に近い中心を重ねる
+  // 4本の光がのびるキラキラ（✦）。ふちどりはなし。淡いピンクの上に、白に近い中心を重ねる（瓶のまわりの金のキラキラと区別する）
   const d = "M12 1C12.85 8.3 15.7 11.15 23 12C15.7 12.85 12.85 15.7 12 23C11.15 15.7 8.3 12.85 1 12C8.3 11.15 11.15 8.3 12 1Z";
   return `<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">
-    <path d="${d}" fill="#ebc977"/>
-    <path d="${d}" fill="#fff6dc" transform="translate(12 12) scale(.62) translate(-12 -12)"/>
+    <path d="${d}" fill="#f4abc6"/>
+    <path d="${d}" fill="#ffe9f1" transform="translate(12 12) scale(.62) translate(-12 -12)"/>
     <circle cx="12" cy="12" r="1.5" fill="#fff"/>
   </svg>`;
 }
@@ -198,8 +198,10 @@ function starsHtml(bottle, count, liquidTop, sizeH, seed) {
   return spots
     .map(([x, y], i) => {
       const size = (sizeH * (0.82 + ((i * 37) % 5) * 0.07) * bottle.h) / bottle.w;
-      const dur = 4.6 + ((i * 53) % 7) * 0.35;
-      return `<span class="bottle-star" style="width:${size.toFixed(1)}%;left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--float:${dur.toFixed(2)}s;--float-delay:${(-i * 1.3).toFixed(1)}s;--glint:${period.toFixed(1)}s;--glint-delay:${(i * 2.2 + 1).toFixed(1)}s">${starSvg()}</span>`;
+      const dur = 11 + ((i * 53) % 7) * 1.0; // 漂う速さ（ゆっくり。星ごとに少しずつちがう）
+      const dx = (i % 2 ? 1 : -1) * (70 + ((i * 29) % 5) * 12); // 横に漂う幅（星の大きさの%）
+      const dy = 28 + ((i * 17) % 4) * 8;                        // たてに漂う幅
+      return `<span class="bottle-star" style="width:${size.toFixed(1)}%;left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--float:${dur.toFixed(2)}s;--float-delay:${(-i * 2.7).toFixed(1)}s;--dx:${dx}%;--dy:${dy}%;--glint:${period.toFixed(1)}s;--glint-delay:${(i * 2.2 + 1).toFixed(1)}s">${starSvg()}</span>`;
     })
     .join("");
 }
