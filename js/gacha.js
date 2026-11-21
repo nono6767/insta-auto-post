@@ -368,16 +368,16 @@ function drawGachaScreen() {
         <span class="g-notice-name"></span>
         <span class="g-notice-arrow" aria-hidden="true">▾</span>
       </button>
+      ${sr.catch ? `<p class="g-notice-catch"></p>` : ""}
       <div class="g-notice-flow" aria-hidden="true"><div class="g-notice-track" style="--n:${lineup.length}">${imgs}${imgs}</div></div>
       <div class="g-notice-detail"${open ? "" : " hidden"}>
         <h3 class="g-notice-title"></h3>
         <p class="g-notice-date">${shortDate(p.start)}〜${shortDate(p.end)}　${p.revival ? "もう一度会えるよ" : "なにが出るかは、始まってからのお楽しみ"}</p>
-        ${sr.catch ? `<p class="g-notice-sub"></p>` : ""}
         <div class="g-notice-lineup">${imgs}</div>
       </div>`;
     el.querySelector(".g-notice-name").textContent = sr.name;
     el.querySelector(".g-notice-title").textContent = sr.name;
-    if (sr.catch) el.querySelector(".g-notice-sub").textContent = sr.catch;
+    if (sr.catch) el.querySelector(".g-notice-catch").textContent = sr.catch; // サブタイトルは、閉じていても見える
     el.querySelector(".g-notice-strip").addEventListener("click", () => {
       if (noticeOpen.has(key)) noticeOpen.delete(key);
       else noticeOpen.add(key);

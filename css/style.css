@@ -1780,3 +1780,4 @@ body.gacha-open { overflow: hidden; }
 .g-grade-legend { margin: 8px 0 0; font-size: 11px; color: #8d6070; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .g-grade-legend .grade-badge { position: static; font-size: 11px; }
 .g-grade-legend small { font-size: 10px; }
+.g-notice-catch { margin: 1px 0 0; font-size: 12px; line-height: 1.45; color: #8d6070; letter-spacing: .02em; }
