@@ -107,7 +107,7 @@ const CHARMS = [
   { id: "k05", name: "水色のなびきリボン", w: 132, h: 160, place: "neck", band: [0.29, 0.25, 0.46], scale: 0.85, kind: "ribbon" },
   { id: "k06", name: "ラベンダーのななめリボン", w: 155, h: 157, place: "neck", band: [0.71, 0.23, 0.44], kind: "ribbon" },
   { id: "k07", name: "さくら色のひらひらリボン", w: 155, h: 160, place: "neck", band: [0.27, 0.32, 0.49], kind: "ribbon" },
-  { id: "k08", name: "水色のロングリボン", w: 115, h: 160, place: "neck", band: [0.3, 0.19, 0.46], scale: 0.82, kind: "ribbon" },
+  { id: "k08", name: "水色のロングリボン", w: 115, h: 160, place: "neck", band: [0.28, 0.28, 0.54], scale: 0.82, kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
