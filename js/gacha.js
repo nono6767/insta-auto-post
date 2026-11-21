@@ -309,6 +309,13 @@ function drawGachaScreen() {
     b.setAttribute("role", "tab");
     b.setAttribute("aria-selected", String(it.id === gacha.id));
     b.textContent = it.name;
+    // はじめて開催のガチャは「NEW」、もう一度の開催は「復刻」
+    if (it.series) {
+      const mark = document.createElement("span");
+      mark.className = `g-tab-mark ${it.revival ? "revival" : "new"}`;
+      mark.textContent = it.revival ? "復刻" : "NEW";
+      b.append(mark);
+    }
     b.addEventListener("click", () => {
       gachaTab = it.id;
       data.gacha.lastTab = it.id;
@@ -330,7 +337,7 @@ function drawGachaScreen() {
     el.className = `g-banner g-banner-${gacha.series}`;
     el.style.setProperty("--c", sr.color || "#e8a3b8");
     el.innerHTML = `
-      <p class="g-banner-tag">${gacha.revival ? "復刻ピックアップ" : "ピックアップ開催中"}</p>${gacha.revival ? `<span class="g-revival">復刻</span>` : ""}
+      <p class="g-banner-tag">${gacha.revival ? "復刻ピックアップ" : "NEW ピックアップ開催中"}</p>${gacha.revival ? `<span class="g-revival">復刻</span>` : `<span class="g-newgacha">NEW</span>`}
       <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${sr.catch || ""}</p>
       <p class="g-banner-date"><b class="g-days">${left <= 1 ? "今日まで！" : `あと${left}日`}</b>（${shortDate(gacha.end)}まで） ・ 集めた ${have} / ${lineup.length}</p>

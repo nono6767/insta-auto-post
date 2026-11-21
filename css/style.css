@@ -1787,3 +1787,10 @@ body.gacha-open { overflow: hidden; }
 .g-notice-kind.revival { background: linear-gradient(135deg, #9b7fe0, #6fa8e8); }
 .g-notice-strip { gap: 5px; }
 @keyframes notice-new { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+/* はじめて開催のガチャ（NEW）と、もう一度の開催（復刻）のしるし */
+.g-tab { position: relative; }
+.g-tab-mark { position: absolute; top: -7px; right: 2px; padding: 1px 6px; border-radius: 999px; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .04em; line-height: 1.4; box-shadow: 0 1px 3px rgb(200 60 110 / .35); pointer-events: none; }
+.g-tab-mark.new { background: linear-gradient(135deg, #ff6f9f, #ff9a6b); animation: notice-new 2.4s ease-in-out infinite; }
+.g-tab-mark.revival { background: linear-gradient(135deg, #9b7fe0, #6fa8e8); }
+.g-tabs { overflow: visible; }
+.g-newgacha { position: absolute; top: 12px; right: 12px; padding: 3px 12px; border-radius: 999px; background: linear-gradient(135deg, #ff6f9f, #ff9a6b); color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .08em; box-shadow: 0 2px 6px rgb(230 90 120 / .4); transform: rotate(6deg); animation: notice-new 2.4s ease-in-out infinite; }
