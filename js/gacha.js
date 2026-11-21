@@ -350,7 +350,8 @@ function drawGachaScreen() {
   // 予告：もうすぐ始まるピックアップ（チャームはシルエットで、ちらっと見せる）
   const notice = $("g-notice");
   notice.replaceChildren();
-  for (const p of upcomingPickups()) {
+  // いろいろガチャのタブには出さない（ピックアップガチャのタブだけ）
+  for (const p of gacha.mix ? [] : upcomingPickups()) {
     const sr = SERIES[p.series];
     const lineup = CHARMS.filter((c) => seriesOf(c) === p.series);
     const n = daysUntil(p.start);

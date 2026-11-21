@@ -1431,8 +1431,8 @@ body.gacha-open { overflow: hidden; }
 .jbox.open .jb-charm { transform: translate(-50%, -28%) scale(1.15); opacity: 1; animation: jb-float 2.4s ease-in-out 2s infinite; }
 @keyframes jb-float { 50% { translate: 0 -6px; } }
 /* ガチャ画面の飾りの宝石箱 */
-.gacha-showcase { display: grid; place-items: center; height: 220px; margin: 4px auto; }
-.gacha-showcase .jbox { width: 200px; }
+.gacha-showcase { display: grid; place-items: center; height: 104px; margin: -2px auto 2px; }
+.gacha-showcase .jbox { width: 96px; }
 .jbox.idle { animation: jb-idle 3s ease-in-out infinite; }
 @keyframes jb-idle { 50% { transform: translateY(-5px); } }
 /* 演出中は背景を少し暗くして、上から箱にスポットライト */
