@@ -106,7 +106,9 @@ function chainAtOf(b) {
   return out;
 }
 
-const STACK_SCALE = { 2: 0.85, 3: 0.72 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
+const STACK_SCALE = { 2: 0.9, 3: 0.8 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
+const STACK_DROP = { 2: 0.7, 3: 0.45 }; // ★ 縦につなげたときの、いちばん上のチェーンの長さ（1個のときを1として）
+const MIN_DROP = 2.5; // いちばん上のチェーンの、いちばん短い長さ
 const LINK_GAP = 3.2; // 縦につなげるときの、チャームとチャームのあいだの短いチェーン（瓶の横幅の%）
 
 function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
@@ -196,14 +198,21 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       // 左右は少し外がわへ（3か所ぜんぶのときは広めに）。真ん中は、左右があるとき少し下に
       const out = s.side ? Math.max(...widths) * (cols.length === 3 ? 0.42 : cols.length === 2 ? 0.3 : 0.15) : 0;
       const len = CHAIN_LENGTHS[chainAt[s.key]] || CHAIN_LENGTHS.normal; // チェーンの長さ（場所ごとに選べる）
-      const drop = len.drop + (!s.side && cols.length === 3 ? 3 : 0) + (ribbonId ? bottle.charmDrop || 0 : 0); // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
-      // それでも瓶の底からはみ出しそうなら、はみ出さない大きさまで小さくする
-      const room = Y(bottle.bottom) - 3 - (p.y + drop);
-      const need = s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
-      if (need > room) {
-        const f = Math.max(0.5, (room - LINK_GAP * (s.list.length - 1)) / (need - LINK_GAP * (s.list.length - 1)));
+      // チェーンの長さ：縦につなげるときは、いちばん上のチェーンを短めに（STACK_DROP）
+      let base = len.drop * (STACK_DROP[s.list.length] || 1) + (!s.side && cols.length === 3 ? 3 : 0);
+      const extra = ribbonId ? bottle.charmDrop || 0 : 0; // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
+      // 瓶の底からはみ出しそうなら、まずいちばん上のチェーンを短くして、それでもだめなら小さくする
+      const height = () => s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
+      const bottomLimit = Y(bottle.bottom) - 3;
+      let over = p.y + base + extra + height() - bottomLimit;
+      if (over > 0) base -= Math.min(over, Math.max(0, base - MIN_DROP));
+      over = p.y + base + extra + height() - bottomLimit;
+      if (over > 0) {
+        const gaps = LINK_GAP * (s.list.length - 1);
+        const f = Math.max(0.5, (height() - over - gaps) / (height() - gaps));
         widths = widths.map((w) => w * f);
       }
+      const drop = base + extra;
       const x = p.x + s.side * out;
       let y = p.y + drop;
       // たるんだカーブ（まん中が少し下にふくらむ）
