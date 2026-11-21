@@ -77,13 +77,6 @@ const CHARMS = [
   { id: "k03", name: "さくらの横むすび", w: 147, h: 160, place: "neck", band: [0.68, 0.31, 0.52], kind: "ribbon" },
   { id: "k04", name: "ミントの横むすび", w: 134, h: 160, place: "neck", band: [0.31, 0.31, 0.54], kind: "ribbon" },
   { id: "k06", name: "ラベンダーの横むすび", w: 155, h: 157, place: "neck", band: [0.71, 0.23, 0.44], kind: "ribbon" },
-  // 金のレースのふちどりリボン
-  { id: "l00", name: "そらいろレースリボン", w: 170, h: 155, place: "neck", band: [0.717, 0.3, 0.402], kind: "ribbon" },
-  { id: "l01", name: "さくらレースリボン", w: 163, h: 147, place: "neck", band: [0.73, 0.21, 0.47], kind: "ribbon" },
-  { id: "l02", name: "ミルクレースリボン", w: 155, h: 143, place: "neck", band: [0.713, 0.252, 0.438], kind: "ribbon" },
-  { id: "l03", name: "花がらレースリボン", w: 170, h: 152, place: "neck", band: [0.666, 0.244, 0.482], kind: "ribbon" },
-  { id: "l04", name: "バラがらレースリボン", w: 170, h: 151, place: "neck", band: [0.708, 0.291, 0.405], kind: "ribbon" },
-  { id: "l05", name: "ローズレースリボン", w: 170, h: 152, place: "neck", band: [0.659, 0.198, 0.435], kind: "ribbon" },
 ];
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）

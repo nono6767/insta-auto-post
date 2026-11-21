@@ -747,13 +747,13 @@ function drawCharmGrid() {
     btn.className = "charm-option" + (gradeOf(c) ? ` grade-${c.grade}` : "");
     btn.dataset.id = c.id;
     btn.setAttribute("aria-label", c.name + (gradeOf(c) ? `（${GRADES[c.grade].label}）` : ""));
-    btn.innerHTML = `${gradeBadge(c)}<img src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
+    btn.innerHTML = `<img src="${charmSrc(c)}" alt="" width="${c.w}" height="${c.h}" loading="lazy"><span class="charm-num"></span>`;
     grid.append(btn);
   }
   grid.querySelectorAll(".charm-option").forEach((btn) => btn.addEventListener("click", () => pickCharm(btn.dataset.id)));
 }
 // チャームのマスを押したとき
-const q = (c) => `${gradeOf(c) ? GRADES[c.grade].stars : ""}「${c.name}」`;
+const q = (c) => `「${c.name}」`;
 function pickCharm(id) {
   pickNote = "";
   if (charmTab === "ribbon") {

@@ -19,7 +19,7 @@
 // チャーム1つの書き方
 //   { id: "h00", name: "チャームの名前" }
 //   ・レア度（grade）：書かないと「ノーマル」。grade: "super"（スーパーレア・いちばんレア）／ grade: "rare"（レア）
-//     レアほどガチャで出にくい（出やすさは下の GRADES の weight）。付け替え画面やガチャの一覧で、背景の色と★でわかる
+//     レアほどガチャで出にくい（出やすさは下の GRADES の weight）。ガチャの画面では「SR」「R」「N」、付け替え画面では背景の色でわかる
 //   ・画像は charms/シリーズのid/ の「id.webp」（ちがう名前なら file: "xxx.webp"）
 //   ・つけ方（place）を書かないと「首のチェーンから下げる」。リボンは place: "neck", pw: 58, pa: 0.2
 //   ・w・h（画像の大きさ）は書かなくてもOK（アプリが読みこんだときに測る）
@@ -121,6 +121,24 @@ const SERIES_LIST = [
     ],
   },
 
+  {
+    // リボンガチャ（いろいろガチャの中。1日1回無料。チャームのガチャには入らない）
+    id: "vribbon",
+    name: "ベルサイユの王妃のリボン",
+    gachaName: "リボンガチャ",
+    catch: "金のレースでふちどった、王妃のためのリボン",
+    color: "#e9b8c8",
+    ribbonGacha: true,
+    pickups: [],
+    charms: [
+      { id: "l00", name: "トリアノンの空色リボン", w: 170, h: 155, place: "neck", band: [0.717, 0.3, 0.402], kind: "ribbon" },
+      { id: "l01", name: "王妃のさくらリボン", w: 163, h: 147, place: "neck", band: [0.73, 0.21, 0.47], kind: "ribbon" },
+      { id: "l02", name: "ミルクティーのレースリボン", w: 155, h: 143, place: "neck", band: [0.713, 0.252, 0.438], kind: "ribbon" },
+      { id: "l03", name: "ロココの花がらリボン", w: 170, h: 152, place: "neck", band: [0.666, 0.244, 0.482], kind: "ribbon", grade: "rare" },
+      { id: "l04", name: "プチ・トリアノンのバラリボン", w: 170, h: 151, place: "neck", band: [0.708, 0.291, 0.405], kind: "ribbon", grade: "super" },
+      { id: "l05", name: "ベルサイユのローズリボン", w: 170, h: 152, place: "neck", band: [0.659, 0.198, 0.435], kind: "ribbon", grade: "rare" },
+    ],
+  },
   // ---- ひな形（コピーして、// を消して使う） ----
   // {
   //   id: "neko",                       // 英字（画像のフォルダ名）
@@ -140,12 +158,16 @@ const SERIES_LIST = [
 
 // ★ レア度（出やすさ weight は、ノーマルを1としたとき）
 const GRADES = {
-  super: { label: "スーパーレア", stars: "★★★", weight: 0.35 },
-  rare: { label: "レア", stars: "★★", weight: 0.65 },
+  super: { label: "スーパーレア", short: "SR", weight: 0.35 },
+  rare: { label: "レア", short: "R", weight: 0.65 },
 };
 const gradeOf = (c) => (c && GRADES[c.grade] ? c.grade : null);
 const gradeWeight = (c) => (gradeOf(c) ? GRADES[c.grade].weight : 1);
-const gradeBadge = (c) => (gradeOf(c) ? `<span class="grade-badge grade-${c.grade}" aria-label="${GRADES[c.grade].label}">${GRADES[c.grade].stars}</span>` : "");
+// ガチャの画面で出す「SR」「R」「N」（付け替え画面では出さず、背景の色だけ）
+const gradeBadge = (c) => {
+  const g = gradeOf(c);
+  return g ? `<span class="grade-badge grade-${g}" aria-label="${GRADES[g].label}">${GRADES[g].short}</span>` : `<span class="grade-badge grade-normal" aria-label="ノーマル">N</span>`;
+};
 
 const PICKUP_DAYS = 7; // end を書かないときの期間
 function addDaysKey(key, n) {

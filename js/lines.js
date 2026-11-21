@@ -182,7 +182,7 @@ function talkContext() {
     savingsLeft: typeof savingsReady === "function" && savingsReady() ? timesLeft() : null,
     savedThisWeek: typeof thisWeeksDeposit === "function" && !!thisWeeksDeposit(),
     coins: g ? g.coins : 0,
-    free: g ? freeLeft() : 0,
+    free: g ? freeLeft() + (typeof ribbonFreeLeft === "function" ? ribbonFreeLeft() : 0) : 0,
     multiCost: typeof GACHA !== "undefined" ? GACHA.costMulti : 10,
     quizLeft: typeof quizCoinsToday === "function" ? COIN_RULES.quizDailyMax - quizCoinsToday() : 0,
     pickup: gacha && gacha.series ? SERIES[gacha.series]?.name : null,
