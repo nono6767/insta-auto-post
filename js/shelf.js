@@ -741,7 +741,7 @@ function drawCharmGrid() {
   for (const c of CHARMS) {
     if (isRibbon(c) !== ribbonMode) continue;
     const chosen = ribbonMode ? ribbonChoice === c.id : chosenNow.includes(c.id);
-    if (typeof isOwned === "function" && !isOwned(c) && !chosen) continue;
+    if (typeof canUse === "function" && !canUse(c) && !chosen) continue;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "charm-option" + (gradeOf(c) ? ` grade-${c.grade}` : "");

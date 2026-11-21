@@ -80,10 +80,13 @@ function ensureGacha() {
   }
   // すでに大瓶につけているチャームは、持っているものとして扱う
   for (const b of data.bigBottles || []) {
-    for (const id of [...(b.charms || []), b.ribbon].filter(Boolean)) if (!g.owned.includes(id) && charmById(id) && isLimited(charmById(id))) g.owned.push(id);
+    for (const id of [...(b.charms || []), b.ribbon].filter(Boolean)) if (!g.owned.includes(id) && charmById(id) && isLimited(charmById(id)) && !isTrial(charmById(id))) g.owned.push(id);
   }
   return g;
 }
+// 試しに使えるシリーズ（js/series.js で trial: true）：付け替え画面でだけ選べる。持っている記録やガチャの表示は変えない
+const isTrial = (c) => !!(c && SERIES[seriesOf(c)]?.trial);
+const canUse = (c) => isOwned(c) || isTrial(c);
 const isOwned = (c) => !isLimited(c) || (data.gacha && data.gacha.owned.includes(c.id));
 
 // ---------- コイン ----------
@@ -430,9 +433,9 @@ function drawGachaScreen() {
       <div class="g-notice-flow" aria-hidden="true"><div class="g-notice-track" style="--n:${lineup.length}">${imgs}${imgs}</div></div>
       <div class="g-notice-detail"${open ? "" : " hidden"}>
         <h3 class="g-notice-title"></h3>
+        ${extras.map((r) => `<p class="g-notice-extra">✦ リボンガチャに<b>${SERIES[r.series].name}</b>${r.revival ? "も復刻予定" : "も登場予定"}</p>`).join("")}
         <p class="g-notice-date">${shortDate(p.start)}〜${shortDate(p.end)}　${p.revival ? "もう一度会えるよ" : "なにが出るかは、始まってからのお楽しみ"}</p>
         <div class="g-notice-lineup">${imgs}</div>
-        ${extras.map((r) => `<p class="g-notice-extra"><span class="g-notice-kind ${r.revival ? "revival" : "new"}">${r.revival ? "復刻" : "新"}</span><span>同じ期間に、リボンガチャで<b>「${SERIES[r.series].name}」</b>${r.revival ? "がもう一度" : "も追加"}だよ！（${shortDate(r.start)}〜${shortDate(r.end)}）</span></p>`).join("")}
       </div>`;
     el.querySelector(".g-notice-name").textContent = sr.name;
     el.querySelector(".g-notice-title").textContent = sr.name;
