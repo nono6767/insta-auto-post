@@ -215,8 +215,13 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       const extra = ribbonId ? bottle.charmDrop || 0 : 0; // 細長い瓶は、リボンをつけたときだけ、リボンにかくれないように下げる
       // 「長い」のときは、リボンの結び目より下まで、ちゃんと長くする（瓶の底に入らないときは、チェーンではなくチャームを小さくする）
       const isLong = len === CHAIN_LENGTHS.long;
-      const minDrop = isLong && ribbonId ? Math.max(0, ribbonClear - p.y - extra) : 0;
+      let minDrop = isLong && ribbonId ? Math.max(0, ribbonClear - p.y - extra) : 0;
       if (isLong) base = Math.max(base, len.drop * (s.list.length > 1 ? 0.6 : 1), minDrop);
+      // 瓶ごとに、リボンをつけたときの長さを決めているとき（js/bigbottles.js の ribbonDrops）：リボンの下のはしから数える
+      if (ribbonId && bottle.ribbonDrops) {
+        base = Math.max(0, ribbonClear - p.y - extra) + (bottle.ribbonDrops[chainAt[s.key]] ?? bottle.ribbonDrops.normal);
+        minDrop = base; // チェーンは短くしない（瓶に入らないときは、チャームを小さくする）
+      }
       // 瓶の底からはみ出しそうなら、まずいちばん上のチェーンを短くして、それでもだめなら小さくする
       const height = () => s.list.reduce((t, c, i) => t + widths[i] * (c.h / c.w), 0) + LINK_GAP * (s.list.length - 1);
       const bottomLimit = Y(bottle.bottom) - 3;
