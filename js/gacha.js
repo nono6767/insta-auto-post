@@ -351,7 +351,7 @@ function drawGachaScreen() {
   // バナーと、当たるチャームの一覧（選んだガチャのぶんだけ）
   const banner = $("g-banners");
   banner.replaceChildren();
-  const item = (c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}${gradeOf(c) ? " grade-" + c.grade : ""}">${gradeBadge(c)}<img src="${charmSrc(c)}" alt="" loading="lazy"><figcaption>${c.name}</figcaption></figure>`;
+  const item = (c) => `<figure class="g-item${isOwned(c) ? " owned" : ""}${gradeOf(c) ? " grade-" + c.grade : ""}"><img src="${charmSrc(c)}" alt="" loading="lazy"><figcaption>${gradeBadge(c)}${c.name}</figcaption></figure>`;
   if (gacha.series) {
     const sr = SERIES[gacha.series] || { name: gacha.series };
     const lineup = CHARMS.filter((c) => seriesOf(c) === gacha.series);
@@ -499,7 +499,7 @@ function openTrade() {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "charm-option" + (gradeOf(c) ? ` grade-${c.grade}` : "");
-    b.innerHTML = `${gradeBadge(c)}<img src="${charmSrc(c)}" alt="" loading="lazy">`;
+    b.innerHTML = `<img src="${charmSrc(c)}" alt="" loading="lazy">`;
     b.setAttribute("aria-label", c.name);
     b.addEventListener("click", () => {
       tradePick = c;
@@ -728,8 +728,8 @@ function showGachaResults(results, multi, traded) {
     const sName = SERIES[seriesOf(r.charm)]?.name || "";
     card.innerHTML = `
       ${r.isNew ? `<span class="g-new">NEW</span>` : ""}
-      ${gradeBadge(r.charm)}<img src="${charmSrc(r.charm)}" alt="">
-      <span class="g-card-name">${r.charm.name}</span>
+      <img src="${charmSrc(r.charm)}" alt="">
+      <span class="g-card-name">${gradeBadge(r.charm)}${r.charm.name}</span>
       <span class="g-card-sub">${r.isNew ? sName : `かけら+${GACHA.shardPerDup}`}</span>`;
     grid.append(card);
   });

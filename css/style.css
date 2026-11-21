@@ -1806,3 +1806,8 @@ body.gacha-open { overflow: hidden; }
 .g-mix-switch button[aria-selected="true"] { background: linear-gradient(90deg, #f6a2bf, #c9a8ee); color: #fff; box-shadow: 0 1px 4px rgb(180 90 140 / .25); }
 .g-mix-free { position: absolute; top: -6px; right: 4px; padding: 1px 6px; border-radius: 999px; background: linear-gradient(90deg, #7fd3c4, #8bc6f0); color: #fff; font-size: 9px; font-weight: 800; }
 .g-banner-ribbon { background: linear-gradient(135deg, #fff7fa, #fbe0ea 55%, #f1e6d2); }
+/* SR・R・N は、絵にかぶらないように名前の前に小さく */
+.g-item .grade-badge, .g-card .grade-badge, .g-card-name .grade-badge {
+  position: static; display: inline-block; vertical-align: 1px; margin-right: 3px;
+  padding: 0 4px; border-radius: 5px; font-size: 8.5px; line-height: 1.45;
+}
