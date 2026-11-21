@@ -40,9 +40,9 @@ const SERIES_LIST = [
       { id: "d02", name: "まっ赤な約束のバラ", w: 92, h: 160 },
       { id: "d03", name: "バラ園の金のハート", w: 113, h: 160 },
       { id: "d04", name: "のびやかなバラのつる", w: 62, h: 160 },
-      { id: "d05", name: "思い出のバラのロケット", w: 118, h: 160, grade: "rare" },
+      { id: "d05", name: "思い出のバラのロケット", w: 118, h: 160 },
       { id: "d06", name: "ひみつの花園の門", w: 96, h: 160, grade: "rare" },
-      { id: "d07", name: "うさぎのじょうろ", w: 106, h: 160 },
+      { id: "d07", name: "うさぎのじょうろ", w: 106, h: 160, grade: "rare" },
       { id: "d08", name: "バラ園の白うさぎ", w: 91, h: 160, grade: "super" },
       { id: "e08", name: "バラとリボンのしずく", w: 90, h: 160 },
     ],
@@ -58,12 +58,12 @@ const SERIES_LIST = [
       { id: "f00", name: "キトリの情熱の扇", w: 143, h: 160, grade: "super" },
       { id: "f01", name: "広場のタンバリン", w: 115, h: 160 },
       { id: "f02", name: "恋のカスタネット", w: 114, h: 160 },
-      { id: "f03", name: "キトリのバラの髪かざり", w: 160, h: 154, grade: "rare" },
+      { id: "f03", name: "キトリのバラの髪かざり", w: 160, h: 154 },
       { id: "f04", name: "騎士の誓いの剣", w: 46, h: 160 },
       { id: "f05", name: "ドゥルシネアの赤いハート", w: 84, h: 146, grade: "rare" },
       { id: "f06", name: "ドン・キホーテのかぶと", w: 97, h: 160 },
       { id: "f07", name: "バルセロナのショール", w: 127, h: 160 },
-      { id: "f08", name: "ラ・マンチャの風車", w: 90, h: 160 },
+      { id: "f08", name: "ラ・マンチャの風車", w: 90, h: 160, grade: "rare" },
       { id: "f09", name: "セレナーデのギター", w: 77, h: 160 },
     ],
   },
@@ -92,12 +92,12 @@ const SERIES_LIST = [
     color: "#e79ab6",
     pickups: [{ start: "2026-11-20", end: "2026-11-26" }],
     charms: [
-      { id: "e00", name: "はじめてのトウシューズ", w: 105, h: 160 },
-      { id: "e01", name: "さくら色のチュチュ", w: 152, h: 160 },
+      { id: "e00", name: "はじめてのトウシューズ", w: 105, h: 160, grade: "super" },
+      { id: "e01", name: "さくら色のチュチュ", w: 152, h: 160, grade: "rare" },
       { id: "e02", name: "プリマのティアラ", w: 133, h: 125, grade: "rare" },
-      { id: "e03", name: "白鳥の湖", w: 122, h: 156, grade: "rare" },
+      { id: "e03", name: "白鳥の湖", w: 122, h: 156 },
       { id: "e04", name: "ラベンダーの夢チュチュ", w: 160, h: 151 },
-      { id: "e05", name: "くるくるプリマ", w: 131, h: 192, grade: "super" },
+      { id: "e05", name: "くるくるプリマ", w: 131, h: 192 },
       { id: "e06", name: "月夜のトウシューズ", w: 45, h: 160 },
       { id: "e07", name: "星に願うトウシューズ", w: 126, h: 160 },
     ],
@@ -165,8 +165,11 @@ const SERIES_PICKUPS = SERIES_LIST.flatMap((s) =>
 ).sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
 
 // シリーズのチャームを、チャームの一覧（js/bigbottles.js の CHARMS）に足す
+// レア順（スーパーレア → レア → ノーマル）に並べる。一覧の左はしから、レアなものが来るように
+const GRADE_ORDER = { super: 0, rare: 1 };
 for (const s of SERIES_LIST) {
-  for (const c of s.charms || []) {
+  const sorted = (s.charms || []).map((c, i) => [c, i]).sort((a, b) => (GRADE_ORDER[a[0].grade] ?? 2) - (GRADE_ORDER[b[0].grade] ?? 2) || a[1] - b[1]).map(([c]) => c);
+  for (const c of sorted) {
     if (CHARMS.some((x) => x.id === c.id)) continue; // id がかぶったら、あとのほうは使わない
     CHARMS.push({
       place: "hang",
