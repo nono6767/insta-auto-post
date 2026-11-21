@@ -270,6 +270,7 @@ function addDeposit(type, amount) {
   savings().deposits.push(dep);
   saveData();
   renderSavings();
+  if (typeof checkCoinRewards === "function") checkCoinRewards(); // 貯金したらコイン
   const msg =
     wasLeft > 0 && timesLeft() === 0
       ? "目標達成！ほんとうにおめでとう！"

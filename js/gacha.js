@@ -20,6 +20,8 @@ const COIN_RULES = {
   period: 1,    // 生理を記録した（ボーナス。始まりを記録したとき）
   periodDay: 1, // 生理中に、その日のからだの記録をした（毎日）
   bigBottle: 3, // 大瓶に進化した（1本ごと）
+  savings: 5,      // 貯金瓶に今週の分を入れた（1週間に1回）
+  savingsExtra: 3, // 貯金瓶に追加で入れた（1日1回まで）
 };
 
 // ガチャ
@@ -73,6 +75,12 @@ function ensureGacha() {
     for (const r of rewardList()) if (r.key.startsWith("pd:") && r.day !== today) g.given[r.key] = true;
     g.periodDayStart = today;
   }
+  // 貯金のコインを始める前の貯金のぶんは、まとめて出さない（今日のぶんは、もらえる）
+  if (!g.savingsStart) {
+    const today = dateKey();
+    for (const r of rewardList()) if ((r.key.startsWith("sv:") || r.key.startsWith("sx:")) && r.day !== today) g.given[r.key] = true;
+    g.savingsStart = today;
+  }
   if (!g.overStart) {
     const today = dateKey();
     for (const r of rewardList()) if (r.key.startsWith("qx:") && r.day !== today) g.given[r.key] = true;
@@ -115,6 +123,11 @@ function rewardList() {
     }
   }
   for (const b of data.bigBottles || []) out.push({ key: "b:" + b.id, amount: COIN_RULES.bigBottle, label: "大瓶に進化" });
+  // 貯金：今週の分は週に1回、追加は1日1回まで（取り消して入れ直しても、ふえない）
+  for (const d of (data.savings && data.savings.deposits) || []) {
+    if (d.type === "weekly") out.push({ key: "sv:" + (d.week || d.date), amount: COIN_RULES.savings, label: "今週の貯金", day: d.date });
+    else out.push({ key: "sx:" + d.date, amount: COIN_RULES.savingsExtra, label: "追加の貯金", day: d.date });
+  }
   return out;
 }
 function markExistingRewards() {
