@@ -848,14 +848,14 @@ function drawPlacePanel() {
   const list = hangChoice[placeSel];
   const hint = document.createElement("p");
   hint.className = "chain-title";
-  hint.textContent = list.length ? `${label}：上から順につながっているよ` : `下のチャームを押すと、${label}に下がるよ（${STACK_MAX}個までつなげられる）`;
+  hint.textContent = list.length ? `${label}（上から順）` : `下から選ぶと${label}に下がるよ`;
   box.append(hint);
   list.forEach((id, i) => {
     const c = charmById(id);
     const row = document.createElement("div");
     row.className = "chain-row stack-row";
-    row.innerHTML = `<span class="stack-no">${i + 1}</span><img src="${charmSrc(c)}" alt=""><span class="chain-name"></span>`;
-    row.querySelector(".chain-name").textContent = c.name;
+    row.innerHTML = `<span class="stack-no">${i + 1}</span><img src="${charmSrc(c)}" alt="">`;
+    row.setAttribute("aria-label", `${i + 1}番目：${c.name}`);
     const btn = (text, aria, disabled, fn) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -882,8 +882,8 @@ function drawPlacePanel() {
   });
   if (list.length) {
     const row = document.createElement("div");
-    row.className = "chain-row";
-    row.innerHTML = `<span class="chain-name">チェーンの長さ</span>`;
+    row.className = "chain-row len-row";
+    row.setAttribute("aria-label", "チェーンの長さ");
     const now = chainAtChoice[placeSel] || "normal";
     for (const [key, v] of Object.entries(CHAIN_LENGTHS)) {
       const b = document.createElement("button");
@@ -903,7 +903,7 @@ function drawPlacePanel() {
   if (otherChoice.length) {
     const row = document.createElement("div");
     row.className = "chain-row other-row";
-    row.innerHTML = `<span class="chain-name">首・ふたにつけるもの</span>`;
+    row.innerHTML = `<span class="chain-name">首・ふた</span>`;
     for (const id of otherChoice) {
       const c = charmById(id);
       const b = document.createElement("button");
