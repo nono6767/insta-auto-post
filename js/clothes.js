@@ -74,11 +74,38 @@ async function photoTx(mode, fn) {
     tx.onabort = () => reject(tx.error);
   });
 }
-const addPhoto = (photo) => photoTx("readwrite", (s) => s.put(photo));
+// iPhone（ホーム画面のアプリ）では、画像（Blob）をそのまま保存できないことがある。
+// そのときは文字（dataURL）にして保存する。読むときは、どちらでも Blob にもどす
+const blobToDataUrl = (blob) =>
+  new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+function dataUrlToBlob(url) {
+  const [head, body] = url.split(",");
+  const type = (head.match(/data:([^;]+)/) || [])[1] || "image/jpeg";
+  const bin = atob(body);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type });
+}
+const normPhoto = (p) => (p && !p.blob && p.dataUrl ? { ...p, blob: dataUrlToBlob(p.dataUrl) } : p);
+async function addPhoto(photo) {
+  try {
+    await photoTx("readwrite", (s) => s.put(photo));
+  } catch (e) {
+    console.warn("Blobで保存できなかったので、文字にして保存", e);
+    const { blob, ...rest } = photo;
+    const dataUrl = await blobToDataUrl(blob);
+    await photoTx("readwrite", (s) => s.put({ ...rest, dataUrl }));
+  }
+}
 const deletePhoto = (id) => photoTx("readwrite", (s) => s.delete(id));
 const photosOf = async (clothId) =>
-  ((await photoTx("readonly", (s) => s.index("clothId").getAll(clothId))) || []).sort((a, b) => b.ts - a.ts);
-const allPhotos = async () => (await photoTx("readonly", (s) => s.getAll())) || [];
+  ((await photoTx("readonly", (s) => s.index("clothId").getAll(clothId))) || []).map(normPhoto).sort((a, b) => b.ts - a.ts);
+const allPhotos = async () => ((await photoTx("readonly", (s) => s.getAll())) || []).map(normPhoto);
 const clearPhotos = () => photoTx("readwrite", (s) => s.clear());
 async function deletePhotosOf(clothId) {
   for (const p of await photosOf(clothId)) await deletePhoto(p.id);
@@ -129,7 +156,8 @@ async function reshrinkOldPhotos() {
       if (Math.max(img.naturalWidth, img.naturalHeight) <= PHOTO_MAX_PX + 8) continue;
       const smaller = await shrinkPhoto(p.blob);
       if (smaller.size < p.blob.size) {
-        await addPhoto({ ...p, blob: smaller });
+        const { dataUrl, ...rest } = p;
+        await addPhoto({ ...rest, blob: smaller });
         changed++;
       }
     } catch (e) {
@@ -262,7 +290,7 @@ $("photo-input").addEventListener("change", async () => {
     else showToast("写真を保存したよ");
   } catch (e) {
     console.warn(e);
-    showToast("写真を保存できませんでした");
+    showToast(`写真を保存できませんでした（${(e && (e.name || e.message)) || "原因不明"}）`);
   }
 });
 
