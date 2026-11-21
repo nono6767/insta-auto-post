@@ -1597,7 +1597,7 @@ body.gacha-open { overflow: hidden; }
 .g-tab { padding: 0 6px; font-size: 13px; letter-spacing: 0; white-space: nowrap; }
 
 /* ---------- 大瓶の飾り：チャーム／首のリボン ---------- */
-#charm-modal .charm-modal { grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; }
+#charm-modal .charm-modal { grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto; }
 .charm-tabs { display: flex; gap: 4px; margin-top: 8px; padding: 4px; border-radius: 999px; background: var(--rose-soft); }
 .charm-tab { flex: 1; min-height: 36px; border: 0; border-radius: 999px; background: none; color: var(--muted); font-size: 13px; font-weight: 700; }
 .charm-tab[aria-selected="true"] { background: var(--surface); color: var(--rose); box-shadow: 0 1px 2px rgb(120 60 80 / .15); }
@@ -1637,3 +1637,13 @@ body.gacha-open { overflow: hidden; }
 .g-notice-lineup { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
 .g-notice-lineup img { flex: none; width: 44px; height: 44px; object-fit: contain; }
 .g-notice-lineup img.silhouette { filter: brightness(0) opacity(.35); }
+
+/* チェーンの長さ */
+.chain-rows { display: grid; gap: 4px; margin: 0 0 8px; padding: 8px 10px; border-radius: 14px; background: #fdf3f7; text-align: left; }
+.chain-rows[hidden] { display: none; }
+.chain-title { margin: 0 0 2px !important; font-size: 12px !important; font-weight: 700; color: var(--ink) !important; }
+.chain-row { display: flex; align-items: center; gap: 6px; }
+.chain-row img { width: 24px; height: 24px; object-fit: contain; flex: none; }
+.chain-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ink); }
+.chain-btn { flex: none; min-height: 30px; padding: 0 9px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 700; }
+.chain-btn[aria-pressed="true"] { border-color: var(--rose); background: var(--rose-soft); color: var(--rose); }
