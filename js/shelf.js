@@ -226,7 +226,13 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
         if (i < s.list.length - 1) {
           // 下のはしから、短いチェーンで次のチャームへ
           const bottom = top + widths[i] * (c.h / c.w);
-          paths += chainPath(`M${x} ${bottom - 1.4} L${x} ${bottom + LINK_GAP + 0.8}`);
+          if (c.tail) {
+            // 下のチェーンが出る場所が決まっているチャーム（js/series.js の tail）：そこからチェーンをのばす
+            const tx = x + (0.5 - r) * widths[i] - widths[i] / 2 + c.tail[0] * widths[i];
+            const ty = top + c.tail[1] * widths[i] * (c.h / c.w);
+            const ey = bottom + LINK_GAP + 0.8;
+            paths += chainPath(`M${tx} ${ty} Q${tx} ${(ty + ey) / 2} ${x} ${ey}`);
+          } else paths += chainPath(`M${x} ${bottom - 1.4} L${x} ${bottom + LINK_GAP + 0.8}`);
           y = bottom + LINK_GAP;
         }
       });
