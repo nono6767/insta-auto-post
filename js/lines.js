@@ -154,7 +154,7 @@ function talkContext() {
   const g = typeof ensureGacha === "function" ? ensureGacha() : null;
   const gacha = g ? currentGacha() : null;
   const t = data.talk || {};
-  const newPickup = g ? openGachas().find((it) => it.series && !(t.pickupsSeen || []).includes(it.id)) : null;
+  const newPickup = g ? [...openGachas("charm"), ...openGachas("ribbon")].find((it) => it.series && !(t.pickupsSeen || []).includes(it.id)) : null;
   const lineup = gacha && gacha.series ? CHARMS.filter((c) => seriesOf(c) === gacha.series) : [];
   return {
     name: charName(),

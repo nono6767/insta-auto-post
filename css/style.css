@@ -1811,3 +1811,9 @@ body.gacha-open { overflow: hidden; }
   position: static; display: inline-block; vertical-align: 1px; margin-right: 3px;
   padding: 0 4px; border-radius: 5px; font-size: 8.5px; line-height: 1.45;
 }
+/* ガチャの種類：チャーム／リボン */
+.g-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 0 0 8px; padding: 4px; border-radius: 14px; background: rgb(255 255 255 / .7); box-shadow: 0 1px 3px rgb(180 80 120 / .12); }
+.g-cats button { position: relative; min-height: 38px; border: 0; border-radius: 11px; background: none; color: var(--muted); font-size: 15px; font-weight: 800; letter-spacing: .1em; }
+.g-cats button[aria-selected="true"] { background: linear-gradient(90deg, #f6a2bf, #c9a8ee); color: #fff; box-shadow: 0 1px 4px rgb(180 90 140 / .25); }
+.g-tab-vribbon[aria-selected="true"] { background: linear-gradient(90deg, #e9a8bd, #d8b878); }
+.g-banner-vribbon { background: linear-gradient(135deg, #fff7fa, #fbe0ea 55%, #f1e6d2); }
