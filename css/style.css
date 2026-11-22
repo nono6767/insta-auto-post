@@ -1829,3 +1829,5 @@ body.gacha-open { overflow: hidden; }
 /* 写真が1枚だけのとき：1枚を見る・消す */
 .compare.single .compare-grid { grid-template-columns: 1fr; }
 .compare.single .compare-col:last-child { display: none; }
+/* 大瓶に合成ずみの小瓶：記録としてそのまま並べる。札に ✦ */
+.shelf-plate.small.merged { background: linear-gradient(#f6efff, #e6dcfa); border-color: #b9a4e3; color: #6b5196; }

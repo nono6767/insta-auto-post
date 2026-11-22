@@ -12,10 +12,8 @@
 const shake = { day: null, done: false, busy: false };
 let motionAllowed = false; // このあいだに「振ってシェイク」が許可されたか
 
-// その日の小瓶の中身（まだ大瓶にしていない分。今日は今日の全部の記録）
+// その日の小瓶の中身（大瓶に合成したあとも、その日の記録ぜんぶ。頑張った記録として残す）
 function dayBottleLayers(day) {
-  const sb = smallBottles().find((b) => b.day === day);
-  if (sb) return sb.layers;
   return data.logs.filter((l) => l.date === day).sort((a, b) => a.ts - b.ts);
 }
 const dayName = (day) => (day === dateKey() ? "今日" : dayLabel(day));

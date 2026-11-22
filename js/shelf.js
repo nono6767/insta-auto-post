@@ -385,15 +385,25 @@ const SMALL_COL_X = [160, 304, 448, 592, 736]; // 側板の内側を5等分し�
 const SMALL_H = 150;                            // 小瓶の高さ（背景画像1200pxのうち）
 let smallPage = null;
 
+// 棚に並べる小瓶：運動した日ぜんぶ（大瓶に合成した日も、記録として残して並べる）
+function shelfSmallBottles() {
+  const pool = new Map(smallBottles().map((b) => [b.day, b]));
+  return [...new Set(data.logs.map((l) => l.date))].sort().map((day) => {
+    const layers = data.logs.filter((l) => l.date === day).sort((a, b) => a.ts - b.ts);
+    const p = pool.get(day);
+    return { day, layers, min: sumMin(layers), merged: !p, bonus: !!(p && p.bonus) };
+  });
+}
 function drawSmallShelf() {
-  const smalls = smallBottles();
-  const total = smalls.reduce((t, b) => t + b.min, 0);
+  const remain = smallBottles(); // まだ合成していない分（合成の計算はこちら）
+  const smalls = shelfSmallBottles();
+  const total = remain.reduce((t, b) => t + b.min, 0);
   const ready = total >= BIG_BOTTLE_MIN;
   const pages = Math.max(1, Math.ceil(smalls.length / SMALL_PER_PAGE));
   if (smallPage === null || smallPage >= pages) smallPage = pages - 1;
   const today = dateKey();
 
-  $("pool-count").textContent = smalls.length;
+  $("pool-count").textContent = remain.length;
   $("pool-min").textContent = total;
   $("pool-left").innerHTML = ready
     ? `<strong>合成できるよ！</strong> 古い小瓶から250分ぶんが大瓶になるよ`
@@ -418,14 +428,15 @@ function drawSmallShelf() {
     slot.style.height = `${(SMALL_H / SHELF_BOARD.h) * 100}%`;
     slot.style.width = `${((SMALL_H * shape.w) / shape.h / SHELF_BOARD.w) * 100}%`;
     slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex);
-    slot.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.bonus ? "・おまけ" : ""}${shaken ? "・" + shaken.name : ""}）`);
+    slot.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.merged ? "・大瓶に合成ずみ" : sb.bonus ? "・一部を大瓶に合成ずみ" : ""}${shaken ? "・" + shaken.name : ""}）`);
+    if (sb.merged) slot.classList.add("merged");
     slot.addEventListener("click", () => openDayBottle(sb.day));
 
     const plate = document.createElement("span");
-    plate.className = "shelf-plate small" + (sb.bonus ? " bonus" : sb.day === today ? " this-week" : ""); // おまけは金色の札
+    plate.className = "shelf-plate small" + (sb.merged ? " merged" : sb.bonus ? " bonus" : sb.day === today ? " this-week" : ""); // 合成ずみは✦つき、一部だけ合成した日は金色の札
     plate.style.left = slot.style.left;
     plate.style.top = `${(SHELF_PLATE_Y[row] / SHELF_BOARD.h) * 100}%`;
-    plate.textContent = sb.day === today ? "今日" : shortDate(sb.day);
+    plate.textContent = (sb.merged ? "✦" : "") + (sb.day === today ? "今日" : shortDate(sb.day));
     // シェイクした日は、札がその日の色になって、色の名前も出る
     if (shaken) {
       plate.classList.add("colored");
@@ -439,7 +450,7 @@ function drawSmallShelf() {
   });
 
   $("small-empty").hidden = smalls.length > 0;
-  $("bonus-hint").hidden = !smalls.some((b) => b.bonus);
+  $("bonus-hint").hidden = !smalls.some((b) => b.bonus || b.merged);
   $("small-nav").hidden = pages <= 1;
   $("small-page").textContent = `${smallPage + 1} / ${pages}`;
   $("small-prev").disabled = smallPage === 0;
@@ -547,9 +558,8 @@ function playEvolution(big, used) {
   stage.replaceChildren();
   result.hidden = true;
   overlay.hidden = false;
-  const bonus = used.filter((u) => u.took < u.min).length;
   $("merge-note").textContent =
-    `小瓶${used.length}本ぶん（${BIG_BOTTLE_MIN}分）が、大瓶になったよ` + (bonus ? `。あまった分は、おまけの小瓶として残してあるよ` : "") + "。好きなチャームをつけてあげよう";
+    `小瓶${used.length}本ぶん（${BIG_BOTTLE_MIN}分）が、大瓶になったよ。小瓶も、がんばった記録として棚に残してあるよ。好きなチャームをつけてあげよう`;
 
   const W = stage.clientWidth || window.innerWidth;
   const H = stage.clientHeight || window.innerHeight;
