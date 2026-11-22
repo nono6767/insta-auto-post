@@ -9,19 +9,19 @@
 // fit：枠の高さの何割で表示するか。ポーズで絵の形がちがっても、顔の大きさがそろうように決めてある
 const CHARACTERS = {
   n: {
-    name: "KANO",
+    name: "K",
     desc: "おだんごヘアの女の子",
     poses: {
-      pointUp:   { src: "img/char/n-pointUp.webp", w: 275, h: 360, alt: "上をゆびさすKANO" , fit: 0.87 },
-      pointSide: { src: "img/char/n-pointSide.webp", w: 294, h: 360, alt: "横をゆびさすKANO" , fit: 0.93 },
-      surprise:  { src: "img/char/n-surprise.webp", w: 283, h: 360, alt: "びっくりするKANO" , fit: 0.9 },
-      jump:      { src: "img/char/n-jump.webp", w: 264, h: 360, alt: "片足ジャンプでばんざいするKANO" , fit: 0.88 },
-      armsOpen:  { src: "img/char/n-armsOpen.webp", w: 236, h: 360, alt: "両手を広げるKANO" , fit: 0.9 },
-      guts:      { src: "img/char/n-guts.webp", w: 217, h: 360, alt: "ガッツポーズのKANO" , fit: 0.92 },
-      stretch:   { src: "img/char/n-stretch.webp", w: 307, h: 360, alt: "座ってストレッチするKANO" , fit: 0.8 },
-      rolling:   { src: "img/char/n-rolling.webp", w: 381, h: 360, alt: "ローリングライクアボールのKANO" , fit: 0.57 },
-      hands:     { src: "img/char/n-hands.webp", w: 199, h: 360, alt: "手を合わせてにっこりするKANO" , fit: 0.95 },
-      wink:      { src: "img/char/n-wink.webp", w: 177, h: 360, alt: "腰に手をあててウインクするKANO" , fit: 0.98 },
+      pointUp:   { src: "img/char/n-pointUp.webp", w: 275, h: 360, alt: "上をゆびさすK" , fit: 0.87 },
+      pointSide: { src: "img/char/n-pointSide.webp", w: 294, h: 360, alt: "横をゆびさすK" , fit: 0.93 },
+      surprise:  { src: "img/char/n-surprise.webp", w: 283, h: 360, alt: "びっくりするK" , fit: 0.9 },
+      jump:      { src: "img/char/n-jump.webp", w: 264, h: 360, alt: "片足ジャンプでばんざいするK" , fit: 0.88 },
+      armsOpen:  { src: "img/char/n-armsOpen.webp", w: 236, h: 360, alt: "両手を広げるK" , fit: 0.9 },
+      guts:      { src: "img/char/n-guts.webp", w: 217, h: 360, alt: "ガッツポーズのK" , fit: 0.92 },
+      stretch:   { src: "img/char/n-stretch.webp", w: 307, h: 360, alt: "座ってストレッチするK" , fit: 0.8 },
+      rolling:   { src: "img/char/n-rolling.webp", w: 381, h: 360, alt: "ローリングライクアボールのK" , fit: 0.57 },
+      hands:     { src: "img/char/n-hands.webp", w: 199, h: 360, alt: "手を合わせてにっこりするK" , fit: 0.95 },
+      wink:      { src: "img/char/n-wink.webp", w: 177, h: 360, alt: "腰に手をあててウインクするK" , fit: 0.98 },
     },
   },
   m: {

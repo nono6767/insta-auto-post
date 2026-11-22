@@ -124,7 +124,7 @@ async function deliverFile(blob, filename) {
   const file = new File([blob], filename, { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "KANOの運動瓶 バックアップ" });
+      await navigator.share({ files: [file], title: "Kのうんどう瓶 バックアップ" });
       return true;
     } catch (e) {
       if (e && e.name === "AbortError") return false; // 共有をやめた
