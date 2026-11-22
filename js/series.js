@@ -93,7 +93,7 @@ const SERIES_LIST = [
     gachaName: "バレエガチャ",
     catch: "トウシューズとチュチュで、くるっと一回転",
     color: "#e79ab6",
-    pickups: [{ start: "2026-11-20", end: "2026-11-26" }],
+    pickups: [{ start: "2026-11-20", end: "2026-11-22" }], // 11/23からベルサイユが始まるので、今日（11/22）まで
     charms: [
       { id: "e00", name: "はじめてのトウシューズ", w: 105, h: 160, grade: "super" },
       { id: "e01", name: "さくら色のチュチュ", w: 152, h: 160, grade: "rare" },
@@ -124,6 +124,26 @@ const SERIES_LIST = [
     ],
   },
 
+  {
+    id: "nutcracker",
+    trial: true, // ★ 試しに使える（動きの確認用）。確認が終わったら、この行を消して pickups に日付を入れる
+    name: "くるみ割り人形シリーズ",
+    gachaName: "くるみ割り人形ガチャ",
+    catch: "12時の鐘で魔法がとける、クリスマスイブの夢の国",
+    color: "#c8475a",
+    pickups: [],
+    charms: [
+      { id: "m06", name: "くるみ割り人形", w: 57, h: 160, grade: "super" },
+      { id: "m02", name: "王子さまの王冠", w: 159, h: 160, grade: "rare" },
+      { id: "m07", name: "金平糖の精の小瓶", w: 92, h: 160, grade: "rare" },
+      { id: "m00", name: "クララの空色ドレス", w: 141, h: 160 },
+      { id: "m01", name: "お菓子の国へのそり", w: 160, h: 126, ring: 0.73 },
+      { id: "m03", name: "ピンクのキャンディケイン", w: 78, h: 160 },
+      { id: "m04", name: "イブの夜のツリー", w: 96, h: 160 },
+      { id: "m05", name: "12時の柱時計", w: 71, h: 160 },
+      { id: "m08", name: "雪の国のスノーフレーク", w: 108, h: 160 },
+    ],
+  },
   {
     // ドン・キホーテのリボン（公開ずみ。いろいろリボンで引ける）
     id: "qribbon",
