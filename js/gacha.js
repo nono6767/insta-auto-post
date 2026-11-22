@@ -423,7 +423,8 @@ function drawGachaScreen() {
   const charmUps = ups.filter((p) => catOfSeries(p.series) === "charm");
   const near = (a, b) => Math.abs(daysUntil(a.start) - daysUntil(b.start)) <= 3;
   const extrasOf = (p) => ups.filter((r) => catOfSeries(r.series) === "ribbon" && near(r, p) && charmUps.find((c) => near(r, c)) === p);
-  for (const p of ups.filter((x) => catOfSeries(x.series) === "charm" || !charmUps.some((c) => near(x, c)))) {
+  // 予告は1つだけ（いちばん早く始まるもの）。画面をせまくしないように
+  for (const p of ups.filter((x) => catOfSeries(x.series) === "charm" || !charmUps.some((c) => near(x, c))).slice(0, 1)) {
     const sr = SERIES[p.series];
     const extras = extrasOf(p);
     const lineup = CHARMS.filter((c) => seriesOf(c) === p.series);
