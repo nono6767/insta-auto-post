@@ -990,11 +990,11 @@ document.addEventListener("pagechange", (e) => {
   }
 });
 // 確認用に試しで使えたシリーズ（trial）を戻したとき：まだガチャで手に入れていないチャームは、大瓶からはずす
-const TRIAL_ENDED = ["versailles"];
+const TRIAL_ENDED = ["versailles", "nutcracker"];
 function removeTrialCharms() {
   const owned = (data.gacha && data.gacha.owned) || [];
   let changed = false;
-  for (const b of data.bigBottles || []) {
+  for (const b of [...(data.bigBottles || []), ...(data.savings && data.savings.deco ? [data.savings.deco] : [])]) { // 大瓶と貯金瓶
     const keep = (id) => !(charmById(id) && TRIAL_ENDED.includes(charmById(id).series)) || owned.includes(id);
     const ids = Array.isArray(b.charms) ? b.charms : [];
     if (ids.every(keep)) continue;
