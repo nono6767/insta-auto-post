@@ -1831,3 +1831,6 @@ body.gacha-open { overflow: hidden; }
 .compare.single .compare-col:last-child { display: none; }
 /* 大瓶に合成ずみの小瓶：記録としてそのまま並べる。札に ✦ */
 .shelf-plate.small.merged { background: linear-gradient(#f6efff, #e6dcfa); border-color: #b9a4e3; color: #6b5196; }
+/* 貯金瓶の設定：毎週いくら入れたらいいか */
+.savings-suggest { text-align: left; margin: -2px 0 10px; padding: 8px 12px; border-radius: 12px; background: #fdf3f7; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.savings-suggest b { color: var(--rose); }

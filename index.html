@@ -159,7 +159,7 @@
 
       <div class="card savings-setup" id="savings-setup" hidden>
         <div class="modal-n" id="savings-setup-n"></div>
-        <p>まずは、毎週いくら入れるかと、目標を決めよう。</p>
+        <p>まずは、目標の金額を決めよう。目標の日を入れると、毎週いくら入れたらいいか計算するよ。</p>
         <button class="primary-btn" type="button" id="savings-setup-btn">貯金瓶の設定をする</button>
       </div>
 
@@ -370,11 +370,12 @@
   <div class="modal-backdrop" id="savings-modal" hidden>
     <form class="modal card" id="savings-form">
       <h3>貯金瓶の設定</h3>
-      <label class="text-field"><span>毎週の金額</span>
-        <span class="yen-input"><input type="number" id="savings-weekly-amount" inputmode="numeric" min="1" step="1" required placeholder="例：1000"><span>円</span></span></label>
       <label class="text-field"><span>目標金額</span>
         <span class="yen-input"><input type="number" id="savings-goal" inputmode="numeric" min="1" step="1" required placeholder="例：50000"><span>円</span></span></label>
-      <label class="text-field"><span>期限（なくてもOK）</span><input type="date" id="savings-deadline"></label>
+      <label class="text-field"><span>目標の日（なくてもOK）</span><input type="date" id="savings-deadline"></label>
+      <p class="savings-suggest" id="savings-suggest" hidden></p>
+      <label class="text-field"><span>毎週の金額</span>
+        <span class="yen-input"><input type="number" id="savings-weekly-amount" inputmode="numeric" min="1" step="1" required placeholder="例：1000"><span>円</span></span></label>
       <p class="hint">毎週の金額を変えても、これまでに入れた分はそのまま残るよ。</p>
       <p class="field-error" id="savings-error" hidden></p>
       <div class="modal-actions">

@@ -323,6 +323,45 @@ $("extra-form").addEventListener("submit", (ev) => {
 
 // ---------- 設定 ----------
 
+// 目標金額と目標の日から、毎週いくら入れたらいいか（100円単位で切り上げ）
+// 今週の分をまだ入れていなければ今週もふくめて、目標の日までの週の数で割る
+function weeklyFor(goal, deadline) {
+  if (!(goal >= 1) || !deadline) return null;
+  const rest = Math.max(0, goal - savedTotal());
+  if (rest <= 0) return { weekly: 0, weeks: 0, rest };
+  const days = Math.round((parseKey(deadline) - parseKey(dateKey())) / 86400000);
+  if (days < 0) return null;
+  const weeks = Math.max(1, Math.floor(days / 7) + (thisWeeksDeposit() ? 0 : 1));
+  return { weekly: Math.ceil(rest / weeks / 100) * 100, weeks, rest };
+}
+// 目標金額か目標の日を変えたら、毎週の金額を自動で入れる（あとから自分で直してもOK）
+function updateSavingsSuggest(fill) {
+  const goal = Math.round(Number($("savings-goal").value));
+  const deadline = $("savings-deadline").value;
+  const box = $("savings-suggest");
+  const r = weeklyFor(goal, deadline);
+  if (!deadline) {
+    box.hidden = false;
+    box.textContent = "目標の日を入れると、毎週いくら入れたらいいか計算するよ";
+    return;
+  }
+  if (!r) {
+    box.hidden = false;
+    box.textContent = "目標の日は、今日よりあとの日にしてね";
+    return;
+  }
+  box.hidden = false;
+  if (r.rest <= 0) {
+    box.innerHTML = "もう目標に届いているよ！すごい！";
+    return;
+  }
+  box.innerHTML = `目標の日まで <b>${r.weeks}週</b>。毎週 <b>${yen(r.weekly)}</b> 入れると届くよ`;
+  if (fill) $("savings-weekly-amount").value = r.weekly;
+}
+$("savings-goal").addEventListener("input", () => updateSavingsSuggest(true));
+$("savings-deadline").addEventListener("input", () => updateSavingsSuggest(true));
+$("savings-deadline").addEventListener("change", () => updateSavingsSuggest(true));
+
 function openSavingsSettings() {
   const s = savings();
   $("savings-weekly-amount").value = s.weekly || "";
@@ -330,6 +369,7 @@ function openSavingsSettings() {
   $("savings-deadline").value = s.deadline || "";
   $("savings-deadline").min = dateKey();
   $("savings-error").hidden = true;
+  updateSavingsSuggest(false);
   $("settings-modal").hidden = true;
   $("savings-modal").hidden = false;
 }
