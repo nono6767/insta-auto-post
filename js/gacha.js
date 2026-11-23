@@ -47,7 +47,13 @@ const SERIES = {
 // ガチャは2種類：ピックアップガチャ（js/series.js の期間で、同時に2つまで）と、常設の「いろいろガチャ」
 // いろいろガチャ：ピックアップが一度終わったシリーズ（ベーシックライン以外）が、ぜんぶ同じ確率で出る
 const MIX_GACHA = { id: "mix", name: "いろいろガチャ", series: null, mix: true, cat: "charm", effect: "jewelBox" };
-const MIX_RIBBON = { id: "mixribbon", name: "いろいろリボン", series: null, mix: true, cat: "ribbon", effect: "jewelBox" };
+// リボンは1つのガチャにまとめる（始まったリボンがぜんぶ入る。ピックアップ中のリボンは出やすい）
+const MIX_RIBBON = { id: "ribbon", name: "リボンガチャ", series: null, mix: true, cat: "ribbon", effect: "jewelBox" };
+// いまピックアップ中のリボンのシリーズ
+const ribbonPickupNow = () => {
+  const t = dateKey();
+  return SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && catOfSeries(p.series) === "ribbon");
+};
 // ガチャの種類：シリーズの type: "ribbon" はリボンのガチャ（チャームのガチャとは別）
 const catOfSeries = (id) => (SERIES[id]?.type === "ribbon" ? "ribbon" : "charm");
 let gachaCat = "charm"; // いま選んでいる種類（"charm" / "ribbon"）
@@ -105,10 +111,10 @@ function rewardList() {
   for (const l of data.logs) byDay[l.date] = (byDay[l.date] || 0) + l.min;
   for (const [day, min] of Object.entries(byDay)) {
     if (min < DAILY_QUOTA_MIN) continue;
-    out.push({ key: "q:" + day, amount: COIN_RULES.quota, label: "ノルマ達成", day });
+    out.push({ key: "q:" + day, amount: COIN_RULES.quota, label: "小瓶が満タン", day });
     // ノルマのあとも、30分ごとに+1
     const extra = Math.floor((min - DAILY_QUOTA_MIN) / COIN_RULES.overMin);
-    for (let k = 1; k <= extra; k++) out.push({ key: `qx:${day}:${k}`, amount: COIN_RULES.over, label: `ノルマのあと+${k * COIN_RULES.overMin}分`, day });
+    for (let k = 1; k <= extra; k++) out.push({ key: `qx:${day}:${k}`, amount: COIN_RULES.over, label: `満タンのあと+${k * COIN_RULES.overMin}分`, day });
   }
   for (const [day, m] of Object.entries(data.meals || {})) {
     if (m && Object.values(m).some((v) => v && (typeof v !== "object" || Object.keys(v).length))) out.push({ key: "m:" + day, amount: COIN_RULES.meal, label: "食事の記録", day });
@@ -195,6 +201,7 @@ const freeLeftFor = (cat) => (cat === "ribbon" ? ribbonFreeLeft() : freeLeft());
 // 開催中のガチャ：ピックアップ（開始日が早い順に、最大2つ）＋ いろいろガチャ（チャームとリボンで別々）
 const openGachas = (cat = gachaCat) => {
   const t = dateKey();
+  if (cat === "ribbon") return [MIX_RIBBON]; // リボンはタブを分けない
   // 3つ以上重なったときは、新しく始まったものを優先して2つまで
   const pickups = SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && SERIES[p.series] && catOfSeries(p.series) === cat)
     .slice()
@@ -219,6 +226,10 @@ const endedSeries = () => {
 // いろいろガチャの中身（チャーム／リボン）
 const mixPool = (cat = "charm") => {
   const rel = releasedSeries();
+  if (cat === "ribbon") {
+    const st = startedSeries(); // リボンは、始まったシリーズがぜんぶ入る（ピックアップ中も）
+    return CHARMS.filter((c) => st.has(seriesOf(c)) && catOfSeries(seriesOf(c)) === "ribbon" && isRibbon(c));
+  }
   return CHARMS.filter((c) => rel.has(seriesOf(c)) && catOfSeries(seriesOf(c)) === cat && isRibbon(c) === (cat === "ribbon"));
 };
 // そのガチャで出るもの（リボンのピックアップは、そのシリーズのリボンだけ）
@@ -254,12 +265,21 @@ function pickByGrade(arr) {
 // レア度：ピックアップ（虹）／レア＝まだ持っていない・終わったシリーズのチャーム（紫）／ふつう（ピンク）
 function rarityOf(r, gacha) {
   if (gacha && gacha.series && seriesOf(r.charm) === gacha.series) return "pickup";
+  if (gacha && gacha.cat === "ribbon" && r.pickup) return "pickup";
   if (r.isNew || isLimited(r.charm)) return "rare";
   return "normal";
 }
 
 // 選んだガチャから1つ出す
 function drawCharm(gacha, forcePickup = false) {
+  if (gacha.mix && gacha.cat === "ribbon") {
+    // ピックアップ中のリボンは、GACHA.pickupRate の確率でそこから出る
+    const pu = new Set(ribbonPickupNow().map((p) => p.series));
+    const puPool = mixPool("ribbon").filter((c) => pu.has(seriesOf(c)));
+    if (puPool.length && Math.random() < GACHA.pickupRate) return { charm: pickByGrade(puPool), pickup: true };
+    const c = pickByGrade(mixPool("ribbon"));
+    return { charm: c, pickup: pu.has(seriesOf(c)) };
+  }
   if (gacha.mix) return { charm: pickByGrade(mixPool(gacha.cat)), pickup: false };
   if (gacha.cat === "ribbon") return { charm: pickByGrade(poolOf(gacha)), pickup: true }; // リボンのピックアップは、そのリボンだけ
   const pickupPool = gacha.series ? poolOf(gacha) : [];
@@ -399,10 +419,33 @@ function drawGachaScreen() {
       <div class="g-lineup">${lineup.map(item).join("")}</div>${GRADE_LEGEND}`;
     banner.append(el);
   } else {
-    // いろいろガチャ（チャーム）／いろいろリボン：ピックアップが終わったシリーズが入る
+    // いろいろガチャ（チャーム）：ピックアップが終わったシリーズ／リボンガチャ：始まったリボンぜんぶ（ピックアップ中は上に）
     const ribbon = gacha.cat === "ribbon";
     const pool = mixPool(gacha.cat);
-    const groups = [...releasedSeries()].filter((id) => catOfSeries(id) === gacha.cat).map((id) => {
+    const puNow = ribbon ? ribbonPickupNow() : [];
+    const ids = ribbon
+      ? [...new Set([...puNow.map((p) => p.series), ...[...startedSeries()].filter((id) => catOfSeries(id) === "ribbon")])]
+      : [...releasedSeries()].filter((id) => catOfSeries(id) === gacha.cat);
+    if (ribbon) {
+      const pu = puNow[0];
+      const list = pool.filter((c) => puNow.some((p) => p.series === seriesOf(c)));
+      const head = pu
+        ? `<p class="g-banner-tag">${pu.revival ? "復刻ピックアップ" : "NEW ピックアップ開催中"}</p>${pu.revival ? `<span class="g-revival">復刻</span>` : `<span class="g-newgacha">NEW</span>`}
+      <h3 class="g-banner-title">リボンガチャ</h3>
+      <p class="g-banner-sub">${SERIES[pu.series].name}が出やすい！</p>
+      <p class="g-banner-date"><b class="g-days">${daysLeft(pu.end) <= 1 ? "今日まで！" : `あと${daysLeft(pu.end)}日`}</b>（${shortDate(pu.end)}まで）</p>`
+        : `<p class="g-banner-tag">いつでも引ける</p>
+      <h3 class="g-banner-title">リボンガチャ</h3>
+      <p class="g-banner-sub">${pool.length ? "これまでのリボンが、ぜんぶ入っているよ" : "リボンが、ここに入るよ。お楽しみに！"}</p>`;
+      void list;
+      banner.innerHTML = `<section class="g-banner g-banner-mix g-banner-ribbon">${head}
+      ${ids.map((id) => {
+        const l = pool.filter((c) => seriesOf(c) === id);
+        const isPu = puNow.some((p) => p.series === id);
+        return l.length ? `<p class="g-mix-name">${isPu ? "★ " : ""}${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
+      }).join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
+    } else {
+    const groups = ids.map((id) => {
       const list = pool.filter((c) => seriesOf(c) === id);
       return `<p class="g-mix-name">${SERIES[id]?.name || id} <small>${list.filter(isOwned).length} / ${list.length}</small></p><div class="g-lineup">${list.map(item).join("")}</div>`;
     });
@@ -412,6 +455,7 @@ function drawGachaScreen() {
       <h3 class="g-banner-title">${gacha.name}</h3>
       <p class="g-banner-sub">${pool.length ? `ピックアップが終わった${what}が、ぜんぶ入っているよ` : `ピックアップが終わった${what}が、ここに入るよ。お楽しみに！`}</p>
       ${groups.join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
+    }
   }
   // いろいろガチャでは、宝石箱の飾りは出さない
   $("gacha-screen").classList.toggle("mix-tab", !!gacha.mix);
@@ -465,7 +509,7 @@ function drawGachaScreen() {
   const free = freeLeftFor(gacha.cat);
   $("g-free").disabled = free <= 0;
   $("g-free").querySelector("small").textContent =
-    free > 0 ? (ribbonMode ? "1日1回・どのリボンガチャでもOK" : "1日1回・どのガチャでもOK") : "今日はひいたよ。また明日";
+    free > 0 ? (ribbonMode ? "リボンは1日1回" : "1日1回・どのガチャでもOK") : "今日はひいたよ。また明日";
   const empty = !poolOf(gacha).length;
   if (empty) {
     $("g-free").disabled = true;
@@ -477,7 +521,7 @@ function drawGachaScreen() {
   $("g-one").querySelector("small").textContent = `コイン${one}枚`;
   $("g-multi").querySelector("small").textContent = `コイン${multi}枚で${GACHA.multiCount}回`;
   $("g-multi-note").hidden = !gacha.series;
-  if (gacha.series) $("g-multi-note").textContent = ribbonMode ? "ピックアップのリボンだけ！" : `${SERIES[gacha.series]?.name || ""}1個確定！`;
+  if (gacha.series) $("g-multi-note").textContent = `${SERIES[gacha.series]?.name || ""}1個確定！`;
   // かけら
   $("g-shard-text").textContent = `${g.shards} / ${GACHA.shardsForCharm}`;
   $("g-shard-bar").style.width = `${Math.min(100, (g.shards / GACHA.shardsForCharm) * 100)}%`;
@@ -485,15 +529,18 @@ function drawGachaScreen() {
   // 確率ともらい方
   const ended = [...endedSeries()].map((s) => SERIES[s]?.name || s);
   $("g-rates").innerHTML = `
-    ${gacha.mix
-      ? `<li>ピックアップが終わった${ribbonMode ? "リボン" : "チャーム"}が出るよ</li>`
-      : ribbonMode
-      ? `<li>${SERIES[gacha.series]?.name || ""}のリボンだけが出るよ</li>`
+    ${ribbonMode
+      ? ribbonPickupNow().length
+        ? `<li>${SERIES[ribbonPickupNow()[0].series].name} <b>${Math.round(GACHA.pickupRate * 100)}%</b></li>
+    <li>これまでのリボン <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b>（ピックアップのリボンも入る）</li>`
+        : `<li>これまでのリボンが出るよ</li>`
+      : gacha.mix
+      ? `<li>ピックアップが終わったチャームが出るよ</li>`
       : `<li>${SERIES[gacha.series]?.name || ""} <b>${Math.round(GACHA.pickupRate * 100)}%</b>（11連は1個以上確定）</li>
     <li>これまでのシリーズ <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b></li>`}
     <li>SR・Rは出にくい ／ かぶったら かけら+${GACHA.shardPerDup}</li>`;
   $("g-earn").innerHTML = `
-    <li>ノルマ達成 <b>+${COIN_RULES.quota}</b>（そのあと${COIN_RULES.overMin}分ごとに <b>+${COIN_RULES.over}</b>）</li>
+    <li>今日の小瓶が満タン <b>+${COIN_RULES.quota}</b>（そのあとも${COIN_RULES.overMin}分ごとに <b>+${COIN_RULES.over}</b>）</li>
     <li>食事の記録・クイズ・大瓶に進化 など</li>`;
 }
 

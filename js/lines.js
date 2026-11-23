@@ -21,7 +21,7 @@ const WEATHER_IMPORTANT = "weather-important", WEATHER_NORMAL = "weather-normal"
 const LINES = {
   home: [
     { when: (c) => c.full, pose: "jump", say: (c) => `小瓶が${c.pool}分たまったよ！瓶の棚で合成できるよ` },
-    { when: (c) => c.quotaDone, pose: "jump", say: (c) => [`今日は${c.todayMin}分！ノルマクリア、えらい！`, `${c.todayMin}分も動いたね！今日は満点だよ`] },
+    { when: (c) => c.quotaDone, pose: "jump", say: (c) => [`今日は${c.todayMin}分！小瓶が満タンだよ。まだまだ貯められるよ`, `${c.todayMin}分も動いたね！満タンのあとも、30分ごとにコインがもらえるよ`] },
     { when: (c) => c.quotaDone && c.pilatesMin, pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！がんばったね` },
     WEATHER_IMPORTANT,
     { when: (c) => c.quotaDone, pose: "guts", say: (c) => `あと${c.overLeft}分動くと、ボーナスのコイン+1だよ！` },
@@ -29,9 +29,9 @@ const LINES = {
     { when: (c) => c.bodyNote, pose: "stretch", say: (c) => c.bodyNote },
     { when: (c) => c.clothesNote, pose: "wink", say: (c) => c.clothesNote },
     { when: (c) => c.backupNote, pose: "pointSide", say: (c) => c.backupNote },
-    { when: (c) => !c.quotaDone && c.last && c.last.type === "stretch", pose: "stretch", say: (c) => `ストレッチ${c.last.min}分、からだがほぐれたね。あと${c.quotaLeft}分でノルマだよ` },
-    { when: (c) => !c.quotaDone && c.last && c.last.type === "pilates", pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！あと${c.quotaLeft}分で今日のノルマだよ` },
-    { when: (c) => c.todayMin > 0 && !c.quotaDone, pose: "guts", say: (c) => [`あと${c.quotaLeft}分で今日のノルマだよ！`, `今日は${c.todayMin}分！あと${c.quotaLeft}分でノルマクリア`] },
+    { when: (c) => !c.quotaDone && c.last && c.last.type === "stretch", pose: "stretch", say: (c) => `ストレッチ${c.last.min}分、からだがほぐれたね。小瓶はあと${c.quotaLeft}分で満タンだよ` },
+    { when: (c) => !c.quotaDone && c.last && c.last.type === "pilates", pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！あと${c.quotaLeft}分で今日の小瓶が満タン` },
+    { when: (c) => c.todayMin > 0 && !c.quotaDone, pose: "guts", say: (c) => [`${c.todayMin}分、小瓶に入ったよ！あと${c.quotaLeft}分で満タン`, `今日は${c.todayMin}分！小瓶もうすぐ満タンだよ`] },
     { when: (c) => c.todayMin === 0 && c.tod === "morning", pose: "armsOpen", say: ["おはよう！今日はなにから動く？", "おはよう〜！朝のストレッチ5分からどう？"] },
     { when: (c) => c.todayMin === 0 && c.tod === "day", pose: "pointSide", say: ["こんにちは！下のボタンから運動を記録してね", "お昼休みに5分だけ動いてみる？"] },
     { when: (c) => c.todayMin === 0 && c.tod === "night", pose: "stretch", say: ["おつかれさま。寝る前にストレッチ5分はどう？", "今日もおつかれさま〜。ゆっくりほぐそう"] },
