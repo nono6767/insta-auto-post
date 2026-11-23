@@ -1834,3 +1834,7 @@ body.gacha-open { overflow: hidden; }
 /* 貯金瓶の設定：毎週いくら入れたらいいか */
 .savings-suggest { text-align: left; margin: -2px 0 10px; padding: 8px 12px; border-radius: 12px; background: #fdf3f7; font-size: 13px; line-height: 1.5; color: var(--ink); }
 .savings-suggest b { color: var(--rose); }
+/* リボンガチャ：ピックアップの下の「いっしょに入っているリボン」（控えめに） */
+.g-banner-others { margin-top: 10px; padding-top: 12px; background: rgb(255 255 255 / .7); }
+.g-others-title { margin: 0 0 2px; font-size: 12px; font-weight: 700; color: #8d6070; }
+.g-banner-others .g-mix-name { font-size: 13px; }

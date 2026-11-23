@@ -428,22 +428,29 @@ function drawGachaScreen() {
       : [...releasedSeries()].filter((id) => catOfSeries(id) === gacha.cat);
     if (ribbon) {
       const pu = puNow[0];
-      const list = pool.filter((c) => puNow.some((p) => p.series === seriesOf(c)));
-      const head = pu
-        ? `<p class="g-banner-tag">${pu.revival ? "復刻ピックアップ" : "NEW ピックアップ開催中"}</p>${pu.revival ? `<span class="g-revival">復刻</span>` : `<span class="g-newgacha">NEW</span>`}
-      <h3 class="g-banner-title">リボンガチャ</h3>
-      <p class="g-banner-sub">${SERIES[pu.series].name}が出やすい！</p>
-      <p class="g-banner-date"><b class="g-days">${daysLeft(pu.end) <= 1 ? "今日まで！" : `あと${daysLeft(pu.end)}日`}</b>（${shortDate(pu.end)}まで）</p>`
-        : `<p class="g-banner-tag">いつでも引ける</p>
-      <h3 class="g-banner-title">リボンガチャ</h3>
-      <p class="g-banner-sub">${pool.length ? "これまでのリボンが、ぜんぶ入っているよ" : "リボンが、ここに入るよ。お楽しみに！"}</p>`;
-      void list;
-      banner.innerHTML = `<section class="g-banner g-banner-mix g-banner-ribbon">${head}
-      ${ids.map((id) => {
+      const group = (id) => {
         const l = pool.filter((c) => seriesOf(c) === id);
-        const isPu = puNow.some((p) => p.series === id);
-        return l.length ? `<p class="g-mix-name">${isPu ? "★ " : ""}${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
-      }).join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
+        return l.length ? `<p class="g-mix-name">${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
+      };
+      const others = ids.filter((id) => !puNow.some((p) => p.series === id));
+      if (pu) {
+        // ピックアップ中：上に大きく（シリーズ名・ひとこと・期間・一覧）。下に「いっしょに出るリボン」
+        const sr = SERIES[pu.series];
+        const l = pool.filter((c) => seriesOf(c) === pu.series);
+        banner.innerHTML = `<section class="g-banner g-banner-ribbon g-banner-${pu.series}">
+      <p class="g-banner-tag">${pu.revival ? "復刻ピックアップ" : "NEW ピックアップ開催中"}</p>${pu.revival ? `<span class="g-revival">復刻</span>` : `<span class="g-newgacha">NEW</span>`}
+      <h3 class="g-banner-title">${sr.name}</h3>
+      <p class="g-banner-sub">${sr.catch || ""}</p>
+      <p class="g-banner-date"><b class="g-days">${daysLeft(pu.end) <= 1 ? "今日まで！" : `あと${daysLeft(pu.end)}日`}</b>（${shortDate(pu.end)}まで） ・ 集めた ${l.filter(isOwned).length} / ${l.length}</p>
+      <div class="g-lineup">${l.map(item).join("")}</div>${GRADE_LEGEND}</section>
+      ${others.length ? `<section class="g-banner g-banner-mix g-banner-others"><p class="g-others-title">いっしょに入っているリボン</p>${others.map(group).join("")}</section>` : ""}`;
+      } else {
+        banner.innerHTML = `<section class="g-banner g-banner-mix g-banner-ribbon">
+      <p class="g-banner-tag">いつでも引ける</p>
+      <h3 class="g-banner-title">リボンガチャ</h3>
+      <p class="g-banner-sub">${pool.length ? "これまでのリボンが、ぜんぶ入っているよ" : "リボンが、ここに入るよ。お楽しみに！"}</p>
+      ${ids.map(group).join("")}${pool.length ? GRADE_LEGEND : ""}</section>`;
+      }
     } else {
     const groups = ids.map((id) => {
       const list = pool.filter((c) => seriesOf(c) === id);

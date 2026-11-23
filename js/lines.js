@@ -21,7 +21,9 @@ const WEATHER_IMPORTANT = "weather-important", WEATHER_NORMAL = "weather-normal"
 const LINES = {
   home: [
     { when: (c) => c.full, pose: "jump", say: (c) => `小瓶が${c.pool}分たまったよ！瓶の棚で合成できるよ` },
-    { when: (c) => c.quotaDone, pose: "jump", say: (c) => [`今日は${c.todayMin}分！小瓶が満タンだよ。まだまだ貯められるよ`, `${c.todayMin}分も動いたね！満タンのあとも、30分ごとにコインがもらえるよ`] },
+    // 満タンになったら、まずはほめるだけ。満タンをこえて動いた日は、その分もちゃんと入っていることを伝える（「もっとやって」とは言わない）
+    { when: (c) => c.quotaDone && c.todayMin <= DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日の小瓶、満タン！よくがんばったね`, `${c.todayMin}分、おつかれさま！今日の小瓶は満タンだよ`] },
+    { when: (c) => c.todayMin > DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日は${c.todayMin}分！満タンからあふれた分も、ちゃんと記録されてるよ`, `満タンをこえて${c.todayMin - DAILY_QUOTA_MIN}分も！がんばった分は全部、瓶に入ってるよ`] },
     { when: (c) => c.quotaDone && c.pilatesMin, pose: "rolling", say: (c) => `今日はピラティス${c.pilatesMin}分！がんばったね` },
     WEATHER_IMPORTANT,
     { when: (c) => c.quotaDone, pose: "guts", say: (c) => `あと${c.overLeft}分動くと、ボーナスのコイン+1だよ！` },

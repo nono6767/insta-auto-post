@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-28"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-29"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -499,7 +499,7 @@ const $ = (id) => document.getElementById(id);
 const MESSAGES = {
   zero: ["今日もいっしょにがんばろ〜", "まずは5分だけでもどう？", "背すじ、すっと伸ばしていこ！"],
   some: ["いいね！その調子〜", "ちゃんと瓶にたまってるよ", "からだ、あったまってきたね"],
-  quota: ["今日の小瓶、満タン！まだまだ貯められるよ", "やったね！小瓶が満タンだよ", "満タンおめでとう！ここからはおまけで貯めよう"],
+  quota: ["今日の小瓶、満タン！よくがんばったね", "やったね！小瓶が満タンだよ", "満タンおめでとう！おつかれさま"],
   full: ["小瓶が250分たまったよ！瓶の棚で合成しよう", "合成できるよ！大瓶に進化させよう"],
 };
 function pickMessage(kind) {
@@ -851,7 +851,7 @@ function celebrate(before) {
     n.classList.remove("bounce");
     void n.offsetWidth;
     n.classList.add("bounce");
-    return `小瓶が満タン！このあとも貯められるよ`;
+    return `今日の小瓶が満タンになったよ！`;
   }
   return null;
 }
