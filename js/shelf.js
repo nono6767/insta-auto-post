@@ -106,6 +106,8 @@ function chainAtOf(b) {
   return out;
 }
 
+const CHARM_REF_W = 281;     // ★ チャームの大きさの基準の瓶の幅（まんまるの大瓶）
+const CHARM_TALL_MAX = 1.7;  // ★ 細い瓶で、基準より大きくする上限（倍）
 const STACK_SCALE = { 2: 0.9, 3: 0.8 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
 const STACK_DROP = { 2: 0.7, 3: 0.45 }; // ★ 縦につなげたときの、いちばん上のチェーンの長さ（1個のときを1として）
 const MIN_DROP = 2.5; // いちばん上のチェーンの、いちばん短い長さ
@@ -200,7 +202,8 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
       let width = CHARM_SIZE * Math.sqrt(c.w / c.h);
       const tall = width * (c.h / c.w);
       if (Math.max(width, tall) > CHARM_SIZE * CHARM_MAX_SIDE) width *= (CHARM_SIZE * CHARM_MAX_SIDE) / Math.max(width, tall);
-      return width * (c.scale || 1) * (bottle.charmScale || 1);
+      // 瓶の幅ではなく高さに合わせる（どの瓶でも、チャームの見た目の大きさがそろうように）。細い瓶は大きくしすぎない
+      return width * (c.scale || 1) * (bottle.charmScale ?? Math.min(CHARM_TALL_MAX, CHARM_REF_W / bottle.w));
     };
     const ring = (x, y) => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.05" fill="none" stroke="#b39a6a" stroke-width=".7"/>`; // つなぎの輪
     for (const s of cols) {
