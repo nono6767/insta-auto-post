@@ -306,7 +306,8 @@ function bigBottleHtml(b) {
   const fillH = range * BIG_FILL;
   const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
   // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの8.5%）
-  const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 8.5, seedOf(b.id || b.bottle));
+  const poopDays = (b.days || []).filter((d) => typeof dayPoop === "function" && dayPoop(d)).length; // お通じが出た日の数ぶん、泡
+  const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 8.5, seedOf(b.id || b.bottle)) + (poopDays ? bubblesHtml(bottle, Math.ceil(poopDays / 2), bottle.bottom - fillH, 4.8, seedOf((b.id || "") + "b")) : "");
   const mask = `url(big/${bottle.id}-mask.webp)`;
   const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), hangsOf(b), chainAtOf(b));
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
@@ -427,7 +428,7 @@ function drawSmallShelf() {
     slot.style.bottom = `${(1 - SHELF_BASE_Y[row] / SHELF_BOARD.h) * 100}%`;
     slot.style.height = `${(SMALL_H / SHELF_BOARD.h) * 100}%`;
     slot.style.width = `${((SMALL_H * shape.w) / shape.h / SHELF_BOARD.w) * 100}%`;
-    slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex);
+    slot.innerHTML = bottleHtml(sb.layers, shape, daySnackFree(sb.day) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex, dayPoop(sb.day));
     slot.setAttribute("aria-label", `${shortDate(sb.day)}の小瓶（${sb.min}分${sb.merged ? "・大瓶に合成ずみ" : sb.bonus ? "・一部を大瓶に合成ずみ" : ""}${shaken ? "・" + shaken.name : ""}）`);
     if (sb.merged) slot.classList.add("merged");
     slot.addEventListener("click", () => openDayBottle(sb.day));

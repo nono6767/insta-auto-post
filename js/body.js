@@ -133,7 +133,7 @@ function renderBody() {
       renderBody();
     });
     row.id = "poop-row";
-    row.querySelectorAll(".choice-btn").forEach((b, i) => b.style.setProperty("--on", i === 0 ? "#c79a6b" : "#9a8fb5"));
+    row.querySelectorAll(".choice-btn").forEach((b, i) => b.style.setProperty("--on", i === 0 ? "#8ec5ea" : "#9a8fb5"));
     $("poop-row").replaceWith(row);
   }
 

@@ -23,7 +23,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-30"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-31"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -205,6 +205,26 @@ function starsHtml(bottle, count, liquidTop, sizeH, seed) {
     })
     .join("");
 }
+// ---------- お通じが出た日の「すっきりの泡」 ----------
+// 瓶の底から、小さな泡がゆっくりのぼって、液体の表面で消える（星・コイン・まわりのキラキラとは別の動き）
+const dayPoop = (day) => !!(data.body && data.body[day] && data.body[day].poop === "yes");
+function bubblesHtml(bottle, count, liquidTop, sizeH, seed = 1) {
+  if (count <= 0) return "";
+  const n = Math.min(count * 3, 9); // 1日ぶん＝泡3つ
+  let r = seed % 2147483647 || 1;
+  const rand = () => ((r = (r * 48271) % 2147483647) / 2147483647);
+  const xs = (bottle.flowers || [[50, 80]]).map((p) => p[0]);
+  const lo = Math.min(...xs), hi = Math.max(...xs);
+  const zone = `left:0;right:0;top:${liquidTop.toFixed(1)}%;bottom:${(100 - bottle.bottom).toFixed(1)}%`;
+  let out = "";
+  for (let i = 0; i < n; i++) {
+    const x = lo + (hi - lo) * ((i + 0.5) / n) + (rand() - 0.5) * 6;
+    const size = (sizeH * (0.6 + rand() * 0.6) * bottle.h) / bottle.w;
+    const dur = 6 + rand() * 4;
+    out += `<span class="bottle-bubble" style="left:${x.toFixed(1)}%;width:${size.toFixed(1)}%;--dur:${dur.toFixed(1)}s;--delay:${(-rand() * dur).toFixed(1)}s"></span>`;
+  }
+  return `<span class="bubble-zone" style="${zone}">${out}</span>`;
+}
 const seedOf = (text) => [...String(text)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 2147483647, 7);
 
 // その週の「おやつ・つまみ食いをしなかった日」の数（＝瓶に浮かぶ星の数）
@@ -235,7 +255,7 @@ function pastel(hex, mix = 0.3) {
 const SMALL_MIN_LAYER = 7;   // いちばん細い層の厚さ（瓶の中身が入る高さの%）
 const SMALL_BLUR = 1.6;      // 境目のぼかしの幅（同じく%）
 const SMALL_FULL_LEVEL = 92; // 満タンの高さ（中身が入る高さの%）。首の飾りに、いちばん上の層がかくれないように
-function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix = null) {
+function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix = null, poop = false) {
   const range = bottle.bottom - bottle.top; // 中身が入る高さ（瓶の画像の%）
   // 同じ運動が続いたら1つの層にまとめる
   const bands = [];
@@ -282,7 +302,7 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix
   // おやつを食べなかった日の星（液体の中に浮かぶ。星の大きさ：瓶の高さの12%）
   const fillPct = total > 0 ? Math.max(Math.min(1, total / capacity) * SMALL_FULL_LEVEL, 30) : 30;
   const liquidTop = bottle.bottom - (fillPct / 100) * range;
-  const flowers = starsHtml(bottle, flowerCount, liquidTop, 12, seedOf(bottle.id + flowerCount));
+  const flowers = starsHtml(bottle, flowerCount, liquidTop, 12, seedOf(bottle.id + flowerCount)) + (poop && total > 0 ? bubblesHtml(bottle, 1, liquidTop, 6.5, seedOf(bottle.id + "b")) : "");
   // 満タンをこえた日は、瓶のまわりにキラキラ
   const sparks = overflow
     ? [[8, 30], [92, 40], [14, 72], [88, 78], [50, 6], [96, 62]]
@@ -524,7 +544,7 @@ function renderHome() {
   const todayKey = dateKey();
   const bottle = smallBottleShape(todayKey);
   const shaken = dayShake(todayKey);
-  $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex);
+  $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex, dayPoop(todayKey));
   $("jar").classList.toggle("tappable", today.length > 0);
   const colorLine = shaken ? `<span class="jar-color"><span class="mini-swatch" style="background:${shaken.hex}"></span>${shaken.name}</span>` : "";
   $("jar-caption").innerHTML = full

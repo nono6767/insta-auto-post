@@ -1838,4 +1838,19 @@ body.gacha-open { overflow: hidden; }
 .g-banner-others { margin-top: 10px; padding-top: 12px; background: rgb(255 255 255 / .7); }
 .g-others-title { margin: 0 0 2px; font-size: 12px; font-weight: 700; color: #8d6070; }
 .g-banner-others .g-mix-name { font-size: 13px; }
-.gb-dot.poop { background: #c79a6b; }
+.gb-dot.poop { background: #8ec5ea; }
+/* お通じが出た日の「すっきりの泡」：底からゆっくりのぼって、表面で消える */
+.bottle .bubble-zone { position: absolute; pointer-events: none; }
+.bottle .bottle-bubble {
+  position: absolute; bottom: 0; aspect-ratio: 1; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #fff 0 16%, rgb(255 255 255 / .35) 28%, rgb(200 230 250 / .25) 62%, rgb(255 255 255 / .75) 100%);
+  box-shadow: inset 0 0 0 1.2px rgb(255 255 255 / .95), 0 0 4px rgb(160 210 240 / .7);
+  animation: bubble-rise var(--dur, 7s) ease-in var(--delay, 0s) infinite;
+}
+@keyframes bubble-rise {
+  0% { bottom: 0; opacity: 0; transform: translateX(0) scale(.6); }
+  12% { opacity: .95; }
+  50% { transform: translateX(35%) scale(.85); }
+  88% { opacity: .9; }
+  100% { bottom: 100%; opacity: 0; transform: translateX(-25%) scale(1); }
+}

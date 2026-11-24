@@ -57,7 +57,7 @@ function drawShakeStage() {
   const shape = smallBottleShape(day);
   const stage = $("shake-stage");
   stage.style.aspectRatio = `${shape.w}/${shape.h}`;
-  stage.innerHTML = bottleHtml(dayBottleLayers(day), shape, daySnackFree(day) ? 1 : 0, SMALL_FULL_MIN);
+  stage.innerHTML = bottleHtml(dayBottleLayers(day), shape, daySnackFree(day) ? 1 : 0, SMALL_FULL_MIN, null, dayPoop(day));
   stage.disabled = false;
 }
 
@@ -137,7 +137,7 @@ function doShake() {
     shake.busy = false;
     // まざったあとの瓶に描き直す
     const shape = smallBottleShape(day);
-    stage.innerHTML = bottleHtml(dayBottleLayers(day), shape, daySnackFree(day) ? 1 : 0, SMALL_FULL_MIN, color.hex);
+    stage.innerHTML = bottleHtml(dayBottleLayers(day), shape, daySnackFree(day) ? 1 : 0, SMALL_FULL_MIN, color.hex, dayPoop(day));
     stage.querySelector(".bottle").classList.add("just-mixed");
     $("shake-swatch").style.background = color.hex;
     $("shake-name").textContent = color.name;
@@ -245,10 +245,10 @@ function openDayDetail(day) {
   const box = (html, cap) =>
     `<figure class="day-bottle"><div class="day-bottle-img" style="aspect-ratio:${shape.w}/${shape.h}">${html}</div><figcaption>${cap}</figcaption></figure>`;
   $("day-bottles").innerHTML = shaken
-    ? box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN), "もとの層") +
+    ? box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN, null, dayPoop(day)), "もとの層") +
       `<span class="day-arrow" aria-hidden="true">→</span>` +
-      box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN, shaken.hex), "シェイク")
-    : box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN), "");
+      box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN, shaken.hex, dayPoop(day)), "シェイク")
+    : box(bottleHtml(layers, shape, flowers, SMALL_FULL_MIN, null, dayPoop(day)), "");
   // その日の運動（種目ごとの分数）
   const mins = dayMinutesByType(day);
   const total = Object.values(mins).reduce((t, m) => t + m, 0);
