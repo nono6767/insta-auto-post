@@ -8,6 +8,10 @@ const GOOD_BAD = [
   { value: "good", label: "Good" },
   { value: "bad", label: "Bad" },
 ];
+const POOP_CHOICES = [
+  { value: "yes", label: "出た" },
+  { value: "no", label: "出なかった" },
+];
 const DEFAULT_CYCLE_DAYS = 28; // 記録が少ないうちの目安
 const LATE_MARGIN_DAYS = 7;    // いつもの間隔からこれだけ空いたらお知らせ
 const LONG_PERIOD_DAYS = 10;   // 終わった日の入れ忘れを疑う日数
@@ -102,7 +106,7 @@ function renderBody() {
     cell.disabled = key > today;
     const dots = ["condition", "mood"]
       .map((f) => `<i class="gb-dot ${b[f] || "none"}"></i>`)
-      .join("");
+      .join("") + (b.poop === "yes" ? `<i class="gb-dot poop" title="お通じ"></i>` : "");
     cell.innerHTML = `<span class="wd">${WEEKDAYS[d.getDay()]}</span><span class="dn">${d.getDate()}</span>
       <span class="mark">${periodOn(key) ? dropSvg() : ""}</span><span class="gb-dots">${dots}</span>`;
     cell.addEventListener("click", () => {
@@ -121,6 +125,16 @@ function renderBody() {
     row.id = rowId;
     row.querySelectorAll(".choice-btn").forEach((b, i) => b.style.setProperty("--on", i === 0 ? "#5fc39b" : "#9a8fb5"));
     $(rowId).replaceWith(row);
+  }
+  // お通じ（出た／出なかった。もう一度押すと取り消し）
+  {
+    const row = choiceRow(POOP_CHOICES, day.poop, (v) => {
+      setBody(bodyDay, "poop", v);
+      renderBody();
+    });
+    row.id = "poop-row";
+    row.querySelectorAll(".choice-btn").forEach((b, i) => b.style.setProperty("--on", i === 0 ? "#c79a6b" : "#9a8fb5"));
+    $("poop-row").replaceWith(row);
   }
 
   renderPeriod();
