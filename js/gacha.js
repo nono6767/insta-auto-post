@@ -18,7 +18,8 @@ const COIN_RULES = {
   over: 1,      // …このコインがもらえる（例：35分でノルマ → 65分で+1、95分で+1 …）
   meal: 1,      // 食事を記録した（1日1回まで）
   period: 1,    // 生理を記録した（ボーナス。始まりを記録したとき）
-  periodDay: 1, // 生理中に、その日のからだの記録をした（毎日）
+  body: 1,      // からだの記録（体調・気分・お通じ）をした（1日1回）
+  periodDay: 1, // 生理中は、からだの記録にさらにおまけ（1日1回）
   bigBottle: 3, // 大瓶に進化した（1本ごと）
   savings: 5,      // 貯金瓶に今週の分を入れた（1週間に1回）
   savingsExtra: 3, // 貯金瓶に追加で入れた（1日1回まで）
@@ -80,6 +81,12 @@ function ensureGacha() {
     for (const r of rewardList()) if (r.key.startsWith("pd:") && r.day !== today) g.given[r.key] = true;
     g.periodDayStart = today;
   }
+  // からだの記録のコインを始める前の日のぶんは、まとめて出さない（今日のぶんは、もらえる）
+  if (!g.bodyStart) {
+    const today = dateKey();
+    for (const r of rewardList()) if (r.key.startsWith("bd:") && r.day !== today) g.given[r.key] = true;
+    g.bodyStart = today;
+  }
   // 貯金のコインを始める前の貯金のぶんは、まとめて出さない（今日のぶんは、もらえる）
   if (!g.savingsStart) {
     const today = dateKey();
@@ -123,8 +130,9 @@ function rewardList() {
   // 生理中は、その日のからだの記録をすると毎日+1
   if (typeof periodOn === "function") {
     for (const [day, rec] of Object.entries(data.body || {})) {
-      if (rec && Object.values(rec).some((v) => v !== null && v !== undefined && v !== "") && periodOn(day))
-        out.push({ key: "pd:" + day, amount: COIN_RULES.periodDay, label: "生理中の記録", day });
+      if (!(rec && Object.values(rec).some((v) => v !== null && v !== undefined && v !== ""))) continue;
+      out.push({ key: "bd:" + day, amount: COIN_RULES.body, label: "からだの記録", day });
+      if (periodOn(day)) out.push({ key: "pd:" + day, amount: COIN_RULES.periodDay, label: "生理中のおまけ", day });
     }
   }
   for (const b of data.bigBottles || []) out.push({ key: "b:" + b.id, amount: COIN_RULES.bigBottle, label: "大瓶に進化" });
@@ -548,7 +556,7 @@ function drawGachaScreen() {
     <li>SR・Rは出にくい ／ かぶったら かけら+${GACHA.shardPerDup}</li>`;
   $("g-earn").innerHTML = `
     <li>今日の小瓶が満タン <b>+${COIN_RULES.quota}</b>（そのあとも${COIN_RULES.overMin}分ごとに <b>+${COIN_RULES.over}</b>）</li>
-    <li>食事の記録・クイズ・大瓶に進化 など</li>`;
+    <li>食事・からだの記録・クイズ・大瓶に進化 など</li>`;
 }
 
 // ---------- かけらで交換 ----------

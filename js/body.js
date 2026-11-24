@@ -29,7 +29,7 @@ function setBody(key, field, value) {
   const day = data.body[key] || (data.body[key] = {});
   day[field] = value;
   saveData();
-  if (typeof checkCoinRewards === "function") checkCoinRewards(); // 生理中の記録のコイン
+  if (typeof checkCoinRewards === "function") checkCoinRewards(); // からだの記録のコイン（生理中はおまけ）
 }
 
 function periods() {

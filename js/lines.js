@@ -62,7 +62,7 @@ const LINES = {
   ],
   body: [
     { when: (c) => c.periodOpen, pose: "hands", say: "生理中は無理しないでね。記録してくれてえらい！" },
-    { when: (c) => c.periodOpen, pose: "hands", say: "生理中は、からだの記録をすると毎日コインが1枚もらえるよ" },
+    { when: (c) => c.periodOpen, pose: "hands", say: "生理中は、からだの記録でおまけのコインがもう1枚もらえるよ" },
     { when: (c) => c.bodyNote, pose: "stretch", say: (c) => c.bodyNote },
     { when: (c) => c.poopToday === "yes", pose: "wink", say: "お通じ出たね、すっきり！" },
     { when: (c) => c.poopToday === "no", pose: "hands", say: "お水をこまめに飲んで、おなかをあたためてね" },
