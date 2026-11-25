@@ -14,6 +14,10 @@
 //   ・c（状況）で使えるもの：下の talkContext() を見てね（例：c.todayMin 今日の分数、c.quotaLeft ノルマまで、c.poolLeft 大瓶まで）
 // =========================================================
 
+// 期間限定のお知らせセリフ（start〜end の日だけ。日付は "YYYY-MM-DD"）
+const inDays = (start, end) => { const d = dateKey(); return d >= start && d <= end; };
+const ORGANZA_NEWS = () => inDays("2026-11-25", "2026-11-26");
+
 const GACHA_TALK_MAX = 4; // ホームでのガチャの声かけは、1日にここまで
 
 // （天気のセリフは下の WEATHER_LINES。ホームの LINES の中の WEATHER_IMPORTANT／WEATHER_NORMAL の場所に入る）
@@ -21,6 +25,7 @@ const WEATHER_IMPORTANT = "weather-important", WEATHER_NORMAL = "weather-normal"
 const LINES = {
   home: [
     { when: (c) => c.full, pose: "jump", say: (c) => `小瓶が${c.pool}分たまったよ！瓶の棚で合成できるよ` },
+    { when: () => ORGANZA_NEWS(), pose: "surprise", say: ["緊急追加！オーガンジーリボンが出たよ！引いてみよう", "緊急追加！ふんわり透けるオーガンジーリボン、リボンガチャに入ったよ！"] },
     // 満タンになったら、まずはほめるだけ。満タンをこえて動いた日は、その分もちゃんと入っていることを伝える（「もっとやって」とは言わない）
     { when: (c) => c.quotaDone && c.todayMin <= DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日の小瓶、満タン！よくがんばったね`, `${c.todayMin}分、おつかれさま！今日の小瓶は満タンだよ`] },
     { when: (c) => c.todayMin > DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日は${c.todayMin}分！満タンからあふれた分も、ちゃんと記録されてるよ`, `満タンをこえて${c.todayMin - DAILY_QUOTA_MIN}分も！がんばった分は全部、瓶に入ってるよ`] },
@@ -91,6 +96,7 @@ const LINES = {
   ],
   gacha: [
     { when: (c) => c.lastDraw, pose: "surprise", say: (c) => `わっ！${c.lastDraw}が出たよ！` },
+    { when: () => ORGANZA_NEWS(), pose: "surprise", say: "緊急追加！オーガンジーリボンが出たよ！リボンガチャで引いてみよう" },
     { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、引いてみよう！" },
     { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
     { when: (c) => c.upcoming, pose: "surprise", say: (c) => `予告だよ！${c.upcoming.date}から「${c.upcoming.name}」が始まるよ` },
@@ -142,6 +148,7 @@ function weatherLines(important) {
 // ホームのガチャの声かけ（1日 GACHA_TALK_MAX 回まで。はじめて開いた日は必ず案内）
 const GACHA_CALLS = [
   { kind: "first", when: (c, t) => !t.guided, pose: "pointUp", say: "ここからガチャが引けるよ！" },
+  { kind: "organza", when: (c, t) => ORGANZA_NEWS() && t.organzaDay !== dateKey(), pose: "surprise", say: "緊急追加！オーガンジーリボンが出たよ！引いてみよう" },
   { kind: "pickup", when: (c, t) => c.newPickup, pose: "surprise", say: (c) => `${c.newPickup.label}始まったよ！` },
   { kind: "free", when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、まだだよ〜！" },
   { kind: "multi", when: (c) => c.coins >= c.multiCost, pose: "surprise", say: "11連引けるよ！" },
@@ -233,6 +240,7 @@ function pickGachaCall(c) {
   if (!call || (call.kind !== "first" && t.count >= GACHA_TALK_MAX)) return null;
   if (call.kind === "first") t.guided = true;
   else t.count++;
+  if (call.kind === "organza") t.organzaDay = today; // 1日1回
   if (call.kind === "pickup") t.pickupsSeen = [...(t.pickupsSeen || []), c.newPickup.id];
   saveData();
   if (call.kind === "first" || call.kind === "free") setTimeout(pointAtGachaButton, 300);
