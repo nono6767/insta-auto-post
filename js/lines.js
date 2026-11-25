@@ -25,7 +25,8 @@ const WEATHER_IMPORTANT = "weather-important", WEATHER_NORMAL = "weather-normal"
 const LINES = {
   home: [
     { when: (c) => c.full, pose: "jump", say: (c) => `小瓶が${c.pool}分たまったよ！瓶の棚で合成できるよ` },
-    { when: () => ORGANZA_NEWS(), pose: "surprise", say: ["緊急追加！オーガンジーリボンが出たよ！引いてみよう", "緊急追加！ふんわり透けるオーガンジーリボン、リボンガチャに入ったよ！"] },
+    { when: () => ORGANZA_NEWS(), pose: "surprise", say: ["緊急追加！オーガンジーリボンが出たよ！引いてみよう", "緊急追加！ふんわり透けるオーガンジーリボン、リボンガチャに入ったよ！", "透明で可愛い！オーガンジーリボン、もう見た？"] },
+    { when: () => ORGANZA_NEWS(), pose: "wink", say: ["透明で可愛い〜！オーガンジーリボン、9色あるよ", "透けるリボン、瓶の色が見えてきれいだよ"] },
     // 満タンになったら、まずはほめるだけ。満タンをこえて動いた日は、その分もちゃんと入っていることを伝える（「もっとやって」とは言わない）
     { when: (c) => c.quotaDone && c.todayMin <= DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日の小瓶、満タン！よくがんばったね`, `${c.todayMin}分、おつかれさま！今日の小瓶は満タンだよ`] },
     { when: (c) => c.todayMin > DAILY_QUOTA_MIN + 5, pose: "jump", say: (c) => [`今日は${c.todayMin}分！満タンからあふれた分も、ちゃんと記録されてるよ`, `満タンをこえて${c.todayMin - DAILY_QUOTA_MIN}分も！がんばった分は全部、瓶に入ってるよ`] },
@@ -96,7 +97,8 @@ const LINES = {
   ],
   gacha: [
     { when: (c) => c.lastDraw, pose: "surprise", say: (c) => `わっ！${c.lastDraw}が出たよ！` },
-    { when: () => ORGANZA_NEWS(), pose: "surprise", say: "緊急追加！オーガンジーリボンが出たよ！リボンガチャで引いてみよう" },
+    { when: () => ORGANZA_NEWS(), pose: "surprise", say: ["緊急追加！オーガンジーリボンが出たよ！リボンガチャで引いてみよう", "透明で可愛い！オーガンジーリボン、リボンガチャに入ってるよ"] },
+    { when: () => ORGANZA_NEWS(), pose: "wink", say: ["オーガンジーリボン、透けてて可愛い〜！", "ふんわり透けるリボン、何色が出るかな？"] },
     { when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、引いてみよう！" },
     { when: (c) => c.coins >= c.multiCost, pose: "surprise", say: (c) => `コイン${c.coins}枚！11連引けるよ！` },
     { when: (c) => c.upcoming, pose: "surprise", say: (c) => `予告だよ！${c.upcoming.date}から「${c.upcoming.name}」が始まるよ` },
@@ -148,7 +150,7 @@ function weatherLines(important) {
 // ホームのガチャの声かけ（1日 GACHA_TALK_MAX 回まで。はじめて開いた日は必ず案内）
 const GACHA_CALLS = [
   { kind: "first", when: (c, t) => !t.guided, pose: "pointUp", say: "ここからガチャが引けるよ！" },
-  { kind: "organza", when: (c, t) => ORGANZA_NEWS() && t.organzaDay !== dateKey(), pose: "surprise", say: "緊急追加！オーガンジーリボンが出たよ！引いてみよう" },
+  { kind: "organza", when: (c, t) => ORGANZA_NEWS() && t.organzaDay !== dateKey(), pose: "surprise", say: ["緊急追加！オーガンジーリボンが出たよ！引いてみよう", "緊急追加！透明で可愛いオーガンジーリボンが出たよ！", "オーガンジーリボン、透けてて可愛い〜！引いてみよう", "ふんわり透けるリボン、瓶につけたら可愛いよ！"] },
   { kind: "pickup", when: (c, t) => c.newPickup, pose: "surprise", say: (c) => `${c.newPickup.label}始まったよ！` },
   { kind: "free", when: (c) => c.free > 0, pose: "pointUp", say: "今日の無料ガチャ、まだだよ〜！" },
   { kind: "multi", when: (c) => c.coins >= c.multiCost, pose: "surprise", say: "11連引けるよ！" },
