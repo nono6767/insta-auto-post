@@ -287,6 +287,24 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   return { html: back + svg + front + ribbon, hasTop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
 }
 
+// 大瓶の中のラメ：液体の中で、小さな光がちらちらまたたく（場所と時間は瓶ごとに決まっている）
+function glitterHtml(top, bottom, seed) {
+  let r = seed || 1;
+  const rand = () => ((r = (r * 16807) % 2147483647) / 2147483647);
+  return Array.from({ length: 20 }, () => {
+    const x = 24 + rand() * 52, y = top + 3 + rand() * Math.max(1, bottom - top - 6);
+    const sz = 2.6 + rand() * 2.6, d = (rand() * 3).toFixed(2), t = (1.6 + rand() * 1.6).toFixed(2);
+    return `<span class="glitter${rand() < 0.35 ? " star" : ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;width:${(rand() < 0.4 ? sz * 2.6 : sz).toFixed(1)}%;animation-delay:-${d}s;animation-duration:${t}s"></span>`;
+  }).join("");
+}
+// ショーケースの大瓶のまわりで、キラッとまたたく星
+const CASE_TWINKLES = [
+  [-4, 30, 22, "gold"], [102, 22, 16, "pink"], [98, 62, 22, "white"], [-2, 74, 15, "pink"], [14, 8, 13, "white"], [86, 4, 18, "gold"], [50, -4, 12, "pink"],
+];
+function caseTwinklesHtml(seed) {
+  return CASE_TWINKLES.map(([x, y, w, c], i) => `<span class="case-twinkle ${c}" style="left:${x}%;top:${y}%;width:${w}%;animation-delay:-${((seed % 7) * 0.37 + i * 0.83).toFixed(2)}s"></span>`).join("");
+}
+
 function bigBottleHtml(b) {
   const bottle = bigBottleById(b.bottle);
   const range = bottle.bottom - bottle.top;
@@ -313,7 +331,9 @@ function bigBottleHtml(b) {
     stops.push(`${colors[i]} ${a.toFixed(2)}%`, `${colors[i]} ${z.toFixed(2)}%`);
   });
   const fillH = range * (bottle.fill || BIG_FILL); // 瓶によって、中身の高さを変える（星は上の腕が広いので、多めに）
-  const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
+  // 中身：パステルの層 ＋ 虹色にゆらめくツヤ ＋ 中でまたたくラメ（大瓶だけのスペシャル感）
+  const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"><span class="big-iris"></span></span>`;
+  const glitter = glitterHtml(bottle.bottom - fillH, bottle.bottom, seedOf((b.id || b.bottle) + "g"));
   // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの8.5%）
   const poopDays = (b.days || []).filter((d) => typeof dayPoop === "function" && dayPoop(d)).length; // お通じが出た日の数ぶん、泡
   const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 8.5, seedOf(b.id || b.bottle)) + (poopDays ? bubblesHtml(bottle, Math.ceil(poopDays / 2), bottle.bottom - fillH, 4.8, seedOf((b.id || "") + "b")) : "");
@@ -322,6 +342,7 @@ function bigBottleHtml(b) {
   return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
+    <div class="liquid glitter-box" aria-hidden="true" style="-webkit-mask-image:${mask};mask-image:${mask}">${glitter}</div>
     ${charms.html}
   </div>`;
 }
@@ -353,7 +374,7 @@ function drawShelf() {
       item.className = "case-bottle" + (b.id === justEvolvedId ? " just-evolved" : "");
       item.style.aspectRatio = `${bottle.w}/${bottle.h}`;
       item.setAttribute("aria-label", `${shortDate(b.date)}に進化した${bottle.name}${names.length ? `（${names.join("・")}）` : ""}。タップでチャームを選ぶ`);
-      item.innerHTML = `<span class="case-glow" aria-hidden="true"></span>` + bigBottleHtml(b);
+      item.innerHTML = `<span class="case-glow" aria-hidden="true"></span>` + bigBottleHtml(b) + `<span class="case-twinkles" aria-hidden="true">${caseTwinklesHtml(seedOf(b.id || b.bottle))}</span>`;
       // ガラスの形にそって、ときどき光がすーっと流れる（瓶ごとに時間をずらす）
       const shine = document.createElement("span");
       shine.className = "big-shimmer occasional";

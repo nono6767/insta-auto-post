@@ -1906,3 +1906,56 @@ body.gacha-open { overflow: hidden; }
 .g-mini img { width: 100%; height: 100%; object-fit: contain; }
 .g-mini .grade-badge { position: absolute; left: 1px; bottom: 1px; top: auto; font-size: 7px; padding: 0 3px; }
 .g-mini.owned::after { content: "✓"; position: absolute; top: 0; right: 3px; color: #e0668f; font-size: 10px; font-weight: 700; }
+/* ===== 大瓶のスペシャル感：虹色のツヤ・中のラメ・まわりの星・やわらかい虹のオーラ ===== */
+.big-bottle .layer-stack { overflow: hidden; }
+.big-iris {
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, rgb(255 190 225 / 0) 0%, rgb(255 190 225 / .55) 18%, rgb(255 240 190 / .5) 34%, rgb(190 240 230 / .5) 50%, rgb(200 200 255 / .55) 66%, rgb(255 190 225 / .5) 82%, rgb(255 190 225 / 0) 100%);
+  background-size: 260% 100%;
+  mix-blend-mode: screen;
+  opacity: .55;
+  animation: big-iris 9s ease-in-out infinite alternate;
+}
+@keyframes big-iris { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+.big-bottle .glitter {
+  position: absolute; aspect-ratio: 1; translate: -50% -50%; z-index: 2;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 35%, rgb(255 250 230 / .7) 50%, transparent 72%);
+  animation: glitter 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.big-bottle .glitter.star {
+  border-radius: 0;
+  background: #fff;
+  clip-path: polygon(50% 0, 59% 41%, 100% 50%, 59% 59%, 50% 100%, 41% 59%, 0 50%, 41% 41%);
+  filter: drop-shadow(0 0 2px rgb(255 236 170 / 1));
+}
+@keyframes glitter { 0%, 100% { opacity: 0; scale: .3; } 45%, 55% { opacity: 1; scale: 1; } }
+/* まわりの星（ショーケースだけ） */
+.case-twinkles { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.case-twinkle {
+  position: absolute; aspect-ratio: 1; translate: -50% -50%;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  animation: case-twinkle 2.8s ease-in-out infinite both;
+}
+.case-twinkle.gold { background: linear-gradient(135deg, #fff6cf, #ffd66e); filter: drop-shadow(0 0 4px rgb(255 214 120 / 1)); }
+.case-twinkle.pink { background: linear-gradient(135deg, #fff0f6, #ffb3d1); filter: drop-shadow(0 0 4px rgb(255 160 200 / 1)); }
+.case-twinkle.white { background: #fff; filter: drop-shadow(0 0 4px rgb(255 255 255 / 1)); }
+@keyframes case-twinkle {
+  0%, 70%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+/* うしろのオーラを、金色＋ピンク＋ラベンダーのやわらかい虹色に */
+.case-glow {
+  background:
+    radial-gradient(circle, rgb(255 250 235 / .85) 0%, rgb(255 226 170 / .42) 26%, rgb(255 190 220 / .26) 42%, rgb(205 190 255 / .14) 56%, transparent 68%);
+}
+.case-bottle .bottle { filter: drop-shadow(0 0 5px rgb(255 255 255 / .85)) drop-shadow(0 0 12px rgb(255 205 225 / .55)); }
+/* ガラスに流れる光を、少し多めに */
+.big-shimmer.occasional { animation-duration: 4.8s; }
+@media (prefers-reduced-motion: reduce) {
+  .big-iris, .big-bottle .glitter, .case-twinkle { animation: none; }
+  .big-bottle .glitter { opacity: .8; }
+  .case-twinkle { opacity: .85; }
+}
+.big-bottle .glitter-box { z-index: 1; pointer-events: none; }
