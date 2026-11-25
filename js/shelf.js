@@ -281,7 +281,8 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   } else if (rc) {
     // big：瓶の首ではなく瓶の高さに合わせた大きさ（たっぷりリボン。細い瓶でも小さくならない）
     const w = rc.big ? Math.min(RIBBON_BIG_MAX, (rc.big * CHARM_REF_W) / bottle.w) : Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
-    ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);
+    // bigRibbonUp：たっぷりリボンを少し上げる瓶（瓶の高さの%）。結び目が首のチェーンの高さに来るように
+    ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5) - (rc.big ? bottle.bigRibbonUp || 0 : 0), w);
   }
   return { html: back + svg + front + ribbon, hasTop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
 }
