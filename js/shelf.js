@@ -108,6 +108,7 @@ function chainAtOf(b) {
 
 const CHARM_REF_W = 281;     // ★ チャームの大きさの基準の瓶の幅（まんまるの大瓶）
 const CHARM_TALL_MAX = 1.7;  // ★ 細い瓶で、基準より大きくする上限（倍）
+const RIBBON_BIG_MAX = 150;  // たっぷりリボンの、瓶の幅に対するいちばん大きい幅（%）
 const STACK_SCALE = { 2: 0.9, 3: 0.8 }; // ★ 縦につなげたときの大きさ（1個のときを1として）
 const STACK_DROP = { 2: 0.7, 3: 0.45 }; // ★ 縦につなげたときの、いちばん上のチェーンの長さ（1個のときを1として）
 const MIN_DROP = 2.5; // いちばん上のチェーンの、いちばん短い長さ
@@ -278,7 +279,8 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     const w = (ww / bw) * (rc.scale || 1); // リボンの黄色の線の幅 ＝ 瓶の黄色の線の幅（scale で全体の大きさを調整）
     ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, wy) - (rc.lift || 0), w); // lift：少し上げる（瓶の高さの%）
   } else if (rc) {
-    const w = Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
+    // big：瓶の首ではなく瓶の高さに合わせた大きさ（たっぷりリボン。細い瓶でも小さくならない）
+    const w = rc.big ? Math.min(RIBBON_BIG_MAX, (rc.big * CHARM_REF_W) / bottle.w) : Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
     ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);
   }
   return { html: back + svg + front + ribbon, hasTop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
