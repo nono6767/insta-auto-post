@@ -177,6 +177,21 @@ const SERIES_LIST = [
     ],
   },
   {
+    // 子猫ガチャといっしょに出るリボン
+    id: "kribbon",
+    type: "ribbon",
+    name: "子猫のおめかしリボン",
+    gachaName: "おめかしリボン",
+    catch: "お出かけ前に、ちょこんとひと結び",
+    color: "#f1b8c8",
+    pickups: [{ start: "2026-11-27", end: "2026-12-10" }],
+    charms: [
+      { id: "kr2", name: "ミルクレースのおめかしリボン", w: 160, h: 138, place: "neck", pw: 56, pa: 0.25, kind: "ribbon", grade: "rare" },
+      { id: "kr0", name: "そらいろサテンのおめかしリボン", w: 160, h: 155, place: "neck", pw: 56, pa: 0.22, kind: "ribbon" },
+      { id: "kr1", name: "いちごミルクのほそリボン", w: 160, h: 155, place: "neck", pw: 56, pa: 0.2, kind: "ribbon" },
+    ],
+  },
+  {
     // ドン・キホーテのリボン（公開ずみ。いろいろリボンで引ける）
     id: "qribbon",
     type: "ribbon",

@@ -1854,3 +1854,4 @@ body.gacha-open { overflow: hidden; }
   88% { opacity: .9; }
   100% { bottom: 100%; opacity: 0; transform: translateX(-25%) scale(1); }
 }
+.g-pu-chip { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: linear-gradient(90deg, #ff8fb4, #ffb86b); color: #fff; font-size: 10px; font-weight: 700; vertical-align: 1px; }

@@ -53,7 +53,7 @@ const MIX_RIBBON = { id: "ribbon", name: "リボンガチャ", series: null, mix
 // いまピックアップ中のリボンのシリーズ
 const ribbonPickupNow = () => {
   const t = dateKey();
-  return SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && catOfSeries(p.series) === "ribbon");
+  return SERIES_PICKUPS.filter((p) => p.start <= t && t <= p.end && catOfSeries(p.series) === "ribbon").slice().reverse(); // 新しく始まったものを先に
 };
 // ガチャの種類：シリーズの type: "ribbon" はリボンのガチャ（チャームのガチャとは別）
 const catOfSeries = (id) => (SERIES[id]?.type === "ribbon" ? "ribbon" : "charm");
@@ -438,9 +438,10 @@ function drawGachaScreen() {
       const pu = puNow[0];
       const group = (id) => {
         const l = pool.filter((c) => seriesOf(c) === id);
-        return l.length ? `<p class="g-mix-name">${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
+        const pu2 = puNow.slice(1).find((p) => p.series === id);
+        return l.length ? `<p class="g-mix-name">${pu2 ? `<span class="g-pu-chip">ピックアップ中 ${shortDate(pu2.end)}まで</span>` : ""}${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
       };
-      const others = ids.filter((id) => !puNow.some((p) => p.series === id));
+      const others = ids.filter((id) => !puNow[0] || id !== puNow[0].series); // 2つ目のピックアップは、下の一覧に「ピックアップ中」として出す
       if (pu) {
         // ピックアップ中：上に大きく（シリーズ名・ひとこと・期間・一覧）。下に「いっしょに出るリボン」
         const sr = SERIES[pu.series];
@@ -546,7 +547,7 @@ function drawGachaScreen() {
   $("g-rates").innerHTML = `
     ${ribbonMode
       ? ribbonPickupNow().length
-        ? `<li>${SERIES[ribbonPickupNow()[0].series].name} <b>${Math.round(GACHA.pickupRate * 100)}%</b></li>
+        ? `<li>${ribbonPickupNow().map((p) => SERIES[p.series].name).join("・")} <b>${Math.round(GACHA.pickupRate * 100)}%</b></li>
     <li>これまでのリボン <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b>（ピックアップのリボンも入る）</li>`
         : `<li>これまでのリボンが出るよ</li>`
       : gacha.mix
