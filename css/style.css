@@ -1887,3 +1887,5 @@ body.gacha-open { overflow: hidden; }
 .news-item p { margin: 2px 0 0; font-size: 12px; line-height: 1.55; color: #8d6070; }
 .news-dot { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--c) 35%, #fff); box-shadow: inset 0 0 0 2px var(--c); font-size: 20px; }
 .news-ok { display: block; width: 100%; min-height: 50px; font-size: 16px; }
+/* 3列で最後の段が1つだけのときは、まん中に */
+.sport-btn:last-child:nth-child(3n + 1) { grid-column: 2; }
