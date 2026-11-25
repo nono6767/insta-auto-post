@@ -240,7 +240,9 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
         widths = widths.map((w) => w * f);
       }
       const drop = base + extra;
-      const x = p.x + s.side * out;
+      // 左右のチャームが瓶の外にはみ出さないように、内がわへ寄せる
+      const half = Math.max(...widths) / 2;
+      const x = Math.min(100 - half - 3, Math.max(half + 3, p.x + s.side * out));
       let y = p.y + drop;
       // たるんだカーブ（まん中が少し下にふくらむ）
       paths += chainPath(`M${p.x} ${p.y} Q${(p.x + x) / 2} ${Math.max(p.y, y) + 1.6} ${x} ${y}`);
