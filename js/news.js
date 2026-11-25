@@ -6,7 +6,7 @@
 
 const NEWS = [
   {
-    id: "2026-11-chores-poop",
+    id: "2026-11-chores-poop-2", // お試しで見たときに「見た」になってしまったので、名前を変えてもう一度出す
     auto: true, // アプリを開いたときに1回だけ出す
     title: "新しくなったよ！",
     items: [
@@ -31,8 +31,9 @@ const NEWS = [
 
 const newsSeen = () => (data.newsSeen = data.newsSeen || []);
 
-function showNews(n) {
+function showNews(n, auto = false) {
   const box = $("news-modal");
+  box.dataset.auto = auto ? "1" : "";
   $("news-title").textContent = n.title;
   // 見本の小瓶：家事の色の層と、すっきりの泡
   const shape = BOTTLES[1];
@@ -49,14 +50,14 @@ function showNews(n) {
 }
 function closeNews() {
   const box = $("news-modal");
-  const id = box.dataset.id;
+  const id = box.dataset.auto ? box.dataset.id : ""; // 設定から見ただけのときは「見た」にしない
   if (id && !newsSeen().includes(id)) newsSeen().push(id), saveData();
   box.hidden = true;
 }
 // 起動したとき：まだ見ていない自動のお知らせがあれば出す
 function checkNews() {
   const n = NEWS.find((x) => x.auto && !newsSeen().includes(x.id));
-  if (n) setTimeout(() => showNews(n), 800);
+  if (n) setTimeout(() => showNews(n, true), 800);
 }
 $("news-ok").addEventListener("click", closeNews);
 $("settings-news").addEventListener("click", () => {

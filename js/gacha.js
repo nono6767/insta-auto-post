@@ -450,7 +450,10 @@ function drawGachaScreen() {
           .map((c) => `<span class="g-mini${isOwned(c) ? " owned" : ""}${gradeOf(c) ? " grade-" + c.grade : ""}" title="${c.name}"><img src="${charmSrc(c)}" alt="${c.name}" loading="lazy">${gradeBadge(c)}</span>`)
           .join("")}</div></div>`;
       };
-      const others = ids.filter((id) => !puNow[0] || id !== puNow[0].series); // 2つ目のピックアップは、下の一覧に「ピックアップ中」として出す
+      // 2つ目のピックアップは、下の一覧に「ピックアップ中」として先頭に。そのあとは新しく入ったシリーズから順に
+      const rest = ids.filter((id) => !puNow[0] || id !== puNow[0].series);
+      const puRest = rest.filter((id) => puNow.some((p) => p.series === id));
+      const others = [...puRest, ...rest.filter((id) => !puRest.includes(id)).reverse()];
       if (pu) {
         // ピックアップ中：上に大きく（シリーズ名・ひとこと・期間・一覧）。下に「いっしょに出るリボン」
         const sr = SERIES[pu.series];
