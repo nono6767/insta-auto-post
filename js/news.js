@@ -25,11 +25,6 @@ const NEWS = [
         head: "リボンガチャに「たっぷりオーガンジーリボン」",
         text: "ふんわり透ける9色のリボンが、リボンガチャに入ったよ",
       },
-      {
-        icon: `<span class="news-dot news-swatches"><i style="--c:#eeb39f"></i><i style="--c:#f7c89c"></i><i style="--c:#d9b6c1"></i><i style="--c:#d6d2b8"></i></span>`,
-        head: "色図鑑が10色ふえて60色に",
-        text: "家事をまぜた日にだけ出会える色も。シェイクして集めてみてね",
-      },
     ],
   },
 ];
