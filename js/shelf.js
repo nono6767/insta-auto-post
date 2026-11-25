@@ -275,8 +275,8 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     // 帯の部分（band）を、首のくびれ（waist）の太さ・高さにぴったり合わせる（首に巻きついているように）
     const [bx, by, bw] = rc.band;
     const [wy, ww] = bottle.waist;
-    const w = ww / bw; // リボンの黄色の線の幅 ＝ 瓶の黄色の線の幅
-    ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, wy), w);
+    const w = (ww / bw) * (rc.scale || 1); // リボンの黄色の線の幅 ＝ 瓶の黄色の線の幅（scale で全体の大きさを調整）
+    ribbon = img(rc, "neck ribbon", nx + (0.5 - bx) * w, topAt(rc, w, by, wy) - (rc.lift || 0), w); // lift：少し上げる（瓶の高さの%）
   } else if (rc) {
     const w = Math.min(100, ((rc.pw || 58) * neckScale(bottle) * 281) / bottle.w);
     ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5), w);

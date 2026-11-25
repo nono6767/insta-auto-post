@@ -201,12 +201,12 @@ const SERIES_LIST = [
     color: "#e9b8c8",
     pickups: [{ start: "2026-11-23" }], // 1週間（11/23〜11/29）。終わったら「いろいろリボン」へ
     charms: [
-      { id: "l00", name: "トリアノンの空色リボン", w: 170, h: 155, place: "neck", band: [0.717, 0.3, 0.402], kind: "ribbon" },
-      { id: "l01", name: "王妃のさくらリボン", w: 163, h: 147, place: "neck", band: [0.73, 0.21, 0.47], kind: "ribbon" },
-      { id: "l02", name: "ミルクティーのレースリボン", w: 155, h: 143, place: "neck", band: [0.713, 0.252, 0.438], kind: "ribbon" },
-      { id: "l03", name: "ロココの花がらリボン", w: 170, h: 152, place: "neck", band: [0.666, 0.244, 0.482], kind: "ribbon", grade: "rare" },
-      { id: "l04", name: "プチ・トリアノンのバラリボン", w: 170, h: 151, place: "neck", band: [0.708, 0.291, 0.405], kind: "ribbon", grade: "super" },
-      { id: "l05", name: "ベルサイユのローズリボン", w: 170, h: 152, place: "neck", band: [0.659, 0.198, 0.435], kind: "ribbon", grade: "rare" },
+      { id: "l00", name: "トリアノンの空色リボン", w: 170, h: 155, place: "neck", band: [0.717, 0.3, 0.402], kind: "ribbon", scale: 0.86, lift: 2.5 },
+      { id: "l01", name: "王妃のさくらリボン", w: 163, h: 147, place: "neck", band: [0.73, 0.21, 0.47], kind: "ribbon", scale: 0.86, lift: 2.5 },
+      { id: "l02", name: "ミルクティーのレースリボン", w: 155, h: 143, place: "neck", band: [0.713, 0.252, 0.438], kind: "ribbon", scale: 0.86, lift: 2.5 },
+      { id: "l03", name: "ロココの花がらリボン", w: 170, h: 152, place: "neck", band: [0.666, 0.244, 0.482], kind: "ribbon", scale: 0.86, lift: 2.5, grade: "rare" },
+      { id: "l04", name: "プチ・トリアノンのバラリボン", w: 170, h: 151, place: "neck", band: [0.708, 0.291, 0.405], kind: "ribbon", scale: 0.86, lift: 2.5, grade: "super" },
+      { id: "l05", name: "ベルサイユのローズリボン", w: 170, h: 152, place: "neck", band: [0.659, 0.198, 0.435], kind: "ribbon", scale: 0.86, lift: 2.5, grade: "rare" },
     ],
   },
   // ---- ひな形（コピーして、// を消して使う） ----
