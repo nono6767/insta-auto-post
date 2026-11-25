@@ -201,11 +201,11 @@ const SERIES_LIST = [
     pickups: [{ start: "2026-11-24", end: "2026-11-24" }], // ピックアップはなし。リボンガチャに入っている（公開ずみ）
     charms: [
       { id: "og0", name: "ラベンダーのオーガンジーリボン", file: "g0.webp", w: 170, h: 120, place: "neck", big: 88, pa: 0.12, pc: 0.525, kind: "ribbon" },
-      { id: "og1", name: "さくらのオーガンジーリボン", file: "g1.webp", w: 170, h: 133, place: "neck", big: 88, pa: 0.12, pc: 0.495, kind: "ribbon", grade: "rare" },
+      { id: "og1", name: "さくらのオーガンジーリボン", file: "g1.webp", w: 170, h: 133, place: "neck", big: 88, pa: 0.12, pc: 0.495, kind: "ribbon", grade: "super" },
       { id: "og2", name: "そらいろのオーガンジーリボン", file: "g2.webp", w: 170, h: 124, place: "neck", big: 88, pa: 0.12, pc: 0.445, kind: "ribbon" },
       { id: "og3", name: "シャンパンのオーガンジーリボン", file: "g3.webp", w: 170, h: 128, place: "neck", big: 88, pa: 0.12, pc: 0.465, kind: "ribbon" },
       { id: "og4", name: "ミントのオーガンジーリボン", file: "g4.webp", w: 170, h: 131, place: "neck", big: 88, pa: 0.12, pc: 0.45, kind: "ribbon" },
-      { id: "og5", name: "すみれのオーガンジーリボン", file: "g5.webp", w: 170, h: 159, place: "neck", big: 88, pa: 0.12, pc: 0.42, kind: "ribbon" },
+      { id: "og5", name: "すみれのオーガンジーリボン", file: "g5.webp", w: 170, h: 159, place: "neck", big: 88, pa: 0.12, pc: 0.42, kind: "ribbon", grade: "rare" },
       { id: "og6", name: "ブルーのオーガンジーリボン", file: "g6.webp", w: 170, h: 132, place: "neck", big: 88, pa: 0.12, pc: 0.495, kind: "ribbon" },
       { id: "og7", name: "コーラルのオーガンジーリボン", file: "g7.webp", w: 170, h: 131, place: "neck", big: 88, pa: 0.12, pc: 0.425, kind: "ribbon" },
       { id: "og8", name: "はちみつのオーガンジーリボン", file: "g8.webp", w: 170, h: 135, place: "neck", big: 88, pa: 0.12, pc: 0.45, kind: "ribbon", grade: "rare" },
