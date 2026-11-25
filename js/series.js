@@ -150,7 +150,7 @@ const SERIES_LIST = [
     gachaName: "子猫ガチャ",
     catch: "ころころ、ふわふわ。子猫たちのおへやへようこそ",
     color: "#e9b48f",
-    pickups: [], // ★ 開始日が決まったら { start: "2026-12-07" } のように入れる（それまでガチャにも予告にも出ない）
+    pickups: [{ start: "2026-11-27", end: "2026-12-10" }], // 2週間（22種と多いので）
     charms: [
       { id: "n00", name: "くまさんとおひるねの子猫", w: 139, h: 160, grade: "super" },
       { id: "n01", name: "ぴったりふたご子猫", w: 158, h: 160, grade: "super" },
