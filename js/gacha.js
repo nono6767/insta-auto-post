@@ -441,6 +441,15 @@ function drawGachaScreen() {
         const pu2 = puNow.slice(1).find((p) => p.series === id);
         return l.length ? `<p class="g-mix-name">${pu2 ? `<span class="g-pu-chip">ピックアップ中 ${shortDate(pu2.end)}まで</span>` : ""}${SERIES[id]?.name || id} <small>${l.filter(isOwned).length} / ${l.length}</small></p><div class="g-lineup">${l.map(item).join("")}</div>` : "";
       };
+      // いっしょに入っているリボン：シリーズごとに小さく、横1列にならべる（引くボタンが遠くならないように）
+      const miniGroup = (id) => {
+        const l = pool.filter((c) => seriesOf(c) === id);
+        if (!l.length) return "";
+        const pu2 = puNow.slice(1).find((p) => p.series === id);
+        return `<div class="g-mini-group"><p class="g-mini-name">${pu2 ? `<span class="g-pu-chip">ピックアップ中</span>` : ""}${SERIES[id]?.name || id} <small>${l.filter(isOwned).length}/${l.length}</small></p><div class="g-mini-row">${l
+          .map((c) => `<span class="g-mini${isOwned(c) ? " owned" : ""}${gradeOf(c) ? " grade-" + c.grade : ""}" title="${c.name}"><img src="${charmSrc(c)}" alt="${c.name}" loading="lazy">${gradeBadge(c)}</span>`)
+          .join("")}</div></div>`;
+      };
       const others = ids.filter((id) => !puNow[0] || id !== puNow[0].series); // 2つ目のピックアップは、下の一覧に「ピックアップ中」として出す
       if (pu) {
         // ピックアップ中：上に大きく（シリーズ名・ひとこと・期間・一覧）。下に「いっしょに出るリボン」
@@ -452,7 +461,7 @@ function drawGachaScreen() {
       <p class="g-banner-sub">${sr.catch || ""}</p>
       <p class="g-banner-date"><b class="g-days">${daysLeft(pu.end) <= 1 ? "今日まで！" : `あと${daysLeft(pu.end)}日`}</b>（${shortDate(pu.end)}まで） ・ 集めた ${l.filter(isOwned).length} / ${l.length}</p>
       <div class="g-lineup">${l.map(item).join("")}</div>${GRADE_LEGEND}</section>
-      ${others.length ? `<section class="g-banner g-banner-mix g-banner-others"><p class="g-others-title">いっしょに入っているリボン</p>${others.map(group).join("")}</section>` : ""}`;
+      ${others.length ? `<section class="g-banner g-banner-mix g-banner-others"><p class="g-others-title">いっしょに入っているリボン <small>（横にスクロール）</small></p><div class="g-mini-scroll">${others.map(miniGroup).join("")}</div></section>` : ""}`;
       } else {
         banner.innerHTML = `<section class="g-banner g-banner-mix g-banner-ribbon">
       <p class="g-banner-tag">いつでも引ける</p>
