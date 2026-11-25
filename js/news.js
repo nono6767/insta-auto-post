@@ -7,7 +7,7 @@
 const NEWS = [
   {
     id: "2026-11-chores-poop",
-    auto: false, // ★ お試し中。OKが出たら true にする
+    auto: true, // アプリを開いたときに1回だけ出す
     title: "新しくなったよ！",
     items: [
       {
@@ -19,6 +19,11 @@ const NEWS = [
         icon: `<span class="news-dot" style="--c:#8ec5ea">🫧</span>`,
         head: "からだに「お通じ」の記録",
         text: "「出た」を記録すると、その日の小瓶に“すっきりの泡”がのぼるよ。からだの記録で毎日コインも+1",
+      },
+      {
+        icon: `<span class="news-dot news-swatches"><i style="--c:#eeb39f"></i><i style="--c:#f7c89c"></i><i style="--c:#d9b6c1"></i><i style="--c:#d6d2b8"></i></span>`,
+        head: "色図鑑が10色ふえて60色に",
+        text: "家事をまぜた日にだけ出会える色も。シェイクして集めてみてね",
       },
     ],
   },
