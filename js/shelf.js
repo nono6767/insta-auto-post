@@ -309,7 +309,7 @@ function bigBottleHtml(b) {
     const z = Math.max(a, hi - blurAbove);
     stops.push(`${colors[i]} ${a.toFixed(2)}%`, `${colors[i]} ${z.toFixed(2)}%`);
   });
-  const fillH = range * BIG_FILL;
+  const fillH = range * (bottle.fill || BIG_FILL); // 瓶によって、中身の高さを変える（星は上の腕が広いので、多めに）
   const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"></span>`;
   // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの8.5%）
   const poopDays = (b.days || []).filter((d) => typeof dayPoop === "function" && dayPoop(d)).length; // お通じが出た日の数ぶん、泡
