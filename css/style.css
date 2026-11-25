@@ -1855,3 +1855,35 @@ body.gacha-open { overflow: hidden; }
   100% { bottom: 100%; opacity: 0; transform: translateX(-25%) scale(1); }
 }
 .g-pu-chip { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: linear-gradient(90deg, #ff8fb4, #ffb86b); color: #fff; font-size: 10px; font-weight: 700; vertical-align: 1px; }
+/* 運動の種目：3列で、ひと目で全部見えるように */
+.sports { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sport-btn { flex-direction: column; justify-content: center; gap: 6px; min-height: 76px; padding: 10px 4px; text-align: center; font-size: 13px; line-height: 1.25; }
+.sport-btn .dot { width: 24px; height: 24px; }
+.sport-btn:last-child:nth-child(odd) { grid-column: auto; }
+.sheet-note { margin: 2px 0 10px; font-size: 12px; color: #8d6070; text-align: center; }
+.sheet-note[hidden] { display: none; }
+
+/* ---------- お知らせ（新しくなったこと） ---------- */
+.news-backdrop { z-index: 60; }
+.news-card { position: relative; width: min(92vw, 380px); margin: auto; padding-top: 26px; animation: news-in .5s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes news-in { from { transform: scale(.7) translateY(20px); opacity: 0; } }
+.news-ribbon { position: absolute; z-index: 2; top: 0; left: 50%; translate: -50% 0; padding: 10px 34px 12px; border-radius: 22px; background: linear-gradient(#ffd0e0, #f6a5c1); box-shadow: 0 3px 0 #d97fa1, 0 6px 14px rgb(200 90 130 / .3); white-space: nowrap; }
+.news-ribbon::before, .news-ribbon::after { content: ""; position: absolute; top: 50%; width: 22px; height: 26px; translate: 0 -40%; background: #f29bbb; z-index: -1; }
+.news-ribbon::before { left: -14px; clip-path: polygon(0 0, 100% 15%, 100% 85%, 0 100%, 35% 50%); }
+.news-ribbon::after { right: -14px; clip-path: polygon(100% 0, 0 15%, 0 85%, 100% 100%, 65% 50%); }
+.news-ribbon h3 { margin: 0; font-size: 20px; letter-spacing: .12em; color: #fff; text-shadow: 0 2px 0 #c76b91; }
+.news-frame { padding: 34px 14px 16px; border-radius: 22px; border: 3px solid #f3c3d4; background: linear-gradient(#fffafc, #fff1f6); box-shadow: 0 0 0 6px #fde3ec, 0 12px 30px rgb(120 50 80 / .3); }
+.news-hero { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 170px; margin: 0 0 10px; border-radius: 16px; background: radial-gradient(ellipse at 50% 80%, #fff 0 30%, transparent 70%), linear-gradient(#e8f4fb, #fde8f0); overflow: hidden; }
+.news-hero-char { height: 150px; width: 120px; flex: none; }
+.news-hero-char .n-char { height: 100%; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.news-hero-char .n-char img { width: auto; max-width: 100%; object-fit: contain; }
+.news-hero-jar { height: 130px; width: 110px; flex: none; display: flex; justify-content: center; margin-bottom: 10px; }
+.news-hero-jar .bottle { height: 100%; width: auto; }
+.news-spark { position: absolute; width: 14px; aspect-ratio: 1; background: #fff3c4; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); animation: twinkle-soft 2.4s ease-in-out infinite; }
+.news-spark.s1 { left: 12%; top: 14%; } .news-spark.s2 { right: 10%; top: 22%; animation-delay: .8s; } .news-spark.s3 { left: 46%; top: 8%; width: 10px; animation-delay: 1.5s; }
+.news-items { display: grid; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
+.news-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: #fff; box-shadow: 0 1px 0 #f3d5df; text-align: left; }
+.news-item b { display: block; font-size: 14px; color: var(--ink); }
+.news-item p { margin: 2px 0 0; font-size: 12px; line-height: 1.55; color: #8d6070; }
+.news-dot { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--c) 35%, #fff); box-shadow: inset 0 0 0 2px var(--c); font-size: 20px; }
+.news-ok { display: block; width: 100%; min-height: 50px; font-size: 16px; }
