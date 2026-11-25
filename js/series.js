@@ -146,12 +146,11 @@ const SERIES_LIST = [
   },
   {
     id: "kitten",
-    trial: true, // ★ 試しに使える（動きの確認用）。確認が終わったら、この行を消して pickups に日付を入れる
     name: "ふわふわ子猫シリーズ",
     gachaName: "子猫ガチャ",
     catch: "ころころ、ふわふわ。子猫たちのおへやへようこそ",
     color: "#e9b48f",
-    pickups: [],
+    pickups: [], // ★ 開始日が決まったら { start: "2026-12-07" } のように入れる（それまでガチャにも予告にも出ない）
     charms: [
       { id: "n00", name: "テディベアとなかよし子猫", w: 139, h: 160, grade: "super" },
       { id: "n01", name: "ぴったりふたご子猫", w: 158, h: 160, grade: "super" },
