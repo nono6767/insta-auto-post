@@ -177,7 +177,7 @@ function talkContext() {
     todayMin,
     quotaDone: todayMin >= DAILY_QUOTA_MIN,
     quotaLeft: Math.max(0, DAILY_QUOTA_MIN - todayMin),
-    overLeft: overCoinLeft(todayMin),
+    overLeft: todayMin >= DAILY_QUOTA_MIN ? COIN_RULES.overMin - ((todayMin - DAILY_QUOTA_MIN) % COIN_RULES.overMin) : 0,
     last: logs[logs.length - 1] || null,
     pilatesMin: minOf("pilates"),
     pool,
