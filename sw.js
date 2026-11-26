@@ -9,8 +9,8 @@
 // ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
 //   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
 importScripts("js/bottles.js", "js/bigbottles.js", "js/series.js");
-const CODE_VERSION = 190;
-const IMAGE_VERSION = 14;
+const CODE_VERSION = 191;
+const IMAGE_VERSION = 15;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
 
