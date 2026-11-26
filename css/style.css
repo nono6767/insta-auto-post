@@ -1933,14 +1933,19 @@ body.gacha-open { overflow: hidden; }
 @keyframes glitter { 0%, 100% { opacity: 0; scale: .3; } 45%, 55% { opacity: 1; scale: 1; } }
 /* まわりの星（ショーケースだけ） */
 .case-twinkles { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+/* 光（filter）は外側、星の形（clip-path）は内側の ::before に。同じ所にすると光が切れてシールっぽくなる */
 .case-twinkle {
   position: absolute; aspect-ratio: 1; translate: -50% -50%;
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
   animation: case-twinkle 2.8s ease-in-out infinite both;
 }
-.case-twinkle.gold { background: linear-gradient(135deg, #fff6cf, #ffd66e); filter: drop-shadow(0 0 4px rgb(255 214 120 / 1)); }
-.case-twinkle.pink { background: linear-gradient(135deg, #fff0f6, #ffb3d1); filter: drop-shadow(0 0 4px rgb(255 160 200 / 1)); }
-.case-twinkle.white { background: #fff; filter: drop-shadow(0 0 4px rgb(255 255 255 / 1)); }
+.case-twinkle::before {
+  content: ""; position: absolute; inset: 0;
+  clip-path: polygon(50% 0, 56% 44%, 100% 50%, 56% 56%, 50% 100%, 44% 56%, 0 50%, 44% 44%);
+  background: radial-gradient(circle, #fff 0 25%, var(--tw) 70%);
+}
+.case-twinkle.gold { --tw: #ffe2a0; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgb(255 214 120 / .95)); }
+.case-twinkle.pink { --tw: #ffc6dc; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgb(255 160 205 / .95)); }
+.case-twinkle.white { --tw: #fff; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgb(255 235 250 / .95)); }
 @keyframes case-twinkle {
   0%, 70%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
   30% { opacity: 1; transform: scale(1) rotate(45deg); }

@@ -293,16 +293,16 @@ function glitterHtml(top, bottom, seed) {
   const rand = () => ((r = (r * 16807) % 2147483647) / 2147483647);
   return Array.from({ length: 20 }, () => {
     const x = 24 + rand() * 52, y = top + 3 + rand() * Math.max(1, bottom - top - 6);
-    const sz = 2.6 + rand() * 2.6, d = (rand() * 3).toFixed(2), t = (1.6 + rand() * 1.6).toFixed(2);
-    return `<span class="glitter${rand() < 0.35 ? " star" : ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;width:${(rand() < 0.4 ? sz * 2.6 : sz).toFixed(1)}%;animation-delay:-${d}s;animation-duration:${t}s"></span>`;
+    const sz = 2.5 + rand() * 2.5, d = (rand() * 3).toFixed(2), t = (1.6 + rand() * 1.6).toFixed(2);
+    return `<span class="glitter${rand() < 0.35 ? " star" : ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;width:${(rand() < 0.35 ? 6 + rand() * 4 : sz).toFixed(1)}px;animation-delay:-${d}s;animation-duration:${t}s"></span>`;
   }).join("");
 }
-// ショーケースの大瓶のまわりで、キラッとまたたく星
+// ショーケースの大瓶のまわりで、キラッとまたたく星（[左%, 上%, 大きさpx, 色]。瓶の大きさにかかわらず同じ大きさ）
 const CASE_TWINKLES = [
-  [-4, 30, 22, "gold"], [102, 22, 16, "pink"], [98, 62, 22, "white"], [-2, 74, 15, "pink"], [14, 8, 13, "white"], [86, 4, 18, "gold"], [50, -4, 12, "pink"],
+  [-4, 30, 13, "gold"], [102, 22, 9, "pink"], [98, 62, 11, "white"], [-2, 74, 8, "pink"], [14, 8, 7, "white"], [86, 4, 10, "gold"], [50, -4, 6, "pink"],
 ];
 function caseTwinklesHtml(seed) {
-  return CASE_TWINKLES.map(([x, y, w, c], i) => `<span class="case-twinkle ${c}" style="left:${x}%;top:${y}%;width:${w}%;animation-delay:-${((seed % 7) * 0.37 + i * 0.83).toFixed(2)}s"></span>`).join("");
+  return CASE_TWINKLES.map(([x, y, w, c], i) => `<span class="case-twinkle ${c}" style="left:${x}%;top:${y}%;width:${w}px;animation-delay:-${((seed % 7) * 0.37 + i * 0.83).toFixed(2)}s"></span>`).join("");
 }
 
 function bigBottleHtml(b) {
