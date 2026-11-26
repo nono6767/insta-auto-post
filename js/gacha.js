@@ -32,7 +32,7 @@ const GACHA = {
   multiCount: 11,      // 11連で出る数
   freePerDay: 1,       // 1日に無料でひける回数
   pickupRate: 0.5,     // チャームのピックアップガチャで、そのシリーズが出る確率（0.5 ＝ 50%）
-  ribbonPickupRate: 0.4, // リボンガチャで、ピックアップ中のリボンが出る確率（ぴったり40%）
+  ribbonPickupRate: 0.5, // リボンガチャで、ピックアップ中のリボンが出る確率（ぴったり50%）
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
   ribbonCostOne: 1,    // リボンのガチャ：1回ひくのに使うコイン
   ribbonCostMulti: 5,  // リボンのガチャ：11連に使うコイン（チャームより安く）
@@ -281,7 +281,7 @@ function rarityOf(r) {
 // 選んだガチャから1つ出す
 function drawCharm(gacha, forcePickup = false) {
   if (gacha.mix && gacha.cat === "ribbon") {
-    // ピックアップのシリーズは、ちょうど GACHA.ribbonPickupRate（40%）。残りは、ピックアップ以外のリボンから
+    // ピックアップのシリーズは、ちょうど GACHA.ribbonPickupRate（50%）。残りは、ピックアップ以外のリボンから
     const pu = new Set(ribbonPickupNow().map((p) => p.series));
     const all = mixPool("ribbon");
     const puPool = all.filter((c) => pu.has(seriesOf(c)));
