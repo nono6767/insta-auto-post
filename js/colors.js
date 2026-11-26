@@ -4,10 +4,10 @@
 // ・色の「方向（色あい）」と「あざやかさ」を分けて混ぜるので、組み合わせや割合でちゃんと違う色になる
 //   （近い色どうしはあいだの色に、反対の色どうしは落ち着いたグレージュ系に）
 // ・たくさん運動した日ほど色がこく、短い日は淡くなる
-// ・混ざった色にいちばん近い色を、下の66色から選んで名前をつける
+// ・混ざった色にいちばん近い色を、下の78色から選んで名前をつける
 // =========================================================
 
-// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの66色
+// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの78色
 const DAY_COLORS = [
   // ピンク
   { name: "ベビーピンク", hex: "#f8d3d6" },
@@ -87,6 +87,19 @@ const DAY_COLORS = [
   { name: "ピンクラベンダー", hex: "#e2bfe3", added: true },
   { name: "ピーチローズ", hex: "#f4bcb3", added: true },
   { name: "ラベンダーグレー", hex: "#d6ccd8", added: true },
+  // 大瓶をまぜられるようになって、ふえた色
+  { name: "ミルキーピーチ", hex: "#f8cdb8", added: true },
+  { name: "ピンクグレープフルーツ", hex: "#f5b2a6", added: true },
+  { name: "ローズクォーツ", hex: "#efc1cc", added: true },
+  { name: "シャーベットオレンジ", hex: "#f8c4a0", added: true },
+  { name: "シャンパンピンク", hex: "#f1d0c8", added: true },
+  { name: "ハニーミルク", hex: "#f6dca8", added: true },
+  { name: "ミントラベンダー", hex: "#c9d4e6", added: true },
+  { name: "ラムネ", hex: "#b9e0e6", added: true },
+  { name: "フローズンミント", hex: "#c8ead9", added: true },
+  { name: "ブルーベリーミルク", hex: "#c9cdef", added: true },
+  { name: "グレープソーダ", hex: "#d8b4dc", added: true },
+  { name: "ピーチミント", hex: "#e3d9c0", added: true },
 ];
 
 // ---------- 色の計算（sRGB ⇄ OKLab） ----------
