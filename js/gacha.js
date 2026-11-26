@@ -31,7 +31,8 @@ const GACHA = {
   costMulti: 10,       // 11連に使うコイン
   multiCount: 11,      // 11連で出る数
   freePerDay: 1,       // 1日に無料でひける回数
-  pickupRate: 0.5,     // ピックアップ中のシリーズが出る確率（0.5 ＝ 50%）
+  pickupRate: 0.5,     // チャームのピックアップガチャで、そのシリーズが出る確率（0.5 ＝ 50%）
+  ribbonPickupRate: 0.4, // リボンガチャで、ピックアップ中のリボンが出る確率（ぴったり40%）
   shardPerDup: 1,      // かぶったときにもらえる、かけらの数
   ribbonCostOne: 1,    // リボンのガチャ：1回ひくのに使うコイン
   ribbonCostMulti: 5,  // リボンのガチャ：11連に使うコイン（チャームより安く）
@@ -270,23 +271,23 @@ function pickByGrade(arr) {
   return arr[arr.length - 1];
 }
 
-// レア度：ピックアップ（虹）／レア＝まだ持っていない・終わったシリーズのチャーム（紫）／ふつう（ピンク）
-function rarityOf(r, gacha) {
-  if (gacha && gacha.series && seriesOf(r.charm) === gacha.series) return "pickup";
-  if (gacha && gacha.cat === "ribbon" && r.pickup) return "pickup";
-  if (r.isNew || isLimited(r.charm)) return "rare";
-  return "normal";
+// 演出の色は、レア度（SR・R・N）だけで決める：SR＝金と虹／R＝紫／N＝白
+// （ピックアップかどうか・新しいかどうかでは色を変えない。当たった感がわかりやすいように）
+function rarityOf(r) {
+  const g = gradeOf(r.charm);
+  return g === "super" ? "super" : g === "rare" ? "rare" : "normal";
 }
 
 // 選んだガチャから1つ出す
 function drawCharm(gacha, forcePickup = false) {
   if (gacha.mix && gacha.cat === "ribbon") {
-    // ピックアップ中のリボンは、GACHA.pickupRate の確率でそこから出る
+    // ピックアップのシリーズは、ちょうど GACHA.ribbonPickupRate（40%）。残りは、ピックアップ以外のリボンから
     const pu = new Set(ribbonPickupNow().map((p) => p.series));
-    const puPool = mixPool("ribbon").filter((c) => pu.has(seriesOf(c)));
-    if (puPool.length && Math.random() < GACHA.pickupRate) return { charm: pickByGrade(puPool), pickup: true };
-    const c = pickByGrade(mixPool("ribbon"));
-    return { charm: c, pickup: pu.has(seriesOf(c)) };
+    const all = mixPool("ribbon");
+    const puPool = all.filter((c) => pu.has(seriesOf(c)));
+    const rest = all.filter((c) => !pu.has(seriesOf(c)));
+    if (puPool.length && (!rest.length || Math.random() < GACHA.ribbonPickupRate)) return { charm: pickByGrade(puPool), pickup: true };
+    return { charm: pickByGrade(rest.length ? rest : all), pickup: false };
   }
   if (gacha.mix) return { charm: pickByGrade(mixPool(gacha.cat)), pickup: false };
   if (gacha.cat === "ribbon") return { charm: pickByGrade(poolOf(gacha)), pickup: true }; // リボンのピックアップは、そのリボンだけ
@@ -336,7 +337,7 @@ function runGacha(kind) {
     return r;
   });
   // キャラがびっくりする（ピックアップやレアの新しいチャームが出たとき）
-  const wow = results.find((r) => r.isNew && r.rarity === "pickup") || results.find((r) => r.isNew && r.rarity === "rare");
+  const wow = results.find((r) => r.isNew && r.rarity === "super") || results.find((r) => r.isNew && r.rarity === "rare") || results.find((r) => r.isNew && r.pickup);
   if (typeof talkState !== "undefined") talkState.lastDraw = wow ? wow.charm.name : null;
   saveData();
   updateCoinBadge();
@@ -559,8 +560,8 @@ function drawGachaScreen() {
   $("g-rates").innerHTML = `
     ${ribbonMode
       ? ribbonPickupNow().length
-        ? `<li>${ribbonPickupNow().map((p) => SERIES[p.series].name).join("・")} <b>${Math.round(GACHA.pickupRate * 100)}%</b></li>
-    <li>これまでのリボン <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b>（ピックアップのリボンも入る）</li>`
+        ? `<li>${ribbonPickupNow().map((p) => SERIES[p.series].name).join("・")} <b>${Math.round(GACHA.ribbonPickupRate * 100)}%</b></li>
+    <li>そのほかのリボン <b>${100 - Math.round(GACHA.ribbonPickupRate * 100)}%</b></li>`
         : `<li>これまでのリボンが出るよ</li>`
       : gacha.mix
       ? `<li>ピックアップが終わったチャームが出るよ</li>`

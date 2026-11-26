@@ -1338,8 +1338,8 @@ body.gacha-open { overflow: hidden; }
 .g-card-sub { font-size: 11px; color: var(--muted); }
 .g-result-grid.multi .g-card-sub { font-size: 9px; }
 /* ピックアップのチャームは、金と虹のふち＋光 */
-.g-card.r-pickup { background: linear-gradient(#fff, #fff7e4); box-shadow: 0 0 0 2px #f3cf7a, 0 0 14px rgb(255 214 120 / .8); }
-.g-card.r-pickup::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .8) 48%, transparent 60%) no-repeat; background-size: 300% 100%; animation: shimmer-occasional 3s ease-in-out infinite; pointer-events: none; }
+.g-card.r-super { background: linear-gradient(#fff, #fff7e4); box-shadow: 0 0 0 2px #f3cf7a, 0 0 14px rgb(255 214 120 / .8); }
+.g-card.r-super::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .8) 48%, transparent 60%) no-repeat; background-size: 300% 100%; animation: shimmer-occasional 3s ease-in-out infinite; pointer-events: none; }
 .g-new { position: absolute; top: -6px; left: -4px; z-index: 1; padding: 1px 7px; border-radius: 999px; background: linear-gradient(90deg, #ff6f9f, #ffaa5c); color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 2px 4px rgb(200 80 120 / .35); animation: new-color-pop .7s cubic-bezier(.2, 1.6, .4, 1) both; }
 .g-result-grid.multi .g-new { font-size: 9px; padding: 0 5px; }
 .g-result-note { margin: 10px 0 0; font-size: 12px; color: #8d6070; }
@@ -1368,7 +1368,7 @@ body.gacha-open { overflow: hidden; }
 .jbox { --glow: 255 140 190; position: relative; width: min(72vw, 280px); aspect-ratio: 1; animation: jb-in .6s cubic-bezier(.3, 1.5, .5, 1) var(--d, 0s) both; }
 .jb-wrap.multi .jbox { width: 78px; }
 .jbox.r-rare { --glow: 175 125 255; }
-.jbox.r-pickup { --glow: 255 205 130; }
+.jbox.r-super { --glow: 255 205 130; }
 @keyframes jb-in { from { transform: translateY(50px) scale(.4); opacity: 0; } }
 .jbox > * { position: absolute; display: block; }
 .jb-base, .jb-lid { inset: 0; }
@@ -1378,7 +1378,7 @@ body.gacha-open { overflow: hidden; }
   background: radial-gradient(circle at 50% 50%, rgb(var(--glow) / .8), rgb(var(--glow) / .3) 35%, transparent 62%);
   animation: jb-pulse 1.4s ease-in-out infinite;
 }
-.jbox.r-pickup .jb-glow { background: conic-gradient(from 0deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff, #ff9fc0); -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 60%); mask-image: radial-gradient(circle, #000 12%, transparent 60%); opacity: .8; animation: jb-pulse 1.4s ease-in-out infinite, jb-spin 4s linear infinite; }
+.jbox.r-super .jb-glow { background: conic-gradient(from 0deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff, #ff9fc0); -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 60%); mask-image: radial-gradient(circle, #000 12%, transparent 60%); opacity: .8; animation: jb-pulse 1.4s ease-in-out infinite, jb-spin 4s linear infinite; }
 @keyframes jb-pulse { 50% { scale: 1.1; opacity: .7; } }
 @keyframes jb-spin { to { rotate: 360deg; } }
 .jb-rays {
@@ -1390,7 +1390,7 @@ body.gacha-open { overflow: hidden; }
   transition: opacity .6s, transform 1s cubic-bezier(.2, .8, .3, 1);
 }
 .jbox.r-rare .jb-rays { background: repeating-conic-gradient(from 0deg at 50% 100%, rgb(225 205 255 / .85) 0deg 5deg, transparent 5deg 16deg); }
-.jbox.r-pickup .jb-rays { background: repeating-conic-gradient(from 0deg at 50% 100%, #ffd1e3 0deg 5deg, transparent 5deg 10deg, #fff2b8 10deg 15deg, transparent 15deg 20deg, #c9f1ff 20deg 25deg, transparent 25deg 30deg, #e2d4ff 30deg 35deg, transparent 35deg 40deg); }
+.jbox.r-super .jb-rays { background: repeating-conic-gradient(from 0deg at 50% 100%, #ffd1e3 0deg 5deg, transparent 5deg 10deg, #fff2b8 10deg 15deg, transparent 15deg 20deg, #c9f1ff 20deg 25deg, transparent 25deg 30deg, #e2d4ff 30deg 35deg, transparent 35deg 40deg); }
 /* 箱の中から浮かぶチャーム（箱の幅の半分くらい。浮かんだあと、少しだけ大きくなって止まる） */
 .jb-charm {
   left: 50%; bottom: 50%; width: 40%; height: auto; max-height: 52%; object-fit: contain; max-width: none;
@@ -1400,7 +1400,7 @@ body.gacha-open { overflow: hidden; }
 }
 /* ふたと箱のすき間からもれる光（レア度の色） */
 .jb-seam { left: 12%; right: 12%; top: 46%; height: 4%; border-radius: 50%; background: rgb(var(--glow)); box-shadow: 0 0 14px 5px rgb(var(--glow) / .9); animation: jb-seam 1s ease-in-out infinite; }
-.jbox.r-pickup .jb-seam { background: linear-gradient(90deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff); box-shadow: 0 0 16px 6px rgb(255 230 200 / .9); }
+.jbox.r-super .jb-seam { background: linear-gradient(90deg, #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff); box-shadow: 0 0 16px 6px rgb(255 230 200 / .9); }
 @keyframes jb-seam { 50% { opacity: .6; } }
 /* ふた：うしろのつなぎ目（上から47%）を軸に、ゆっくり開く */
 .jb-lid { transform-origin: 50% 49%; transition: transform .55s cubic-bezier(.5, 0, .9, .5), opacity .2s .45s; }
@@ -1984,3 +1984,27 @@ body.gacha-open { overflow: hidden; }
 .merge-mix strong { font-size: 18px; }
 .merge-mix .new-color { margin: 0; padding: 1px 8px; border-radius: 999px; background: #e0668f; color: #fff; font-size: 11px; font-weight: 700; }
 .merge-result .merge-tip { font-size: 12.5px; padding: 8px 12px; border-radius: 12px; background: rgb(255 255 255 / .75); color: #6e4a58; }
+
+/* ===== ガチャの結果：色はレア度だけで決める（SR＝金と虹／R＝紫と青／N＝白） ===== */
+.g-card.r-normal, .g-card.r-normal.grade-super, .g-card.r-normal.grade-rare { background: #fff; box-shadow: 0 2px 8px rgb(170 70 110 / .16); }
+.g-card.r-rare {
+  background: linear-gradient(160deg, #f4eeff, #dcd0fb 60%, #cfe0fb);
+  box-shadow: 0 0 0 2.5px #a98be6, 0 0 14px rgb(150 110 240 / .75);
+}
+.g-card.r-super {
+  background: linear-gradient(160deg, #fffbe6, #ffe39a 50%, #ffc8da);
+  box-shadow: 0 0 0 3px #f0c14d, 0 0 18px rgb(255 200 90 / 1), 0 0 30px rgb(255 160 200 / .7);
+  animation: card-pop .5s cubic-bezier(.3, 1.6, .5, 1) both, sr-glow 1.8s ease-in-out .5s infinite;
+}
+.g-card.r-super::after {
+  content: ""; position: absolute; inset: -3px; border-radius: inherit; padding: 3px; pointer-events: none;
+  background: conic-gradient(from var(--sr-a, 0deg), #ff9fc0, #ffd27a, #a8f0d8, #9fd6ff, #d9b8ff, #ff9fc0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: sr-spin 3s linear infinite;
+}
+@property --sr-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes sr-spin { to { --sr-a: 360deg; } }
+@keyframes sr-glow { 50% { box-shadow: 0 0 0 3px #f0c14d, 0 0 26px rgb(255 210 100 / 1), 0 0 44px rgb(255 160 200 / .9); } }
+.g-card.r-super .g-card-name { color: #8a5a10; }
+.g-card.r-rare .g-card-name { color: #5b4699; }
+@media (prefers-reduced-motion: reduce) { .g-card.r-super, .g-card.r-super::after { animation: none; } }
