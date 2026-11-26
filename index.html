@@ -516,9 +516,15 @@
   <div class="merge-overlay" id="merge-overlay" hidden>
     <div class="merge-stage" id="merge-stage" aria-hidden="true"></div>
     <div class="merge-result" id="merge-result" hidden>
-      <h3>大瓶に進化したよ！</h3>
+      <h3 id="merge-h">大瓶に進化したよ！</h3>
       <p id="merge-note"></p>
-      <button class="primary-btn" type="button" id="merge-ok">チャームを選ぶ</button>
+      <p class="merge-mix" id="merge-mix" hidden><span class="swatch" id="merge-swatch"></span><strong id="merge-mix-name"></strong><span class="new-color" id="merge-new" hidden>新しい色！</span></p>
+      <p class="merge-tip" id="merge-tip" hidden></p>
+      <div class="merge-choices" id="merge-choices">
+        <button class="primary-btn" type="button" id="merge-shake">シェイクしてまぜる</button>
+        <button class="text-btn" type="button" id="merge-keep">層のままにする</button>
+      </div>
+      <button class="primary-btn" type="button" id="merge-ok" hidden>チャームを選ぶ</button>
     </div>
   </div>
 

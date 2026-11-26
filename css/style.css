@@ -1977,3 +1977,10 @@ body.gacha-open { overflow: hidden; }
 .look-sw[aria-pressed="true"] { box-shadow: 0 0 0 3px #e0668f; }
 .look-foot { margin: 8px 2px 0; font-size: 11px; color: #8d6070; }
 .charm-tab { white-space: nowrap; font-size: 12px; padding: 0 4px; }
+/* 進化したあと：シェイクしてまぜる */
+.merge-choices { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.merge-mix { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.merge-mix .swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ead6de; }
+.merge-mix strong { font-size: 18px; }
+.merge-mix .new-color { margin: 0; padding: 1px 8px; border-radius: 999px; background: #e0668f; color: #fff; font-size: 11px; font-weight: 700; }
+.merge-result .merge-tip { font-size: 12.5px; padding: 8px 12px; border-radius: 12px; background: rgb(255 255 255 / .75); color: #6e4a58; }

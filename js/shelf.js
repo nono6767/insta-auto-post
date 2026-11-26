@@ -624,7 +624,12 @@ function playEvolution(big, used) {
   result.hidden = true;
   overlay.hidden = false;
   $("merge-note").textContent =
-    `小瓶${used.length}本ぶん（${BIG_BOTTLE_MIN}分）が、大瓶になったよ。小瓶も、がんばった記録として棚に残してあるよ。好きなチャームをつけてあげよう`;
+    `小瓶${used.length}本ぶん（${BIG_BOTTLE_MIN}分）が、大瓶になったよ。小瓶も、がんばった記録として棚に残してあるよ。シェイクすると、中身がまざって1色になるよ`;
+  $("merge-h").textContent = "大瓶に進化したよ！";
+  $("merge-mix").hidden = true;
+  $("merge-tip").hidden = true;
+  $("merge-choices").hidden = false;
+  $("merge-ok").hidden = true;
 
   const W = stage.clientWidth || window.innerWidth;
   const H = stage.clientHeight || window.innerHeight;
@@ -639,6 +644,7 @@ function playEvolution(big, used) {
   bigEl.style.left = cx + "px";
   bigEl.style.top = cy + "px";
   stage.append(bigEl);
+  mergeView = { big, bigEl, stage };
 
   const showResult = () => {
     result.hidden = false;
@@ -790,6 +796,103 @@ $("merge-btn").addEventListener("click", () => {
   playEvolution(big, used);
 });
 let lastEvolved = null;
+let mergeView = null; // 進化の画面の大瓶（シェイクするとき使う）
+
+// 進化したあと：大瓶をシェイクして、中身を1色にまぜる
+function shakeBigBottle() {
+  if (!mergeView || mergeView.busy) return;
+  mergeView.busy = true;
+  const { big, bigEl, stage } = mergeView;
+  const mix = bigMixColor(big);
+  $("merge-choices").hidden = true;
+  $("merge-h").textContent = "シャカシャカ…";
+  $("merge-note").textContent = "中身がまざっていくよ";
+  const quick = reduceMotionShelf();
+  const MS = quick ? 0 : 1700;
+  const bottle = bigEl.querySelector(".bottle");
+  const stack = bigEl.querySelector(".layer-stack");
+  if (!quick && bottle) {
+    bottle.animate(
+      [
+        { transform: "translate(0,0) rotate(0deg)" },
+        { transform: "translate(-6%,-3%) rotate(-12deg)" },
+        { transform: "translate(6%,-5%) rotate(11deg)" },
+        { transform: "translate(-5%,-2%) rotate(-10deg)" },
+        { transform: "translate(5%,-4%) rotate(9deg)" },
+        { transform: "translate(-3%,-2%) rotate(-6deg)" },
+        { transform: "translate(2%,-1%) rotate(4deg)" },
+        { transform: "translate(0,0) rotate(0deg)" },
+      ],
+      { duration: MS, easing: "ease-in-out" }
+    );
+  }
+  if (stack) {
+    // 層がぼやけて、まざった色がふわっと広がる
+    const mixed = stack.cloneNode();
+    mixed.classList.add("solid");
+    mixed.style.background = pastel(mix.hex, 0.12);
+    mixed.style.opacity = quick ? "1" : "0";
+    stack.after(mixed);
+    if (!quick) {
+      stack.animate([{ filter: "blur(0px)" }, { filter: "blur(6px)", offset: 0.6 }, { filter: "blur(3px)" }], { duration: MS, fill: "forwards" });
+      mixed.animate([{ opacity: 0 }, { opacity: 0, offset: 0.35 }, { opacity: 1 }], { duration: MS, fill: "forwards" });
+      const liquid = bigEl.querySelector(".liquid");
+      const bottleDef = bigBottleById(big.bottle);
+      for (let i = 0; i < 14; i++) {
+        const b = document.createElement("span");
+        b.className = "shake-bubble";
+        b.style.left = 22 + Math.random() * 56 + "%";
+        b.style.top = bottleDef.bottom - 6 - Math.random() * 30 + "%";
+        b.style.width = 3 + Math.random() * 4 + "%";
+        liquid.append(b);
+        b.animate([{ transform: "translateY(0) scale(.4)", opacity: 0 }, { opacity: 0.9, offset: 0.3 }, { transform: "translateY(-300%) scale(1)", opacity: 0 }], {
+          duration: 700 + Math.random() * 600, delay: 150 + Math.random() * 1100, fill: "both",
+        });
+      }
+    }
+  }
+  setTimeout(() => {
+    // 記録：この大瓶は「まぜる」。はじめて出た色は、色図鑑にも入る
+    const saved = (data.bigBottles || []).find((x) => x.id === big.id);
+    if (saved) saved.look = { mode: "mix" };
+    big.look = { mode: "mix" };
+    ensureBottleData();
+    const isNew = !data.colorBook[mix.name];
+    if (isNew) data.colorBook[mix.name] = dateKey();
+    saveData();
+    if (lastEvolved && lastEvolved.id === big.id) lastEvolved.look = { mode: "mix" };
+    if (!quick) {
+      const r = bigEl.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+      const cx = r.left - sr.left + r.width / 2, cy = r.top - sr.top + r.height / 2;
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * Math.PI * 2;
+        sparkle(stage, cx + Math.cos(a) * r.width * 0.6, cy + Math.sin(a) * r.height * 0.45, i * 40, 10 + (i % 3) * 4, i % 2 ? "#ffffff" : "#ffd1e3");
+      }
+    }
+    $("merge-h").textContent = "まざったよ！";
+    $("merge-note").textContent = "運動した割合で、中身がまざってこの色になったよ";
+    $("merge-swatch").style.background = mix.hex;
+    $("merge-mix-name").textContent = mix.name;
+    $("merge-new").hidden = !isNew;
+    $("merge-mix").hidden = false;
+    showMergeTip();
+    renderAll();
+  }, MS + 50);
+}
+function showMergeTip() {
+  $("merge-tip").innerHTML = "大瓶をタップして「中身」を開くと、<b>層にもどしたり</b>、<b>色図鑑の色に変えたり</b>できるよ";
+  $("merge-tip").hidden = false;
+  $("merge-choices").hidden = true;
+  $("merge-ok").hidden = false;
+}
+$("merge-shake").addEventListener("click", shakeBigBottle);
+$("merge-keep").addEventListener("click", () => {
+  $("merge-note").textContent = "運動した順に、色が層になってるよ";
+  showMergeTip();
+});
+$("merge-stage").addEventListener("click", () => {
+  if (!$("merge-choices").hidden && !$("merge-result").hidden) shakeBigBottle();
+});
 $("merge-ok").addEventListener("click", () => {
   $("merge-overlay").hidden = true;
   showShelfView("big");
