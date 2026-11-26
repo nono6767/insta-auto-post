@@ -305,7 +305,7 @@ function caseTwinklesHtml(seed) {
   return CASE_TWINKLES.map(([x, y, w, c], i) => `<span class="case-twinkle ${c}" style="left:${x}%;top:${y}%;width:${w}px;animation-delay:-${((seed % 7) * 0.37 + i * 0.83).toFixed(2)}s"></span>`).join("");
 }
 
-// 大瓶の中身を「まぜた1色」にするときの色：層の色を分数の割合でまぜる（OKLab）
+// 大瓶の中身を「まぜた1色」にするときの色：層の色を分数の割合でまぜて、いちばん近い色図鑑の色にする（{ name, hex }）
 // 反対の色どうしで打ち消しあってグレーにならないよう、あざやかさは層の平均くらいに保つ
 function bigMixColor(b) {
   let total = 0, va = 0, vb = 0, chroma = 0, light = 0;
@@ -314,19 +314,26 @@ function bigMixColor(b) {
     const [L, a, bb] = rgbToOklab(hexToRgb(hex));
     total += l.min; va += a * l.min; vb += bb * l.min; chroma += Math.hypot(a, bb) * l.min; light += L * l.min;
   }
-  if (!total) return "#dddddd";
+  if (!total) return DAY_COLORS[0];
   const hue = Math.atan2(vb, va);
   const together = chroma ? Math.hypot(va, vb) / chroma : 0;
   // まぜると淡くぼやけやすいので、層のときより少しあざやかに（色がしっかり見えるように）
   const C = (chroma / total) * (1.25 + 0.35 * together);
-  return rgbToHex(oklabToRgb([light / total - 0.02, C * Math.cos(hue), C * Math.sin(hue)]));
+  const lab = [light / total - 0.02, C * Math.cos(hue), C * Math.sin(hue)];
+  // グレーっぽい色にならないよう、いちばん近い「色図鑑の色」に寄せる（小瓶のシェイクと同じ選び方）
+  let best = 0, bestD = Infinity;
+  DAY_COLORS_LAB.forEach(([L2, a2, b2], i) => {
+    const d = (lab[0] - L2) ** 2 * 0.5 + ((lab[1] - a2) ** 2 + (lab[2] - b2) ** 2) * 1.6;
+    if (d < bestD) (bestD = d), (best = i);
+  });
+  return DAY_COLORS[best];
 }
 // 大瓶の中身の見た目：b.look = { mode: "mix" }（まぜた1色）／{ mode: "color", name }（色図鑑の色）／なし（層）
 function bigLookColor(b) {
   const look = b.look;
   if (!look) return null;
-  if (look.mode === "mix") return bigMixColor(b);
-  if (look.mode === "color") return (DAY_COLORS.find((c) => c.name === look.name) || {}).hex || null;
+  if (look.mode === "mix") return bigMixColor(b).hex;
+  if (look.mode === "color") { const c = DAY_COLORS.find((x) => x.name === look.name); return c ? c.hex : null; }
   return null;
 }
 
@@ -802,7 +809,8 @@ let otherChoice = [];  // 首・ふた・台など、下げないチャーム
 let chainAtChoice = {}; // 場所ごとのチェーンの長さ
 let placeSel = "center"; // いま選んでいる場所
 let ribbonChoice = null; // 首のリボン（1つ・なしもOK）
-let charmTab = "charm";  // いま選んでいるタブ（"charm" / "ribbon"）
+let charmTab = "charm";  // いま選んでいるタブ（"charm" / "ribbon" / "look"）
+let lookChoice = null;   // 中身の見た目（null：層／{ mode: "mix" }／{ mode: "color", name }）
 let pickNote = ""; // さっき押したチャームの名前（「〜をつけたよ」）
 const allChoice = () => [...hangChoice.left, ...hangChoice.center, ...hangChoice.right, ...otherChoice];
 const placeOfChoice = (id) => HANG_SPOTS.find((s) => hangChoice[s.key].includes(id));
@@ -815,6 +823,8 @@ function openCharmPicker(b, justEvolved = false) {
   chainAtChoice = chainAtOf(b);
   placeSel = HANG_SPOTS.find((s) => hangChoice[s.key].length)?.key || "center";
   ribbonChoice = ribbonOf(b);
+  lookChoice = b.look ? { ...b.look } : null;
+  $("charm-tab-look").hidden = !!b.savings; // 中身の見た目は大瓶だけ
   charmTab = "charm";
   pickNote = "";
   $("charm-title").textContent = b.savings ? "貯金瓶の着せ替え" : justEvolved ? "チャームとリボンを選んでつけよう" : "チャームとリボンを付け替える";
@@ -829,6 +839,8 @@ function drawCharmGrid() {
   const ribbonMode = charmTab === "ribbon";
   const grid = $("charm-grid");
   grid.replaceChildren();
+  grid.classList.toggle("look-mode", charmTab === "look");
+  if (charmTab === "look") return drawLookPanel(grid);
   const none = document.createElement("button");
   none.type = "button";
   none.className = "charm-option none";
@@ -898,16 +910,55 @@ document.querySelectorAll(".charm-tab").forEach((t) =>
     updateCharmPreview();
   })
 );
+// 中身タブ：層／まぜる／色図鑑の色（見つけた色だけ）
+const lookLabel = (look, b) => !look ? "層" : look.mode === "mix" ? `まぜる（${bigMixColor(b).name}）` : look.name;
+function drawLookPanel(grid) {
+  const mode = lookChoice ? lookChoice.mode : "layers";
+  const found = DAY_COLORS.filter((c) => data.colorBook && data.colorBook[c.name]);
+  const mix = bigMixColor(charmTarget);
+  grid.innerHTML = `<div class="look-seg" role="radiogroup">
+      <button type="button" data-mode="layers" aria-pressed="${mode === "layers"}">層</button>
+      <button type="button" data-mode="mix" aria-pressed="${mode === "mix"}">まぜる</button>
+      <button type="button" data-mode="color" aria-pressed="${mode === "color"}">色図鑑の色</button>
+    </div>
+    <p class="look-note">${mode === "layers" ? "運動した順に、色が層になってるよ" : mode === "mix" ? `運動の割合でまぜたら「${mix.name}」になったよ` : found.length ? "色図鑑で見つけた色から選んでね" : "色図鑑の色がまだないよ。小瓶をシェイクすると見つかるよ"}</p>
+    ${mode === "color" ? `<div class="look-swatches">${found.map((c) => `<button type="button" class="look-sw" data-name="${c.name}" aria-label="${c.name}" aria-pressed="${lookChoice && lookChoice.name === c.name}" style="background:${c.hex}"></button>`).join("")}</div>` : ""}
+    <p class="look-foot">いつでも「層」にもどせるよ（運動の記録は消えないよ）</p>`;
+  grid.querySelectorAll(".look-seg button").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const m = btn.dataset.mode;
+      if (m === "layers") lookChoice = null;
+      else if (m === "mix") lookChoice = { mode: "mix" };
+      else {
+        const keep = lookChoice && lookChoice.mode === "color" ? lookChoice.name : null;
+        const first = keep || (found[0] && found[0].name);
+        lookChoice = first ? { mode: "color", name: first } : { mode: "color", name: null };
+      }
+      pickNote = "";
+      drawLookPanel(grid);
+      updateCharmPreview();
+    })
+  );
+  grid.querySelectorAll(".look-sw").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      lookChoice = { mode: "color", name: btn.dataset.name };
+      pickNote = `「${btn.dataset.name}」にしたよ`;
+      drawLookPanel(grid);
+      updateCharmPreview();
+    })
+  );
+}
+
 function updateCharmPreview() {
   // プレビュー：チャームとリボンを、両方つけた形で
   const all = allChoice();
-  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: null, charms: all, hang: hangChoice, chainAt: chainAtChoice, chains: null, ribbon: ribbonChoice });
+  $("charm-preview").innerHTML = bigBottleHtml({ ...charmTarget, charm: null, charms: all, hang: hangChoice, chainAt: chainAtChoice, chains: null, ribbon: ribbonChoice, look: lookChoice });
   drawPlacePanel();
   const bottle = bigBottleById(charmTarget.bottle);
   $("charm-preview").style.width = `${(150 * bottle.w) / bottle.h}px`;
   const cText = all.length ? `チャーム ${all.length}/${CHARM_MAX}個` : "チャームなし";
   const rText = ribbonChoice ? charmById(ribbonChoice).name : "リボンなし";
-  $("charm-name").textContent = pickNote || `${cText} ／ ${rText}`;
+  $("charm-name").textContent = pickNote || (charmTab === "look" ? `中身：${lookLabel(lookChoice && (lookChoice.mode !== "color" || lookChoice.name) ? lookChoice : null, charmTarget)}` : `${cText} ／ ${rText}`);
   $("charm-tab-charm").textContent = `チャーム（${all.length}/${CHARM_MAX}）`;
   $("charm-tab-ribbon").textContent = `リボン（${ribbonChoice ? 1 : 0}/1）`;
   $("charm-grid").querySelectorAll(".charm-option").forEach((btn) => {
@@ -1037,6 +1088,10 @@ $("charm-save").addEventListener("click", () => {
     delete b.chains; // 前の版の「チャームごと」の長さは、場所ごとの長さにうつした
     if (ribbonChoice) b.ribbon = ribbonChoice;
     else delete b.ribbon;
+    if (!charmTarget.savings) {
+      if (lookChoice && (lookChoice.mode !== "color" || lookChoice.name)) b.look = { ...lookChoice };
+      else delete b.look;
+    }
     delete b.charm; // 前の版の「1個だけ」の記録は、新しい形にうつしたので消す
   }
   saveData();

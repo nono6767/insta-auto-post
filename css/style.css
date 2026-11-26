@@ -1966,3 +1966,14 @@ body.gacha-open { overflow: hidden; }
 .big-bottle .glitter-box { z-index: 1; pointer-events: none; }
 /* 1色の大瓶：上は明るく、底は少し深く（のっぺりしないように） */
 .big-bottle .layer-stack.solid::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(120 60 90 / .10), transparent 45%, rgb(255 255 255 / .35)); }
+/* 大瓶の「中身」タブ：層／まぜる／色図鑑の色 */
+.charm-grid.look-mode { display: block; }
+.look-seg { display: flex; gap: 6px; }
+.look-seg button { flex: 1; min-height: 38px; border: 0; border-radius: 999px; background: var(--rose-soft); color: #a0607a; font-size: 13px; font-weight: 700; }
+.look-seg button[aria-pressed="true"] { background: linear-gradient(90deg, #f39bbb, #c9a5ef); color: #fff; box-shadow: 0 1px 3px rgb(160 80 120 / .3); }
+.look-note { margin: 10px 2px 8px; font-size: 12px; color: #6e4a58; }
+.look-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 8px; max-height: 132px; overflow-y: auto; padding: 4px; }
+.look-sw { aspect-ratio: 1; width: 100%; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ead6de; padding: 0; }
+.look-sw[aria-pressed="true"] { box-shadow: 0 0 0 3px #e0668f; }
+.look-foot { margin: 8px 2px 0; font-size: 11px; color: #8d6070; }
+.charm-tab { white-space: nowrap; font-size: 12px; padding: 0 4px; }
