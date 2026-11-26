@@ -560,13 +560,13 @@ function drawGachaScreen() {
   $("g-rates").innerHTML = `
     ${ribbonMode
       ? ribbonPickupNow().length
-        ? `<li>${ribbonPickupNow().map((p) => SERIES[p.series].name).join("・")} <b>${Math.round(GACHA.ribbonPickupRate * 100)}%</b></li>
-    <li>そのほかのリボン <b>${100 - Math.round(GACHA.ribbonPickupRate * 100)}%</b></li>`
+        ? `<li>ピックアップ中の「${ribbonPickupNow().map((p) => SERIES[p.series].name).join("・")}」が出やすくなってるよ</li>
+    <li>これまでのリボンも出るよ</li>`
         : `<li>これまでのリボンが出るよ</li>`
       : gacha.mix
       ? `<li>ピックアップが終わったチャームが出るよ</li>`
-      : `<li>${SERIES[gacha.series]?.name || ""} <b>${Math.round(GACHA.pickupRate * 100)}%</b>（11連は1個以上確定）</li>
-    <li>これまでのシリーズ <b>${100 - Math.round(GACHA.pickupRate * 100)}%</b></li>`}
+      : `<li>ピックアップ中の「${SERIES[gacha.series]?.name || ""}」が出やすくなってるよ（11連は1個以上確定）</li>
+    <li>これまでのシリーズも出るよ</li>`}
     <li>SR・Rは出にくい ／ かぶったら かけら+${GACHA.shardPerDup}</li>`;
   $("g-earn").innerHTML = `
     <li>今日の小瓶が満タン <b>+${COIN_RULES.quota}</b>（そのあとも${COIN_RULES.overMin}分ごとに <b>+${COIN_RULES.over}</b>）</li>
