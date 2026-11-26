@@ -305,13 +305,40 @@ function caseTwinklesHtml(seed) {
   return CASE_TWINKLES.map(([x, y, w, c], i) => `<span class="case-twinkle ${c}" style="left:${x}%;top:${y}%;width:${w}px;animation-delay:-${((seed % 7) * 0.37 + i * 0.83).toFixed(2)}s"></span>`).join("");
 }
 
+// 大瓶の中身を「まぜた1色」にするときの色：層の色を分数の割合でまぜる（OKLab）
+// 反対の色どうしで打ち消しあってグレーにならないよう、あざやかさは層の平均くらいに保つ
+function bigMixColor(b) {
+  let total = 0, va = 0, vb = 0, chroma = 0, light = 0;
+  for (const l of b.layers) {
+    const hex = l.color || (sportById(l.type) || { color: "#dddddd" }).color;
+    const [L, a, bb] = rgbToOklab(hexToRgb(hex));
+    total += l.min; va += a * l.min; vb += bb * l.min; chroma += Math.hypot(a, bb) * l.min; light += L * l.min;
+  }
+  if (!total) return "#dddddd";
+  const hue = Math.atan2(vb, va);
+  const together = chroma ? Math.hypot(va, vb) / chroma : 0;
+  // まぜると淡くぼやけやすいので、層のときより少しあざやかに（色がしっかり見えるように）
+  const C = (chroma / total) * (1.25 + 0.35 * together);
+  return rgbToHex(oklabToRgb([light / total - 0.02, C * Math.cos(hue), C * Math.sin(hue)]));
+}
+// 大瓶の中身の見た目：b.look = { mode: "mix" }（まぜた1色）／{ mode: "color", name }（色図鑑の色）／なし（層）
+function bigLookColor(b) {
+  const look = b.look;
+  if (!look) return null;
+  if (look.mode === "mix") return bigMixColor(b);
+  if (look.mode === "color") return (DAY_COLORS.find((c) => c.name === look.name) || {}).hex || null;
+  return null;
+}
+
 function bigBottleHtml(b) {
   const bottle = bigBottleById(b.bottle);
   const range = bottle.bottom - bottle.top;
   const total = Math.max(1, b.layers.reduce((t, l) => t + l.min, 0));
   // 小瓶と同じく、淡いパステル・半透明で、層の境目をやわらかくぼかしたグラデーションにする
   // 新しい大瓶は、その日の色の層（l.color）。前の版の大瓶は、種目の色の層
+  const one = bigLookColor(b);
   const colors = b.layers.map((l) => {
+    if (one) return pastel(one, 0.12);
     if (l.color) return pastel(l.color, 0.12);
     const sport = sportById(l.type);
     return pastel(sport ? sport.color : "#dddddd", 0.4);
@@ -332,7 +359,7 @@ function bigBottleHtml(b) {
   });
   const fillH = range * (bottle.fill || BIG_FILL); // 瓶によって、中身の高さを変える（星は上の腕が広いので、多めに）
   // 中身：パステルの層 ＋ 虹色にゆらめくツヤ ＋ 中でまたたくラメ（大瓶だけのスペシャル感）
-  const layers = `<span class="layer-stack" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"><span class="big-iris"></span></span>`;
+  const layers = `<span class="layer-stack${one ? " solid" : ""}" style="bottom:${(100 - bottle.bottom).toFixed(2)}%;height:${(fillH + 0.3).toFixed(2)}%;background:linear-gradient(to top, ${stops.join(", ")})"><span class="big-iris"></span></span>`;
   const glitter = glitterHtml(bottle.bottom - fillH, bottle.bottom, seedOf((b.id || b.bottle) + "g"));
   // おやつを食べなかった日の星（合成した小瓶の合計。液体の中に浮かぶ。星の大きさ：瓶の高さの8.5%）
   const poopDays = (b.days || []).filter((d) => typeof dayPoop === "function" && dayPoop(d)).length; // お通じが出た日の数ぶん、泡

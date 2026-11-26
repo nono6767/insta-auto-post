@@ -1964,3 +1964,5 @@ body.gacha-open { overflow: hidden; }
   .case-twinkle { opacity: .85; }
 }
 .big-bottle .glitter-box { z-index: 1; pointer-events: none; }
+/* 1色の大瓶：上は明るく、底は少し深く（のっぺりしないように） */
+.big-bottle .layer-stack.solid::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(120 60 90 / .10), transparent 45%, rgb(255 255 255 / .35)); }
