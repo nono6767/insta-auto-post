@@ -308,11 +308,20 @@ function caseTwinklesHtml(seed) {
 // 大瓶の中身を「まぜた1色」にするときの色：層の色を分数の割合でまぜて、いちばん近い色図鑑の色にする（{ name, hex }）
 // 反対の色どうしで打ち消しあってグレーにならないよう、あざやかさは層の平均くらいに保つ
 function bigMixColor(b) {
-  let total = 0, va = 0, vb = 0, chroma = 0, light = 0;
+  // 同じ色の層はまとめて、多い色ほどぐっと強く（分数の2乗）。いろいろまぜても、その瓶らしい色が出るように
+  // 運動の色は暖色（黄・赤・ピンク・アプリコット）が多いので、そのままだとピンク系ばかりになる。
+  // 青・緑・紫の色は2倍の重みにして、いろんな色の大瓶ができるようにする
+  const groups = {};
   for (const l of b.layers) {
     const hex = l.color || (sportById(l.type) || { color: "#dddddd" }).color;
+    groups[hex] = (groups[hex] || 0) + l.min;
+  }
+  let total = 0, va = 0, vb = 0, chroma = 0, light = 0;
+  for (const [hex, min] of Object.entries(groups)) {
     const [L, a, bb] = rgbToOklab(hexToRgb(hex));
-    total += l.min; va += a * l.min; vb += bb * l.min; chroma += Math.hypot(a, bb) * l.min; light += L * l.min;
+    const h = ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360;
+    const w = min ** 2 * (h >= 120 && h < 320 ? 2 : 1);
+    total += w; va += a * w; vb += bb * w; chroma += Math.hypot(a, bb) * w; light += L * w;
   }
   if (!total) return DAY_COLORS[0];
   const hue = Math.atan2(vb, va);
