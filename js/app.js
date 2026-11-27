@@ -9,7 +9,7 @@
 const SPORTS = [
   { id: "pilates",  name: "ピラティス",         color: "#f2c83e",  presets: [10, 50], met: 3.0 },
   { id: "strength", name: "筋トレ",             color: "#f2767e", presets: [5, 15, 30], met: 3.5 },
-  { id: "walking",  name: "ウォーキング",       color: "#8ed8b8",  presets: [20],     met: 3.5 },
+  { id: "walking",  name: "ウォーキング",       color: "#8ed8b8",  presets: [20],     met: 3.5, deep: 0.6 }, // 買い物・旅行で長く歩く日もあるので、ゆっくり濃くなる
   { id: "stepper",  name: "ツイストステッパー", color: "#b9a3e3",  presets: [20],     met: 4.0 },
   { id: "stretch",  name: "ストレッチ",         color: "#9cc8f2",  presets: [5, 10],  met: 2.3, deep: 1.5 },
   { id: "dance",    name: "ダンス",             color: "#ef8fc0",  presets: [15, 30], met: 5.0 },
@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-101"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-102"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 

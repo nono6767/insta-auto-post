@@ -180,7 +180,7 @@ function syncDayColors() {
 
 // 種目ごとの分数 { pilates: 50, walking: 20, ... } から、その日の色を決める
 // sportColor：種目の色（"#rrggbb"）を返す関数
-// sportDeep：種目ごとの「色の濃くなりやすさ」（ふつうは1。筋トレ・ストレッチなど、1回が短い種目は大きく）
+// sportDeep：種目ごとの「色の濃くなりやすさ」（ふつうは1。1回が短いストレッチは大きく、長く歩く日もあるウォーキングは小さく）
 function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
   let total = 0, depth = 0, va = 0, vb = 0, chroma = 0, light = 0;
   for (const [type, min] of Object.entries(minutesByType)) {
