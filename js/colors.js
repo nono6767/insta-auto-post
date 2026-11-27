@@ -4,10 +4,10 @@
 // ・色の「方向（色あい）」と「あざやかさ」を分けて混ぜるので、組み合わせや割合でちゃんと違う色になる
 //   （近い色どうしはあいだの色に、反対の色どうしは落ち着いたグレージュ系に）
 // ・たくさん運動した日ほど色がこく、短い日は淡くなる
-// ・混ざった色にいちばん近い色を、下の78色から選んで名前をつける
+// ・混ざった色にいちばん近い色を、下の75色から選んで名前をつける
 // =========================================================
 
-// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの78色
+// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの75色
 const DAY_COLORS = [
   // ピンク
   { name: "ベビーピンク", hex: "#f8d3d6" },
@@ -65,7 +65,6 @@ const DAY_COLORS = [
   { name: "モーブピンク", hex: "#e6bcd4" },
   // ニュートラル
   { name: "アイボリー", hex: "#f2eedf" },
-  { name: "パールグレー", hex: "#dcd8df" },
   { name: "ミルクティー", hex: "#e3cfbb" },
   { name: "グレージュ", hex: "#d8cfc6" },
   { name: "ローズグレー", hex: "#ddc8ce" },
@@ -76,10 +75,8 @@ const DAY_COLORS = [
   { name: "マンゴーシャーベット", hex: "#f7c89c", added: true },
   { name: "ストロベリーミルク", hex: "#f3bdbf", added: true },
   { name: "ローズティー", hex: "#e2b2aa", added: true },
-  { name: "ヌードベージュ", hex: "#ecc7b3", added: true },
   { name: "キャラメルラテ", hex: "#dfbe9f", added: true },
   { name: "シアーモーブ", hex: "#d9b6c1", added: true },
-  { name: "セージベージュ", hex: "#d6d2b8", added: true },
   // ダンス（ピンク）の日にふえた色
   { name: "コットンキャンディ", hex: "#f6c9dc", added: true },
   { name: "フラミンゴ", hex: "#f2aac4", added: true },
@@ -99,7 +96,7 @@ const DAY_COLORS = [
   { name: "フローズンミント", hex: "#c8ead9", added: true },
   { name: "ブルーベリーミルク", hex: "#c9cdef", added: true },
   { name: "グレープソーダ", hex: "#d8b4dc", added: true },
-  { name: "ピーチミント", hex: "#e3d9c0", added: true },
+  { name: "ピーチミント", hex: "#d9eed6", added: true },
 ];
 
 // ---------- 色の計算（sRGB ⇄ OKLab） ----------
@@ -128,6 +125,42 @@ function oklabToRgb([L, a, b]) {
 }
 const rgbToHex = (rgb) => "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("");
 const DAY_COLORS_LAB = DAY_COLORS.map((c) => rgbToOklab(hexToRgb(c.hex)));
+
+// 図鑑から外した色 → 代わりの色（似ている色にまとめた／くすんでいたので外した）
+const RETIRED_COLORS = {
+  "ヌードベージュ": "シナモンミルク", // 見た目がほぼ同じ
+  "パールグレー": "ラベンダーグレー", // 見た目がほぼ同じ
+  "セージベージュ": "ミルクティー",   // くすんでいたので外した（いちばん近い色へ）
+};
+
+// 前の記録の色を、いまの図鑑にそろえる（毎回開いたときに確かめる。記録は消さない）
+// ・外した色 → 代わりの色に。色図鑑の「はじめて出た日」は、早いほうを残す
+// ・色の中身（hex）を直した色（ピーチミントなど）→ シェイクした瓶・大瓶の層も新しい色に
+function syncDayColors() {
+  const byName = (n) => DAY_COLORS.find((c) => c.name === n);
+  const fix = (n) => byName(RETIRED_COLORS[n] || n);
+  let changed = false;
+  const book = data.colorBook || {};
+  for (const [old, to] of Object.entries(RETIRED_COLORS)) {
+    if (!book[old]) continue;
+    if (!book[to] || book[old] < book[to]) book[to] = book[old];
+    delete book[old];
+    changed = true;
+  }
+  const syncRec = (r) => {
+    if (!r || !r.name) return;
+    const c = fix(r.name);
+    if (!c) return;
+    const hexKey = "hex" in r ? "hex" : "color";
+    if (r.name !== c.name || r[hexKey] !== c.hex) { r.name = c.name; r[hexKey] = c.hex; changed = true; }
+  };
+  for (const s of Object.values(data.shakes || {})) syncRec(s);
+  for (const b of data.bigBottles || []) {
+    for (const l of b.layers || []) if (l && l.name && "color" in l) syncRec(l);
+    if (b.look && b.look.mode === "color" && RETIRED_COLORS[b.look.name]) { b.look.name = RETIRED_COLORS[b.look.name]; changed = true; }
+  }
+  return changed;
+}
 
 // 種目ごとの分数 { pilates: 50, walking: 20, ... } から、その日の色を決める
 // sportColor：種目の色（"#rrggbb"）を返す関数
