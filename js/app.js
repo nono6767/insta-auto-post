@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-98"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-99"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -767,6 +767,7 @@ function resetDeleteButton() {
   const del = $("undo-btn");
   del.classList.remove("armed");
   del.textContent = sheet.mode === "new" ? "取り消す" : "この記録を消す";
+  $("done-btn").textContent = "OK";
 }
 
 function updateDone() {
@@ -803,8 +804,9 @@ $("undo-btn").addEventListener("click", () => {
   if (sheet.mode === "edit" && !del.classList.contains("armed")) {
     del.classList.add("armed");
     del.textContent = "本当に消す";
+    $("done-btn").textContent = "消さない"; // となりのボタンは「消さない」に（OKだと、どっちが消すのかまぎらわしいので）
     clearTimeout(resetDeleteButton.timer);
-    resetDeleteButton.timer = setTimeout(resetDeleteButton, 3000);
+    resetDeleteButton.timer = setTimeout(resetDeleteButton, 5000);
     return;
   }
   const removed = currentEntry();
@@ -861,7 +863,15 @@ function closeSheet() {
   }
   sheet.entryId = null;
 }
-$("done-btn").addEventListener("click", closeSheet);
+// 「本当に消す？」のときは「消さない」：消すのをやめて、記録の画面にもどる
+$("done-btn").addEventListener("click", () => {
+  if ($("undo-btn").classList.contains("armed")) {
+    clearTimeout(resetDeleteButton.timer);
+    resetDeleteButton();
+    return;
+  }
+  closeSheet();
+});
 $("sheet-backdrop").addEventListener("click", closeSheet);
 
 // ノルマクリア・小瓶が250分たまった瞬間にお祝い（トーストに出す言葉を返す）
