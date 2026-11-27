@@ -4,10 +4,10 @@
 // ・色の「方向（色あい）」と「あざやかさ」を分けて混ぜるので、組み合わせや割合でちゃんと違う色になる
 //   （近い色どうしはあいだの色に、反対の色どうしは落ち着いたグレージュ系に）
 // ・たくさん運動した日ほど色がこく、短い日は淡くなる
-// ・混ざった色にいちばん近い色を、下の65色から選んで名前をつける
+// ・混ざった色にいちばん近い色を、下の74色から選んで名前をつける
 // =========================================================
 
-// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの65色
+// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの74色
 const DAY_COLORS = [
   // ピンク
   { name: "ベビーピンク", hex: "#f8d3d6" },
@@ -88,6 +88,15 @@ const DAY_COLORS = [
   { name: "サファイア", hex: "#6b8fe0", added: true, bold: true },
   { name: "パンプキン", hex: "#f28c3c", added: true, bold: true },
   { name: "エメラルド", hex: "#4fc495", added: true, bold: true },
+  { name: "ベリーピンク", hex: "#e46a9a", added: true, bold: true },
+  { name: "ラズベリー", hex: "#dd5f86", added: true, bold: true },
+  { name: "ルビー", hex: "#e0607a", added: true, bold: true },
+  { name: "レッド", hex: "#e86a6a", added: true, bold: true },
+  { name: "アメジスト", hex: "#9a72d8", added: true, bold: true },
+  { name: "バイオレット", hex: "#8b6fe2", added: true, bold: true },
+  { name: "レモンイエロー", hex: "#f2d43c", added: true, bold: true },
+  { name: "グリーンアップル", hex: "#8fd36a", added: true, bold: true },
+  { name: "クローバー", hex: "#6cc77f", added: true, bold: true },
 ];
 
 // ---------- 色の計算（sRGB ⇄ OKLab） ----------
@@ -196,9 +205,16 @@ function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
   const L = 0.945 - 0.11 * k - 0.1 * kb + (light / total - 0.8) * 0.6;
   const lab = [Math.min(0.95, Math.max(0.66, L)), C * Math.cos(hue), C * Math.sin(hue)];
   // いちばん近い色（色あいの差を少し重く見る）
+  // どちらも色みがある色どうしは、色あい（黄色・オレンジ…）のちがいをさらに重く見る（明るさのちがいで、別の色あいの色にならないように）
   let best = 0, bestD = Infinity;
   DAY_COLORS_LAB.forEach(([L2, a2, b2], i) => {
-    const d = (lab[0] - L2) ** 2 * 0.5 + ((lab[1] - a2) ** 2 + (lab[2] - b2) ** 2) * 1.6;
+    let d = (lab[0] - L2) ** 2 * 0.5 + ((lab[1] - a2) ** 2 + (lab[2] - b2) ** 2) * 1.6;
+    const c2 = Math.hypot(a2, b2);
+    if (C > 0.05 && c2 > 0.05) {
+      let dh = Math.abs(hue - Math.atan2(b2, a2));
+      if (dh > Math.PI) dh = 2 * Math.PI - dh;
+      d += 1.5 * dh * dh * C * c2;
+    }
     if (d < bestD) (bestD = d), (best = i);
   });
   return { name: DAY_COLORS[best].name, hex: DAY_COLORS[best].hex, mixed: rgbToHex(oklabToRgb(lab)) };
