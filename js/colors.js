@@ -4,10 +4,10 @@
 // ・色の「方向（色あい）」と「あざやかさ」を分けて混ぜるので、組み合わせや割合でちゃんと違う色になる
 //   （近い色どうしはあいだの色に、反対の色どうしは落ち着いたグレージュ系に）
 // ・たくさん運動した日ほど色がこく、短い日は淡くなる
-// ・混ざった色にいちばん近い色を、下の70色から選んで名前をつける
+// ・混ざった色にいちばん近い色を、下の73色から選んで名前をつける
 // =========================================================
 
-// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの70色
+// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの73色
 const DAY_COLORS = [
   // ピンク
   { name: "ベビーピンク", hex: "#f8d3d6" },
@@ -92,6 +92,10 @@ const DAY_COLORS = [
   { name: "ブルーベリーミルク", hex: "#c9cdef", added: true },
   { name: "グレープソーダ", hex: "#d8b4dc", added: true },
   { name: "ピーチミント", hex: "#d9eed6", added: true },
+  // がっつり濃い色（たくさん運動した日だけの、とくべつな色）
+  { name: "サファイア", hex: "#6b8fe0", added: true, bold: true },
+  { name: "パンプキン", hex: "#f28c3c", added: true, bold: true },
+  { name: "エメラルド", hex: "#4fc495", added: true, bold: true },
 ];
 
 // ---------- 色の計算（sRGB ⇄ OKLab） ----------
@@ -167,7 +171,7 @@ function syncDayColors() {
 
 // 種目ごとの分数 { pilates: 50, walking: 20, ... } から、その日の色を決める
 // sportColor：種目の色（"#rrggbb"）を返す関数
-// sportDeep：種目ごとの「色の濃くなりやすさ」（ふつうは1。筋トレは2で、短い時間でも濃くなる）
+// sportDeep：種目ごとの「色の濃くなりやすさ」（ふつうは1。筋トレ・ストレッチなど、1回が短い種目は大きく）
 function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
   let total = 0, depth = 0, va = 0, vb = 0, chroma = 0, light = 0;
   for (const [type, min] of Object.entries(minutesByType)) {
@@ -186,9 +190,11 @@ function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
   const hue = Math.atan2(vb, va);
   // たくさん運動した日ほど、こく（あざやかで少し深く）。短い日は、淡いパステルに
   const k = Math.min(1, Math.max(0, (depth - 10) / 80));
-  const C = 0.01 + together * (0.03 + 0.085 * k);
-  const L = 0.945 - 0.11 * k + (light / total - 0.8) * 0.6;
-  const lab = [Math.min(0.95, Math.max(0.78, L)), C * Math.cos(hue), C * Math.sin(hue)];
+  // さらにたくさん運動した日（濃さ90をこえた日）は、がっつり濃い色のほうへ（濃さ130でいちばん濃く）
+  const kb = Math.min(1, Math.max(0, (depth - 90) / 40));
+  const C = 0.01 + together * (0.03 + 0.085 * k + 0.045 * kb);
+  const L = 0.945 - 0.11 * k - 0.1 * kb + (light / total - 0.8) * 0.6;
+  const lab = [Math.min(0.95, Math.max(0.66, L)), C * Math.cos(hue), C * Math.sin(hue)];
   // いちばん近い色（色あいの差を少し重く見る）
   let best = 0, bestD = Infinity;
   DAY_COLORS_LAB.forEach(([L2, a2, b2], i) => {
@@ -200,8 +206,11 @@ function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
 
 // 瓶の中身として描くときの色：ガラス越しだと淡く見えるので、少しだけ深く・あざやかにする
 // （色見本・札・色図鑑は、もとの色のまま）
+// がっつり濃い色は、もとから濃いので、ほんの少しだけ（そのままだと蛍光色みたいになるため）
+const BOLD_HEX = new Set(DAY_COLORS.filter((c) => c.bold).map((c) => c.hex));
 function liquidColor(hex) {
   const [L, a, b] = rgbToOklab(hexToRgb(hex));
+  if (BOLD_HEX.has(hex)) return rgbToHex(oklabToRgb([L - 0.03, a * 1.1, b * 1.1]));
   const k = 1.45;
   return rgbToHex(oklabToRgb([L - 0.07, a * k, b * k]));
 }
