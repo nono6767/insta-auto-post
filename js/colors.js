@@ -92,8 +92,8 @@ const DAY_COLORS = [
   { name: "ラズベリー", hex: "#dd5f86", added: true, bold: true },
   { name: "ルビー", hex: "#e0607a", added: true, bold: true },
   { name: "レッド", hex: "#e86a6a", added: true, bold: true },
-  { name: "アメジスト", hex: "#9a72d8", added: true, bold: true },
-  { name: "バイオレット", hex: "#8b6fe2", added: true, bold: true },
+  { name: "アメジスト", hex: "#b465c0", added: true, bold: true }, // 赤っぽい紫
+  { name: "バイオレット", hex: "#7c7ae3", added: true, bold: true }, // 青っぽい紫
   { name: "レモンイエロー", hex: "#f2d43c", added: true, bold: true },
   { name: "グリーンアップル", hex: "#8fd36a", added: true, bold: true },
   { name: "クローバー", hex: "#6cc77f", added: true, bold: true },
