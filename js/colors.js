@@ -4,17 +4,18 @@
 // ・色の「方向（色あい）」と「あざやかさ」を分けて混ぜるので、組み合わせや割合でちゃんと違う色になる
 //   （近い色どうしはあいだの色に、反対の色どうしは落ち着いたグレージュ系に）
 // ・たくさん運動した日ほど色がこく、短い日は淡くなる
-// ・混ざった色にいちばん近い色を、下の69色から選んで名前をつける
+// ・混ざった色にいちばん近い色を、下の70色から選んで名前をつける
 // =========================================================
 
-// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの69色
+// JIS慣用色名（日本の伝統色・慣用色のカタカナ名）などを参考にした、パステル寄りの70色
 const DAY_COLORS = [
   // ピンク
   { name: "ベビーピンク", hex: "#f8d3d6" },
   { name: "サクラピンク", hex: "#f6c4cf" },
   { name: "ローズピンク", hex: "#f0a9b8" },
   { name: "コーラルピンク", hex: "#f5b0a2" },
-  { name: "チェリー", hex: "#ef8a90", added: true }, // 筋トレ（赤）の日の色
+  { name: "ストロベリーソーダ", hex: "#f4a2a6", added: true }, // 筋トレ（赤）の日の色
+  { name: "チェリー", hex: "#ef8a90", added: true },          // 筋トレ（赤）の日の色
   { name: "サーモンピンク", hex: "#f8bea4" },
   { name: "オールドローズ", hex: "#dfa9b0" },
   { name: "ナデシコ", hex: "#eeb7cc" },
@@ -166,12 +167,14 @@ function syncDayColors() {
 
 // 種目ごとの分数 { pilates: 50, walking: 20, ... } から、その日の色を決める
 // sportColor：種目の色（"#rrggbb"）を返す関数
-function mixDayColor(minutesByType, sportColor) {
-  let total = 0, va = 0, vb = 0, chroma = 0, light = 0;
+// sportDeep：種目ごとの「色の濃くなりやすさ」（ふつうは1。筋トレは2で、短い時間でも濃くなる）
+function mixDayColor(minutesByType, sportColor, sportDeep = () => 1) {
+  let total = 0, depth = 0, va = 0, vb = 0, chroma = 0, light = 0;
   for (const [type, min] of Object.entries(minutesByType)) {
     if (!(min > 0)) continue;
     const [L, a, b] = rgbToOklab(hexToRgb(sportColor(type)));
     total += min;
+    depth += min * (sportDeep(type) || 1);
     va += a * min;
     vb += b * min;
     chroma += Math.hypot(a, b) * min;
@@ -182,7 +185,7 @@ function mixDayColor(minutesByType, sportColor) {
   const together = chroma > 0 ? Math.hypot(va, vb) / chroma : 0;
   const hue = Math.atan2(vb, va);
   // たくさん運動した日ほど、こく（あざやかで少し深く）。短い日は、淡いパステルに
-  const k = Math.min(1, Math.max(0, (total - 10) / 80));
+  const k = Math.min(1, Math.max(0, (depth - 10) / 80));
   const C = 0.01 + together * (0.03 + 0.085 * k);
   const L = 0.945 - 0.11 * k + (light / total - 0.8) * 0.6;
   const lab = [Math.min(0.95, Math.max(0.78, L)), C * Math.cos(hue), C * Math.sin(hue)];
@@ -214,7 +217,7 @@ function dayMinutesByType(day) {
 // その日の記録のしるし（記録を足したり直したりすると変わる → シェイクし直せる）
 const daySig = (day) => data.logs.filter((l) => l.date === day).map((l) => `${l.id}:${l.min}`).sort().join(",");
 // その日の運動をまぜた色（シェイクしていない日も、計算はできる）
-const dayColorOf = (day) => mixDayColor(dayMinutesByType(day), (t) => (sportById(t) || { color: "#dddddd" }).color);
+const dayColorOf = (day) => mixDayColor(dayMinutesByType(day), (t) => (sportById(t) || { color: "#dddddd" }).color, (t) => (sportById(t) || {}).deep || 1);
 // シェイクして、そのあと記録が変わっていなければ、その色
 function dayShake(day) {
   const s = data.shakes && data.shakes[day];

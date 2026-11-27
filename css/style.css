@@ -9,7 +9,7 @@
 
   /* 種目の色 */
   --pilates: #f2b544;
-  --strength: #f48a8a;
+  --strength: #f2767e;
   --walking: #8ed8b8;
   --stepper: #b9a3e3;
   --stretch: #9fd3f0;
@@ -1889,7 +1889,7 @@ body.gacha-open { overflow: hidden; }
 .news-ok { display: block; width: 100%; min-height: 50px; font-size: 16px; }
 /* 3列で最後の段が1つだけのときは、まん中に */
 .sport-btn:last-child:nth-child(3n + 1) { grid-column: 2; }
-.news-swatches { --c: #e8a48a; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 8px; }
+.news-swatches { --c: #f4a26a; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 8px; }
 .news-swatches i { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--c); }
 /* いっしょに入っているリボン：小さく横1列（シリーズごとにまとめて、横にスクロール） */
 .g-banner-others { padding: 10px 12px 10px; }

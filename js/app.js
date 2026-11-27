@@ -8,12 +8,12 @@
 // 種目：名前・色・時間ボタン・MET（運動の強さ。カロリー計算に使う）
 const SPORTS = [
   { id: "pilates",  name: "ピラティス",         color: "#f2b544",  presets: [10, 50], met: 3.0 },
-  { id: "strength", name: "筋トレ",             color: "#f48a8a", presets: [5, 15, 30], met: 3.5 },
+  { id: "strength", name: "筋トレ",             color: "#f2767e", presets: [5, 15, 30], met: 3.5, deep: 2 },
   { id: "walking",  name: "ウォーキング",       color: "#8ed8b8",  presets: [20],     met: 3.5 },
   { id: "stepper",  name: "ツイストステッパー", color: "#b9a3e3",  presets: [20],     met: 4.0 },
   { id: "stretch",  name: "ストレッチ",         color: "#9fd3f0",  presets: [5, 10],  met: 2.3 },
   { id: "dance",    name: "ダンス",             color: "#ef8fc0",  presets: [15, 30], met: 5.0 },
-  { id: "chores",   name: "家事",               color: "#e8a48a",  presets: [5, 15, 30], met: 3.3, note: "汗をかくくらい動いた日に記録してね（掃除機・床ふき・布団干し など）" },
+  { id: "chores",   name: "家事",               color: "#f4a26a",  presets: [5, 15, 30], met: 3.3, note: "汗をかくくらい動いた日に記録してね（掃除機・床ふき・布団干し など）" },
 ];
 const WEEK_GOAL_MIN = 250;   // 大瓶1本ぶんの分数（小瓶をこれだけ合成すると大瓶になる）
 const BIG_BOTTLE_MIN = WEEK_GOAL_MIN;
@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-92"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-93"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 

@@ -11,7 +11,7 @@ const NEWS = [
     title: "新しくなったよ！",
     items: [
       {
-        icon: `<span class="news-dot" style="--c:#e8a48a">🧹</span>`,
+        icon: `<span class="news-dot" style="--c:#f4a26a">🧹</span>`,
         head: "運動に「家事」が仲間入り",
         text: "掃除機・床ふき・布団干し…汗をかくくらい動いた日は、家事も小瓶に入れられるよ",
       },
