@@ -265,7 +265,7 @@ if (data.weight && !data.guideSeen && !(data.logs || []).length) setTimeout(open
 const TOURS = {};
 TOURS.home = [
   { sel: "#jar", text: "これが<b>今日の小瓶</b>。<br>運動を記録すると、ここに色がたまっていくよ" },
-  { sel: "#weather", text: "今日の<b>天気と気温</b>も、ここで見られるよ" },
+  { sel: "#weather", text: "今日の<b>天気と気温</b>も、ここで見られるよ。<br>天気の<b>地域</b>は、設定で変えられるよ" },
   { sel: "#n-figure", text: "キャラを<b>タップ</b>すると、<br>いろいろ<b>おしゃべり</b>してくれるよ" },
   { sel: "#sports", text: "今日した運動は<b>ここから選んでね</b>。<br>運動をタップして、時間を入れるだけ！" },
   { sel: ".today.card", text: "今日の運動の時間はここに出るよ。<br><b>35分で小瓶が満タン！</b>" },
