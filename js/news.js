@@ -99,9 +99,8 @@ const GUIDE_STEPS = [
   },
   {
     pose: "wink",
-    wide: true,
-    // 上の段はチャーム、下の段はリボン（ガチャで集められるもの）
-    art: () => `<div class="guide-charms">${["c04", "c01", "n01", "j01", "og5", "j00"].map((id, i) => { const c = typeof charmById === "function" && charmById(id); return c ? `<img class="${i < 3 ? "charm" : "ribbon"}" src="${charmSrc(c)}" alt="" style="--d:${(i * 0.25).toFixed(2)}s">` : ""; }).join("")}</div>`,
+    photo: "img/guide/gacha.webp", // 宝箱からチャームとリボンが出てくる絵（この絵だけで1枚）
+    art: () => "",
     title: "コインでガチャ",
     text: "運動・ごはん・|からだの記録や、|ピラティスクイズで|コインがもらえるよ。\n左上の「ガチャ」で|チャームやリボンを|集めて、|大瓶をかざろう。",
   },
@@ -130,6 +129,11 @@ function drawGuide(dir = 0) {
   const last = guideStep === GUIDE_STEPS.length - 1;
   $("guide-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(s.pose) : "";
   $("guide-art").innerHTML = s.art();
+  // 1枚絵のページは、キャラと瓶のかわりに絵をそのまま出す
+  const photo = $("guide-photo");
+  photo.hidden = !s.photo;
+  if (s.photo) photo.src = s.photo;
+  photo.closest(".news-hero").classList.toggle("has-photo", !!s.photo);
   $("guide-art").classList.toggle("wide", !!s.wide);
   $("guide-title").textContent = s.title;
   $("guide-text").innerHTML = guideLines(s.text) + (s.note ? `<p class="guide-note">${guideLines(s.note)}</p>` : "");
