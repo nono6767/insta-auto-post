@@ -568,7 +568,7 @@ document.addEventListener("log-recorded", () => {
 document.querySelectorAll(".tabbar-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
-    if (!TOURS[page] || page === "home") return;
+    if (!["meals", "body", "clothes", "savings"].includes(page)) return; // 画面を開いたときに自動で出すのは、この4つだけ
     // 貯金：もう金額やチャームを設定している人には出さない（何度も出ないように「見た」にしておく）
     // もう記録がある人には出さない（何度も出ないように「見た」にしておく）
     if (alreadyUsed(page)) return markTourSeen(page);

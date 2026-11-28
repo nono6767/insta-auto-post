@@ -169,19 +169,42 @@ function drawMonthDay() {
   const logs = dayLogs(key);
   const ml = dayMeals(key);
   const b = bodyOf(key);
-  const rows = [];
+  const rows = []; // [種類, 見出し, 中身, 見るボタンを出すか]
+  const show = (t) => monthTab === "all" || monthTab === t;
+  const gb = (v) => (v === "good" ? "Good" : v === "bad" ? "Bad" : "—");
   if (!future) {
-    const c = logs.length ? dayShake(key) : null;
-    rows.push(["exercise", "運動", logs.length ? `${sumMin(logs)}分（${[...new Set(logs.map((l) => (sportById(l.type) || {}).name))].join("・")}）${c ? `・${c.name}` : ""}` : "記録なし"]);
-    const n = mealCount(ml);
-    rows.push(["meals", "ごはん", `${n ? `${n}食` : "記録なし"}${ml.snack === "none" ? "・おやつがまん✿" : ml.snack === "ate" ? "・おやつ食べた" : ""}`]);
-    const gb = (v) => (v === "good" ? "Good" : v === "bad" ? "Bad" : "—");
-    rows.push(["body", "からだ", `体調 ${gb(b.condition)}・気分 ${gb(b.mood)}${b.poop === "yes" ? "・お通じ" : ""}${periodOn(key) ? "・生理" : ""}${tempOf(key) != null ? `・${tempOf(key).toFixed(2)}℃` : ""}`]);
+    if (show("exercise")) {
+      const c = logs.length ? dayShake(key) : null;
+      rows.push(["exercise", "運動", logs.length ? `${sumMin(logs)}分${c ? `・${c.name}` : ""}` : "記録なし", logs.length > 0]);
+    }
+    if (monthTab === "all") {
+      const n = mealCount(ml);
+      rows.push(["meals", "ごはん", `${n ? `${n}食` : "記録なし"}${ml.snack === "none" ? "・おやつがまん✿" : ml.snack === "ate" ? "・おやつ食べた" : ""}`]);
+      rows.push(["body", "からだ", `体調 ${gb(b.condition)}・気分 ${gb(b.mood)}${b.poop === "yes" ? "・お通じ" : ""}${periodOn(key) ? "・生理" : ""}${tempOf(key) != null ? `・${tempOf(key).toFixed(2)}℃` : ""}`]);
+    }
+    if (monthTab === "meals") {
+      // ごはんのタブ：朝・昼・夜を1つずつ
+      const H = { yes: "腹八分目", no: "食べすぎた" }, R = { less: "お米 少なめ", usual: "お米 いつも通り", more: "お米 おかわり" };
+      for (const [id, name] of [["breakfast", "朝"], ["lunch", "昼"], ["dinner", "夜"]]) {
+        const m = ml[id] || {};
+        rows.push(["meals", name, [H[m.hachi], R[m.rice]].filter(Boolean).join("・") || "記録なし"]);
+      }
+      rows.push(["meals", "おやつ", ml.snack === "none" ? "しなかった ✿" : ml.snack === "ate" ? "しちゃった" : "記録なし"]);
+    }
+    if (monthTab === "body") {
+      // からだのタブ：体調・気分・お通じ・生理・体温を1つずつ
+      rows.push(["body", "体調", gb(b.condition)]);
+      rows.push(["body", "気分", gb(b.mood)]);
+      rows.push(["body", "お通じ", b.poop === "yes" ? "出た" : b.poop === "no" ? "出なかった" : "—"]);
+      const pd = periodOn(key);
+      rows.push(["body", "生理", pd ? `生理中（${daysBetween(pd.start, key) + 1}日目）` : ovulationDays().includes(key) ? "排卵日の目安" : isFertileDay(key) ? "妊娠しやすい時期の目安" : "—"]);
+      if (tempOf(key) != null || data.tempOn) rows.push(["body", "体温", tempOf(key) != null ? `${tempOf(key).toFixed(2)}℃` : "—"]);
+    }
   } else {
     rows.push(["body", "予定", predictedOn(key) ? "生理の予定（目安）" : ovulationDays().includes(key) ? "排卵日の目安" : "まだ先の日だよ"]);
   }
-  box.innerHTML = `<h3>${dayLabel(key)}</h3>` + rows.map(([t, label, text]) =>
-    `<div class="md-row"><b>${label}</b><span></span>${future ? "" : `<button type="button" class="text-btn small" data-go="${t}">見る ›</button>`}</div>`).join("");
+  box.innerHTML = `<h3>${dayLabel(key)}</h3>` + rows.map(([t, label, text, go]) =>
+    `<div class="md-row"><b>${label}</b><span></span>${go ? `<button type="button" class="text-btn small" data-go="${t}">小瓶を見る ›</button>` : ""}</div>`).join("");
   box.querySelectorAll(".md-row span").forEach((s, i) => (s.textContent = rows[i][2]));
   box.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => goDay(btn.dataset.go, key)));
   // その日の運動の記録を1つずつ出して、ここで直せる・足せるようにする
@@ -197,7 +220,8 @@ function drawMonthDay() {
       list.append(li);
     }
     const exRow = box.querySelector('.md-row [data-go="exercise"]')?.closest(".md-row");
-    if (exRow && logs.length) exRow.after(list);
+    if (exRow) exRow.after(list);
+    return;
   }
 }
 // 記録を直したり消したりしたら、開いている月の画面も描き直す
