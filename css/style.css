@@ -2045,3 +2045,19 @@ body.gacha-open { overflow: hidden; }
 .news-hero.has-photo { height: 230px; display: block; background: #fcd0ec; }
 .news-hero.has-photo > :not(.guide-photo) { display: none; }
 .guide-photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+/* ガイド「大瓶に合成しよう」：小瓶たち → 大瓶 */
+.guide-art.full { width: 100%; height: 100%; margin: 0; align-items: center; }
+.news-hero-char[hidden] { display: none; }
+.guide-merge { display: flex; align-items: flex-end; justify-content: center; gap: 4px; width: 100%; height: 100%; padding: 8px 6px; }
+.gm-side { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.gm-smalls { display: grid; grid-template-columns: repeat(3, 34px); gap: 2px 3px; }
+.gm-small { display: flex; justify-content: center; height: 44px; animation: gm-hop 2.4s ease-in-out calc(var(--i) * .18s) infinite; }
+.gm-small .bottle { height: 100%; width: auto; }
+@keyframes gm-hop { 50% { transform: translateY(-3px); } }
+.gm-arrow { align-self: center; display: flex; flex-direction: column; align-items: center; color: #f0b6cb; font-size: 11px; line-height: 1; }
+.gm-arrow b { font-size: 24px; color: var(--rose); margin: 2px 0; }
+.gm-big { position: relative; height: 140px; display: flex; justify-content: center; }
+.gm-big::before { content: ""; position: absolute; inset: 8% -18%; border-radius: 50%; background: radial-gradient(#fff8d8 0 35%, transparent 70%); }
+.gm-big .bottle { position: relative; height: 100%; width: auto; }
+.gm-label { font-size: 11px; font-weight: 700; color: #b07890; }
+@media (prefers-reduced-motion: reduce) { .gm-small { animation: none; } }

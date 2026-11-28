@@ -90,9 +90,8 @@ const GUIDE_STEPS = [
   },
   {
     pose: "guts",
-    art: () => (typeof bigBottleHtml === "function"
-      ? bigBottleHtml({ bottle: "heart", layers: [{ type: "pilates", min: 90 }, { type: "stretch", min: 60 }, { type: "walking", min: 100 }] })
-      : bottleHtml([], BOTTLES[0], 0, SMALL_FULL_MIN)),
+    noChar: true, // 小瓶がいくつも集まって大きな瓶になる様子を、横いっぱいに見せる
+    art: guideMergeArt,
     title: "大瓶に合成しよう",
     text: "小瓶が合計|**245分**たまったら、|「瓶の棚」で|合成してね。\nごほうびの大瓶に|進化して、|ショーケースに|飾られるよ。",
     note: "245分は、|35分を7日続けた|ちょうど1週間分。|毎日ノルマを達成したら、|7日目に大瓶になるよ。",
@@ -112,6 +111,21 @@ const GUIDE_STEPS = [
     text: "下のボタンで、|ごはん・|からだ（体調・生理）・|服・貯金も|記録できるよ。\n記録は|このスマホの中だけに|保存されるよ。\nときどき設定から|「バックアップを保存」|してね。",
   },
 ];
+
+// 「大瓶に合成しよう」の絵：いろんな色の小瓶 → きらきら → チャームとリボンで飾った大瓶
+function guideMergeArt() {
+  const hex = (name, fb) => ((typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === name)) || { hex: fb }).hex;
+  const smallCols = [["サクラピンク", "#f6c1cf"], ["フローズンミント", "#c8eedd"], ["ラベンダー", "#d9c8f0"], ["レモンイエロー", "#f2d43c"], ["アジサイ", "#b8c8f0"], ["ピーチ", "#ffd0b5"]];
+  const smalls = smallCols.map(([n, fb], i) => `<span class="gm-small" style="--i:${i}">${bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[i % BOTTLES.length], 0, SMALL_FULL_MIN, hex(n, fb))}</span>`).join("");
+  const big = typeof bigBottleHtml === "function"
+    ? bigBottleHtml({ id: "guide", bottle: "round", charms: ["c04"], ribbon: "j01", layers: smallCols.map(([n, fb]) => ({ min: 40, color: hex(n, fb) })) })
+    : "";
+  return `<div class="guide-merge">
+    <div class="gm-side"><div class="gm-smalls">${smalls}</div><span class="gm-label">小瓶</span></div>
+    <span class="gm-arrow" aria-hidden="true">✦<b>➜</b>✦</span>
+    <div class="gm-side"><div class="gm-big">${big}</div><span class="gm-label">大瓶</span></div>
+  </div>`;
+}
 
 function guideMixHex() {
   const c = typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === "サクラピンク");
@@ -135,6 +149,8 @@ function drawGuide(dir = 0) {
   if (s.photo) photo.src = s.photo;
   photo.closest(".news-hero").classList.toggle("has-photo", !!s.photo);
   $("guide-art").classList.toggle("wide", !!s.wide);
+  $("guide-art").classList.toggle("full", !!s.noChar);
+  $("guide-char").hidden = !!s.noChar;
   $("guide-title").textContent = s.title;
   $("guide-text").innerHTML = guideLines(s.text) + (s.note ? `<p class="guide-note">${guideLines(s.note)}</p>` : "");
   $("guide-dots").innerHTML = GUIDE_STEPS.map((_, i) => `<i class="${i === guideStep ? "on" : ""}"></i>`).join("");
