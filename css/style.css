@@ -2042,6 +2042,6 @@ body.gacha-open { overflow: hidden; }
 .guide-tabs i { font-style: normal; font-size: 10px; color: #8d6070; }
 /* ガイドの1枚絵のページ：絵を枠いっぱいに（キャラと瓶は出さない） */
 /* 絵が大きすぎてボタンが画面からはみ出さないよう、高さを決めて、左右は絵のふちと同じピンクでうめる */
-.news-hero.has-photo { height: 230px; display: block; background: linear-gradient(90deg, #fdd7f2, #fdd4ee); }
+.news-hero.has-photo { height: 230px; display: block; background: #fddaf4; }
 .news-hero.has-photo > :not(.guide-photo) { display: none; }
 .guide-photo { display: block; width: 100%; height: 100%; object-fit: contain; }

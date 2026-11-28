@@ -9,7 +9,7 @@
 // ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
 //   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
 importScripts("js/bottles.js", "js/bigbottles.js", "js/series.js");
-const CODE_VERSION = 213;
+const CODE_VERSION = 214;
 const IMAGE_VERSION = 15;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
@@ -41,7 +41,7 @@ const CODE_FILES = [
 ];
 const IMAGE_FILES = [
   "img/shelf-bg.webp",
-  "img/guide/gacha.webp",
+  "img/guide/gacha-box.webp",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
