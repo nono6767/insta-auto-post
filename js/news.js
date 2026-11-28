@@ -92,7 +92,7 @@ const GUIDE_STEPS = [
     pose: "guts",
     noChar: true, // 小瓶がいくつも集まって大きな瓶になる様子を、横いっぱいに見せる
     art: guideMergeArt,
-    title: "大瓶に合成しよう",
+    title: "小瓶を集めて、大瓶にしよう！",
     text: "小瓶が合計|**245分**たまったら、|「瓶の棚」で|合成してね。\nごほうびの大瓶に|進化して、|ショーケースに|飾られるよ。",
     note: "245分は、|35分を7日続けた|ちょうど1週間分。|毎日ノルマを達成したら、|7日目に大瓶になるよ。",
   },
@@ -112,18 +112,26 @@ const GUIDE_STEPS = [
   },
 ];
 
-// 「大瓶に合成しよう」の絵：いろんな色の小瓶 → きらきら → チャームとリボンで飾った大瓶
+// 「大瓶にしよう」の絵：まわりの小瓶たちが光の中へすいこまれて、特別な大瓶に生まれ変わる瞬間
 function guideMergeArt() {
   const hex = (name, fb) => ((typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === name)) || { hex: fb }).hex;
-  const smallCols = [["サクラピンク", "#f6c1cf"], ["フローズンミント", "#c8eedd"], ["ラベンダー", "#d9c8f0"], ["レモンイエロー", "#f2d43c"], ["アジサイ", "#b8c8f0"], ["ピーチ", "#ffd0b5"]];
-  const smalls = smallCols.map(([n, fb], i) => `<span class="gm-small" style="--i:${i}">${bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[i % BOTTLES.length], 0, SMALL_FULL_MIN, hex(n, fb))}</span>`).join("");
+  const cols = [["サクラピンク", "#f6c1cf"], ["フローズンミント", "#c8eedd"], ["ラベンダー", "#d9c8f0"], ["レモンイエロー", "#f2d43c"], ["アジサイ", "#b8c8f0"], ["ピーチ", "#ffd0b5"]];
+  // 小瓶の場所（枠の中の%）と、大瓶のまん中までの距離（px）
+  const spots = [[13, 22, 105, 40], [6, 62, 125, -5], [18, 86, 95, -30], [87, 22, -105, 40], [94, 62, -125, -5], [82, 86, -95, -30]];
+  const smalls = cols.map(([n, fb], i) => {
+    const [x, y, dx, dy] = spots[i];
+    return `<span class="gm-small" style="left:${x}%;top:${y}%;--dx:${dx}px;--dy:${dy}px;--d:${(i * 0.45).toFixed(2)}s">${bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[i % BOTTLES.length], 0, SMALL_FULL_MIN, hex(n, fb))}</span>`;
+  }).join("");
   const big = typeof bigBottleHtml === "function"
-    ? bigBottleHtml({ id: "guide", bottle: "round", charms: ["c04"], ribbon: "j01", layers: smallCols.map(([n, fb]) => ({ min: 40, color: hex(n, fb) })) })
+    ? bigBottleHtml({ id: "guide", bottle: "heart", charms: ["c04"], ribbon: "j01", flowers: 3, layers: cols.map(([n, fb]) => ({ min: 40, color: hex(n, fb) })) })
     : "";
-  return `<div class="guide-merge">
-    <div class="gm-side"><div class="gm-smalls">${smalls}</div><span class="gm-label">小瓶</span></div>
-    <span class="gm-arrow" aria-hidden="true">✦<b>➜</b>✦</span>
-    <div class="gm-side"><div class="gm-big">${big}</div><span class="gm-label">大瓶</span></div>
+  const sparks = [[30, 18, 0], [70, 14, 0.6], [24, 70, 1.2], [76, 74, 0.3], [50, 6, 0.9], [40, 88, 1.5], [62, 90, 0.4]]
+    .map(([x, y, d]) => `<i class="gm-spark" style="left:${x}%;top:${y}%;--d:${d}s"></i>`).join("");
+  return `<div class="guide-merge" aria-hidden="true">
+    <span class="gm-rays"></span><span class="gm-glow"></span>
+    ${smalls}
+    <div class="gm-big">${big}</div>
+    ${sparks}
   </div>`;
 }
 
