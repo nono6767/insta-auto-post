@@ -94,8 +94,8 @@ const GUIDE_STEPS = [
       ? bigBottleHtml({ bottle: "heart", layers: [{ type: "pilates", min: 90 }, { type: "stretch", min: 60 }, { type: "walking", min: 100 }] })
       : bottleHtml([], BOTTLES[0], 0, SMALL_FULL_MIN)),
     title: "大瓶に合成しよう",
-    text: "小瓶が合計|**250分**たまったら、|「瓶の棚」で|合成してね。\nごほうびの大瓶に|進化して、|ショーケースに|飾られるよ。",
-    note: "250分は、|WHOのおすすめの|ちょうどまん中くらい。|35分を7日続けた|1週間分だよ。",
+    text: "小瓶が合計|**245分**たまったら、|「瓶の棚」で|合成してね。\nごほうびの大瓶に|進化して、|ショーケースに|飾られるよ。",
+    note: "245分は、|35分を7日続けた|ちょうど1週間分。|毎日ノルマを達成したら、|7日目に大瓶になるよ。",
   },
   {
     pose: "wink",

@@ -15,7 +15,7 @@ const SPORTS = [
   { id: "dance",    name: "ダンス",             color: "#ef8fc0",  presets: [15, 30], met: 5.0 },
   { id: "chores",   name: "家事",               color: "#f4a26a",  presets: [5, 15, 30], met: 3.3, note: "汗をかくくらい動いた日に記録してね（掃除機・床ふき・布団干し など）" },
 ];
-const WEEK_GOAL_MIN = 250;   // 大瓶1本ぶんの分数（小瓶をこれだけ合成すると大瓶になる）
+const WEEK_GOAL_MIN = 245;   // 大瓶1本ぶんの分数（小瓶をこれだけ合成すると大瓶になる）。ノルマ35分×7日＝245分で、毎日ノルマ達成すれば7日目に大瓶（11/28に250→245。それまでに作った大瓶はそのまま）
 const BIG_BOTTLE_MIN = WEEK_GOAL_MIN;
 const SMALL_FULL_MIN = 36;   // 小瓶が満タンに見える分数（1日ぶん）
 const DAILY_QUOTA_MIN = 35;  // 毎日のノルマ（画面には出さない）
@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-106"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-107"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -320,7 +320,7 @@ function bottleHtml(logs, bottle, flowerCount = 0, capacity = WEEK_GOAL_MIN, mix
 }
 
 // ---------- 小瓶と大瓶 ----------
-// 運動した日ごとに小瓶が1つ。小瓶の合計が250分をこえたら「合成」で大瓶に進化。
+// 運動した日ごとに小瓶が1つ。小瓶の合計が245分をこえたら「合成」で大瓶に進化。
 // data.usedByLog[記録のid]：その記録の分数のうち、もう大瓶にした分
 //   （記録1件ごとに覚えるので、大瓶にした記録を消して入れ直しても、新しい記録はちゃんと数える）
 // data.bigBottles：大瓶 { id, date（進化した日）, layers[{type,min}], bottle（瓶の種類）, flowers }
@@ -382,7 +382,7 @@ function migrateToSmallBottles() {
     let acc = 0, evolved = sorted[sorted.length - 1].date;
     for (const l of sorted) {
       acc += l.min;
-      if (acc >= BIG_BOTTLE_MIN) { evolved = l.date; break; } // 250分に届いた日＝大瓶に進化した日
+      if (acc >= BIG_BOTTLE_MIN) { evolved = l.date; break; } // 大瓶の分数に届いた日＝大瓶に進化した日
     }
     for (const l of sorted) data.usedByLog[l.id] = l.min; // その週の分は全部、大瓶に
     data.bigBottles.push({
@@ -521,7 +521,7 @@ const MESSAGES = {
   zero: ["今日もいっしょにがんばろ〜", "まずは5分だけでもどう？", "背すじ、すっと伸ばしていこ！"],
   some: ["いいね！その調子〜", "ちゃんと瓶にたまってるよ", "からだ、あったまってきたね"],
   quota: ["今日の小瓶、満タン！よくがんばったね", "やったね！小瓶が満タンだよ", "満タンおめでとう！おつかれさま"],
-  full: ["小瓶が250分たまったよ！瓶の棚で合成しよう", "合成できるよ！大瓶に進化させよう"],
+  full: [`小瓶が${BIG_BOTTLE_MIN}分たまったよ！瓶の棚で合成しよう`, "合成できるよ！大瓶に進化させよう"],
 };
 function pickMessage(kind) {
   const list = MESSAGES[kind];
@@ -536,7 +536,7 @@ function renderHome() {
   const week = weekLogs();
   const quotaDone = todayMin >= DAILY_QUOTA_MIN;
   const pool = poolMinutes();
-  const full = pool >= BIG_BOTTLE_MIN; // 小瓶が250分たまって、合成できる
+  const full = pool >= BIG_BOTTLE_MIN; // 小瓶が大瓶の分数（245分）たまって、合成できる
 
   // キャラのセリフとポーズは js/lines.js（画面と状況に合わせて話す）
   const backupNote = typeof backupBubble === "function" ? backupBubble() : null;
@@ -874,7 +874,7 @@ $("done-btn").addEventListener("click", () => {
 });
 $("sheet-backdrop").addEventListener("click", closeSheet);
 
-// ノルマクリア・小瓶が250分たまった瞬間にお祝い（トーストに出す言葉を返す）
+// ノルマクリア・小瓶が245分たまった瞬間にお祝い（トーストに出す言葉を返す）
 function celebrate(before) {
   const todayMin = sumMin(todayLogs());
   if (before.pool < BIG_BOTTLE_MIN && poolMinutes() >= BIG_BOTTLE_MIN) {

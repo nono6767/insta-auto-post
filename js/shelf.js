@@ -480,7 +480,7 @@ function drawSmallShelf() {
   $("pool-count").textContent = remain.length;
   $("pool-min").textContent = total;
   $("pool-left").innerHTML = ready
-    ? `<strong>合成できるよ！</strong> 古い小瓶から250分ぶんが大瓶になるよ`
+    ? `<strong>合成できるよ！</strong> 古い小瓶から${BIG_BOTTLE_MIN}分ぶんが大瓶になるよ`
     : `大瓶まであと <strong>${BIG_BOTTLE_MIN - total}</strong> 分`;
   const btn = $("merge-btn");
   btn.disabled = !ready;
@@ -560,7 +560,7 @@ document.querySelectorAll(".shelf-switch-btn").forEach((b) =>
 
 let justEvolvedId = null;
 
-// 古い小瓶から順に250分ぶんをまとめて大瓶にする。あまった分は、おまけの小瓶として残る
+// 古い小瓶から順に245分ぶんをまとめて大瓶にする。あまった分は、おまけの小瓶として残る
 function mergeSmallBottles() {
   ensureBottleData();
   const used = [];
