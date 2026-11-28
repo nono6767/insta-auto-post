@@ -2030,8 +2030,13 @@ body.gacha-open { overflow: hidden; }
 .guide-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .guide-actions .primary-btn { flex: 1; min-height: 50px; font-size: 16px; }
 .guide-skip { display: block; margin: 6px auto 0; font-size: 13px; }
-.guide-charms { display: flex; align-items: center; gap: 4px; height: 100%; }
-.guide-charms img { width: 40px; height: 90px; object-fit: contain; }
+.guide-art.wide { width: 186px; }
+.guide-charms { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; justify-items: center; gap: 2px 4px; width: 100%; align-self: center; }
+.guide-charms img { width: 58px; height: 62px; object-fit: contain; animation: guide-bob 2.6s ease-in-out var(--d) infinite; }
+.guide-charms img.ribbon { width: 60px; height: 52px; }
+@keyframes guide-bob { 50% { transform: translateY(-4px) rotate(-3deg); } }
+@media (prefers-reduced-motion: reduce) { .guide-charms img { animation: none; } }
 .guide-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-self: center; }
-.guide-tabs span { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 14px; background: #fff; box-shadow: 0 1px 0 #f3d5df; font-size: 20px; color: var(--rose); }
+.guide-tabs span { display: grid; place-items: center; align-content: center; gap: 2px; width: 58px; height: 58px; border-radius: 14px; background: #fff; box-shadow: 0 1px 0 #f3d5df; color: var(--rose); }
+.guide-tabs svg { width: 24px; height: 24px; }
 .guide-tabs i { font-style: normal; font-size: 10px; color: #8d6070; }

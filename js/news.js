@@ -73,14 +73,14 @@ const GUIDE_STEPS = [
     pose: "wave",
     art: () => bottleHtml([], BOTTLES[0], 0, SMALL_FULL_MIN),
     title: "ようこそ！",
-    text: "運動した分だけ、|小瓶に|きれいな色が|たまっていく|アプリだよ。\n毎日の運動を、|瓶に集めていこう！",
+    text: "運動した分だけ\n小瓶にきれいな色がたまっていくアプリだよ。\n毎日の運動を、|瓶に集めていこう！",
   },
   {
     pose: "pointSide",
     art: () => bottleHtml([{ type: "pilates", min: 15, ts: 1 }, { type: "walking", min: 10, ts: 2 }, { type: "stretch", min: 10, ts: 3 }], BOTTLES[1], 0, SMALL_FULL_MIN),
     title: "運動を記録しよう",
-    text: "ホームの|「どの運動をした？」から、|運動と時間を|選んでね。\n運動ごとの色が、|今日の小瓶に|たまるよ。|**35分で満タン！**",
-    note: "WHO（世界保健機関）は、|大人に|1週間で150〜300分の|運動をすすめているよ。|35分×7日＝245分で、|ちょうどその中なんだ。",
+    text: "ホームの「どの運動をした？」から、\n運動と時間を|選んでね。\n運動ごとの色が、|今日の小瓶に|たまるよ。|**35分で満タン！**",
+    note: "WHO（世界保健機関）は、|「大人は1週間で|150〜300分の運動を」と|すすめているよ。|35分×7日＝245分で、|ちょうどその中なんだ。",
   },
   {
     pose: "jump",
@@ -99,13 +99,16 @@ const GUIDE_STEPS = [
   },
   {
     pose: "wink",
-    art: () => `<div class="guide-charms">${["c04", "c01", "b02"].map((id) => { const c = typeof charmById === "function" && charmById(id); return c ? `<img src="${charmSrc(c)}" alt="">` : ""; }).join("")}</div>`,
+    wide: true,
+    // 上の段はチャーム、下の段はリボン（ガチャで集められるもの）
+    art: () => `<div class="guide-charms">${["c04", "c01", "n01", "j01", "og5", "j00"].map((id, i) => { const c = typeof charmById === "function" && charmById(id); return c ? `<img class="${i < 3 ? "charm" : "ribbon"}" src="${charmSrc(c)}" alt="" style="--d:${(i * 0.25).toFixed(2)}s">` : ""; }).join("")}</div>`,
     title: "コインでガチャ",
     text: "運動・ごはん・|からだの記録や、|ピラティスクイズで|コインがもらえるよ。\n左上の「ガチャ」で|チャームやリボンを|集めて、|大瓶をかざろう。",
   },
   {
     pose: "hands",
-    art: () => `<div class="guide-tabs"><span>🍚<i>ごはん</i></span><span>♡<i>からだ</i></span><span>👗<i>服</i></span><span>💰<i>貯金</i></span></div>`,
+    // 下のタブと同じマークを使う
+    art: () => `<div class="guide-tabs">${[["meals", "ごはん"], ["body", "からだ"], ["clothes", "服"], ["savings", "貯金"]].map(([page, label]) => { const svg = document.querySelector(`.tabbar-btn[data-page="${page}"] svg`); return `<span>${svg ? svg.outerHTML : ""}<i>${label}</i></span>`; }).join("")}</div>`,
     title: "ほかにもあるよ",
     text: "下のボタンで、|ごはん・|からだ（体調・生理）・|服・貯金も|記録できるよ。\n記録は|このスマホの中だけに|保存されるよ。\nときどき設定から|「バックアップを保存」|してね。",
   },
@@ -127,6 +130,7 @@ function drawGuide(dir = 0) {
   const last = guideStep === GUIDE_STEPS.length - 1;
   $("guide-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(s.pose) : "";
   $("guide-art").innerHTML = s.art();
+  $("guide-art").classList.toggle("wide", !!s.wide);
   $("guide-title").textContent = s.title;
   $("guide-text").innerHTML = guideLines(s.text) + (s.note ? `<p class="guide-note">${guideLines(s.note)}</p>` : "");
   $("guide-dots").innerHTML = GUIDE_STEPS.map((_, i) => `<i class="${i === guideStep ? "on" : ""}"></i>`).join("");
