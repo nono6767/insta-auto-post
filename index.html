@@ -69,7 +69,7 @@
       <h2 class="section-title">どの運動をした？</h2>
       <div class="sports" id="sports"></div>
 
-      <h2 class="section-title">最近の記録</h2>
+      <div class="section-row"><h2 class="section-title">最近の記録</h2><button class="month-link" type="button" data-month-tab="exercise">📅 月で見る</button></div>
       <p class="lead">まちがえたときは「直す」から時間を変えたり消したりできるよ。</p>
       <div class="log-days" id="log-list"></div>
       <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
@@ -85,6 +85,7 @@
       </div>
 
       <div class="week-strip card" id="meal-week" aria-label="今週の花まる"></div>
+      <div class="month-link-row"><button class="month-link" type="button" data-month-tab="meals">📅 月で見る</button></div>
 
       <div id="meal-cards"></div>
 
@@ -105,6 +106,7 @@
       </div>
 
       <div class="week-strip card" id="body-week" aria-label="今週のからだ"></div>
+      <div class="month-link-row"><button class="month-link" type="button" data-month-tab="body">📅 月で見る</button></div>
 
       <div class="card meal-card">
         <h3 class="meal-title">体調</h3>
@@ -118,8 +120,26 @@
       <div class="card meal-card">
         <h3 class="meal-title">生理</h3>
         <p class="period-status" id="period-status"></p>
+        <p class="period-ov" id="period-ov" hidden></p>
         <button class="period-btn" type="button" id="period-btn"></button>
         <p class="soft-note" id="period-note" hidden></p>
+      </div>
+
+      <!-- 基礎体温（やる人だけ。お試し） -->
+      <div class="temp-start" id="temp-start"><button class="text-btn small" type="button" id="temp-start-btn">🌡 基礎体温もはかる人は、こちら</button></div>
+      <div class="card meal-card temp-card" id="temp-card" hidden>
+        <h3 class="meal-title">基礎体温</h3>
+        <div class="temp-row">
+          <button class="temp-step" type="button" data-temp-step="-0.1">−0.1</button>
+          <button class="temp-step" type="button" data-temp-step="-0.01">−</button>
+          <div class="temp-value" id="temp-value"></div>
+          <button class="temp-step" type="button" data-temp-step="0.01">＋</button>
+          <button class="temp-step" type="button" data-temp-step="0.1">＋0.1</button>
+        </div>
+        <p class="temp-saved" id="temp-saved"></p>
+        <button class="primary-btn wide" type="button" id="temp-save">今日の体温を記録</button>
+        <p class="hint">朝起きてすぐ、布団の中ではかってね。前の日の数字から始まるので、少し動かすだけでOK</p>
+        <div class="temp-links"><button class="text-btn small" type="button" id="temp-graph">📈 グラフを見る</button><button class="text-btn small" type="button" id="temp-stop">はかるのをやめる</button></div>
       </div>
 
       <div class="card meal-card" id="period-history-card" hidden>
@@ -488,6 +508,31 @@
   </div>
 
   <!-- お知らせ（新しくなったこと） -->
+  <!-- 月で見る -->
+  <div class="gacha-screen month-screen" id="month-screen" role="dialog" aria-modal="true" aria-labelledby="month-title" hidden>
+    <div class="gacha-top"><button class="text-btn" type="button" id="month-close">‹ もどる</button></div>
+    <div class="month-head">
+      <button class="icon-btn nav-arrow" type="button" id="month-prev" aria-label="前の月">‹</button>
+      <h2 id="month-title"></h2>
+      <button class="icon-btn nav-arrow" type="button" id="month-next" aria-label="次の月">›</button>
+    </div>
+    <div class="month-tabs" role="tablist">
+      <button class="month-tab" type="button" role="tab" data-tab="all">ぜんぶ</button>
+      <button class="month-tab" type="button" role="tab" data-tab="exercise">運動</button>
+      <button class="month-tab" type="button" role="tab" data-tab="meals">ごはん</button>
+      <button class="month-tab" type="button" role="tab" data-tab="body">からだ</button>
+    </div>
+    <div class="card month-card">
+      <div class="month-wd"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+      <div class="month-grid" id="month-grid"></div>
+      <div class="month-legend" id="month-legend"></div>
+    </div>
+    <div class="card month-day" id="month-day" hidden></div>
+    <div class="card month-temp" id="month-temp" hidden></div>
+    <div class="card month-summary" id="month-summary"></div>
+    <p class="hint center month-note">生理の予定・排卵日の目安は、記録から計算した<b>目安</b>だよ。避妊や妊活の判断には使わないでね</p>
+  </div>
+
   <!-- 使い方を見る：見たいチュートリアルを選ぶ -->
   <div class="modal-backdrop" id="tour-menu" hidden>
     <div class="modal card settings" role="dialog" aria-modal="true" aria-labelledby="tour-menu-title">
@@ -730,6 +775,7 @@
   <script src="js/lines.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/backup.js"></script>
+  <script src="js/month.js"></script>
   <script src="js/news.js"></script>
 </body>
 </html>

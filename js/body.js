@@ -172,6 +172,7 @@ function renderBody() {
   }
 
   renderPeriod();
+  if (typeof renderFertility === "function") renderFertility(); // 排卵日の目安と基礎体温（js/month.js）
 }
 
 function renderPeriod() {
