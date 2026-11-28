@@ -77,6 +77,20 @@ const CHARMS = [
   { id: "k04", name: "ミントの横むすび", w: 134, h: 160, place: "neck", band: [0.31, 0.31, 0.54], kind: "ribbon" },
   { id: "k06", name: "ラベンダーの横むすび", w: 155, h: 157, place: "neck", band: [0.71, 0.23, 0.44], kind: "ribbon" },
 ];
+// ピンクの宝石（a00）をつけたときは、瓶ごとに描いた「宝石のふた＋口＋首」の絵（big/〇〇-gem.webp）を、
+// 首のいちばん細いところでつなぐ（宝石が口に差しこまれて見えるように）。left/top/width は瓶の幅・高さの%、
+// clip はもとの瓶の絵をかくす高さ（そこから上は新しい絵）。ar は絵の縦横比
+const GEM_TOPS = {
+  round: { left: 28.56, top: -7.02, width: 42.52, clip: 30.38, ar: "101/127" },
+  heart: { left: 28.92, top: -11.86, width: 41.43, clip: 23.38, ar: "101/107" },
+  star: { left: 31.1, top: -1.06, width: 37.69, clip: 33.38, ar: "86/103" },
+  pear: { left: 25.18, top: -9.84, width: 49.25, clip: 23.38, ar: "101/105" },
+  pumpkin: { left: 30.77, top: -4.24, width: 38.97, clip: 30.38, ar: "93/113" },
+  tall: { left: 11.7, top: -6.92, width: 77.57, clip: 23.13, ar: "90/107" },
+  diamond: { left: 25.65, top: 0.14, width: 48.66, clip: 33.63, ar: "109/123" },
+  dome: { left: 27.67, top: -9.96, width: 45.13, clip: 21.38, ar: "98/109" },
+  drop: { left: 25.53, top: -7.68, width: 48.65, clip: 26.38, ar: "85/115" },
+};
 // 首・ふたにつけるチャームは、チャームの説明（チェーンから下げる）と合わないので、いったん外す（11/28）
 // ピンクの宝石（ふた）と馬車の車輪（台）だけ残す。持っている記録はそのまま残るので、ここから消せば元にもどる
 const RETIRED_CHARM_IDS = new Set(["a02", "a03", "a04", "a09", "a10a", "a10b"]);

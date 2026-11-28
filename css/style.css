@@ -2174,3 +2174,5 @@ body.gacha-open { overflow: hidden; }
 .touring .toast { visibility: hidden; }
 /* 台（馬車の車輪など）がついた大瓶：ショーケースの棚では、車輪が棚にのるように瓶ごと持ち上げる */
 .case-bottle .big-bottle.has-base { transform-origin: 50% 100%; transform: translateY(var(--base-lift)) scale(var(--base-scale)); }
+/* 宝石のふた（瓶ごとの絵）：左上の位置そのままで置く。影はつけない（首のつなぎ目に影が出ないように） */
+.big-bottle .charm.gem-top { translate: none; filter: none; animation: none; }

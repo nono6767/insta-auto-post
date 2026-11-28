@@ -125,10 +125,16 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
   const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
 
-  let back = "", front = "", neckN = 0, hasTop = false, baseDrop = 0;
+  let back = "", front = "", neckN = 0, hasTop = false, baseDrop = 0, topClip = bottle.cap;
   const hangs = [];
   for (const c of charms) {
-    if (c.place === "top") {
+    const gemTop = c.id === "a00" && typeof GEM_TOPS !== "undefined" && GEM_TOPS[bottle.id];
+    if (c.place === "top" && gemTop) {
+      // 宝石のふた：その瓶用に描いた「宝石＋口＋首」の絵を、首の細いところでつなぐ（もとの瓶の上の部分はかくす）
+      back += `<img class="charm top gem-top" src="big/${bottle.id}-gem.webp" alt="" style="left:${gemTop.left}%;top:${gemTop.top}%;width:${gemTop.width}%;aspect-ratio:${gemTop.ar}">`;
+      topClip = gemTop.clip;
+      hasTop = true;
+    } else if (c.place === "top") {
       // ふた：もとのコルクやふたをかくして、瓶の口にのせる（宝石のまん中を瓶のまん中に）
       // 宝石だけのふた（fit）は、瓶の口の幅に合わせた大きさにして、首の中まで差しこむ
       const fit = c.fit && bottle.mouth;
@@ -287,7 +293,7 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     // bigRibbonUp：たっぷりリボンを少し上げる瓶（瓶の高さの%）。結び目が首のチェーンの高さに来るように
     ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5) - (rc.big ? bottle.bigRibbonUp || 0 : 0), w);
   }
-  return { html: back + svg + front + ribbon, hasTop, baseDrop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
+  return { html: back + svg + front + ribbon, hasTop, baseDrop, topClip }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
 }
 
 // 大瓶の中のラメ：液体の中で、小さな光がちらちらまたたく（場所と時間は瓶ごとに決まっている）
@@ -390,7 +396,7 @@ function bigBottleHtml(b) {
   const lift = drop > 0 ? `;--base-scale:${(100 / (100 + drop)).toFixed(3)};--base-lift:${(-drop * 100 / (100 + drop)).toFixed(2)}%` : "";
   return `<div class="bottle big-bottle${drop > 0 ? " has-base" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}${lift}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
-    <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
+    <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${charms.topClip ?? bottle.cap}% 0 0 0)"` : ""}>
     <div class="liquid glitter-box" aria-hidden="true" style="-webkit-mask-image:${mask};mask-image:${mask}">${glitter}</div>
     ${charms.html}
   </div>`;
