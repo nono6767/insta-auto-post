@@ -6,6 +6,24 @@
 
 const NEWS = [
   {
+    id: "2026-11-tutorial-look",
+    auto: true, // アプリを開いたときに1回だけ出す（もう使っている人だけ。はじめての人には使い方ガイドが出る）
+    title: "新しくなったよ！",
+    hero: "look", // 見本：色図鑑の色にした大瓶
+    items: [
+      {
+        icon: `<span class="news-dot" style="--c:#f6a2bf">📖</span>`,
+        head: "チュートリアルができたよ",
+        text: "はじめて開く画面で、使い方を教えてくれるよ。設定の「使い方を見る」から、見たい説明を選んでいつでも見られるよ",
+      },
+      {
+        icon: `<span class="news-dot" style="--c:#c9a8ee">🎨</span>`,
+        head: "大瓶の中身を、色図鑑の色にできるよ",
+        text: "大瓶の棚で大瓶をタップ →「中身」から、色図鑑で見つけた好きな色に変えられるよ（運動の記録は消えないよ）",
+      },
+    ],
+  },
+  {
     id: "2026-11-chores-poop-2", // お試しで見たときに「見た」になってしまったので、名前を変えてもう一度出す
     auto: false, // 告知は終わり（11/28）。また新しいお知らせを出すときは、新しい id で auto: true にする
     title: "新しくなったよ！",
@@ -35,12 +53,14 @@ function showNews(n, auto = false) {
   const box = $("news-modal");
   box.dataset.auto = auto ? "1" : "";
   $("news-title").textContent = n.title;
-  // 見本の小瓶：家事の色の層と、すっきりの泡
-  const shape = BOTTLES[1];
-  $("news-hero-jar").innerHTML = bottleHtml(
-    [{ type: "chores", min: 30, ts: 1 }],
-    shape, 0, SMALL_FULL_MIN, null, true
-  );
+  if (n.hero === "look" && typeof bigBottleHtml === "function") {
+    // 見本の大瓶：色図鑑の色（ラベンダー）にして、リボンとチャーム
+    const c = (typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === "ラベンダー")) || { name: "ラベンダー", hex: "#d9c8f0" };
+    $("news-hero-jar").innerHTML = bigBottleHtml({ id: "news", bottle: "heart", layers: [{ min: 245, color: c.hex, name: c.name }], look: { mode: "color", name: c.name }, charms: ["c04"], ribbon: "j01" });
+  } else {
+    // 見本の小瓶：家事の色の層と、すっきりの泡
+    $("news-hero-jar").innerHTML = bottleHtml([{ type: "chores", min: 30, ts: 1 }], BOTTLES[1], 0, SMALL_FULL_MIN, null, true);
+  }
   $("news-hero-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml("jump") : "";
   $("news-items").innerHTML = n.items
     .map((it) => `<li class="news-item">${it.icon}<div><b>${it.head}</b><p>${it.text}</p></div></li>`)
@@ -56,10 +76,16 @@ function closeNews() {
 }
 // 起動したとき：まだ見ていない自動のお知らせがあれば出す
 function checkNews() {
+  if (!data.weight || !(data.logs || []).length) return; // はじめての人には出さない（使い方ガイドが出るので）
   const n = NEWS.find((x) => x.auto && !newsSeen().includes(x.id));
   if (n) setTimeout(() => showNews(n, true), 800);
 }
 $("news-ok").addEventListener("click", closeNews);
+// 設定の「お知らせ」：いちばん新しいお知らせをもう一度見る
+$("settings-info").addEventListener("click", () => {
+  $("settings-modal").hidden = true;
+  showNews(NEWS[0]);
+});
 checkNews();
 
 // =========================================================
@@ -367,11 +393,12 @@ function tourBuild() {
       <div class="tour-char"></div>
       <div class="tour-art"></div>
       <p class="tour-text"></p>
-      <div class="tour-foot"><button class="text-btn tour-skip" type="button">スキップ</button><span class="tour-count"></span><button class="primary-btn tour-next" type="button">次へ</button></div>
+      <div class="tour-foot"><button class="text-btn tour-skip" type="button">スキップ</button><span class="tour-count"></span><button class="choice-btn tour-back" type="button">もどる</button><button class="primary-btn tour-next" type="button">次へ</button></div>
     </div>`;
   document.body.append(tourEl);
   tourEl.querySelector(".tour-next").addEventListener("click", () => tourGo(1));
   tourEl.querySelector(".tour-skip").addEventListener("click", tourEnd);
+  tourEl.querySelector(".tour-back").addEventListener("click", () => tourGo(-1));
   window.addEventListener("resize", () => !tourEl.hidden && tourPlace());
   return tourEl;
 }
@@ -419,6 +446,7 @@ function tourShow() {
   tourEl.querySelector(".tour-count").textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
   tourEl.querySelector(".tour-next").textContent = st.nextLabel || (st.last ? (tourName === "home" ? "はじめる！" : "わかった！") : "次へ");
   tourEl.querySelector(".tour-skip").style.visibility = st.last ? "hidden" : "";
+  tourEl.querySelector(".tour-back").hidden = tourStep === 0; // 1つ目のときは、もどれない
   tourEl.querySelector(".tour-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(st.last ? "jump" : tourStep % 2 ? "pointUp" : "pointSide") : "";
   requestAnimationFrame(tourPlace);
 }
@@ -456,7 +484,10 @@ function tourGo(d) {
     return;
   }
   const n = tourStep + d;
+  if (n < 0) return;
   if (n >= TOUR_STEPS.length) return tourEnd();
+  // もどるときは、その説明の前にすること（設定を開く・閉じるなど）を、もう一度する
+  if (d < 0) for (let i = n; i < TOUR_STEPS.length; i++) TOUR_STEPS[i].beforeDone = false;
   tourStep = n;
   tourShow();
 }
