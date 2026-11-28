@@ -99,7 +99,7 @@ const GUIDE_STEPS = [
   },
   {
     pose: "wink",
-    photo: "img/guide/gacha-box.webp", // 宝箱からチャームとリボンが出てくる絵（この絵だけで1枚）
+    photo: "img/guide/gacha-box1.webp", // 宝箱からチャームとリボンが出てくる絵（この絵だけで1枚）
     art: () => "",
     title: "コインでガチャ",
     text: "運動・ごはん・|からだの記録や、|ピラティスクイズで|コインがもらえるよ。\n左上の「ガチャ」で|チャームやリボンを|集めて、|大瓶をかざろう。",
