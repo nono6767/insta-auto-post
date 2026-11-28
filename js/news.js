@@ -73,19 +73,20 @@ const GUIDE_STEPS = [
     pose: "wave",
     art: () => bottleHtml([], BOTTLES[0], 0, SMALL_FULL_MIN),
     title: "ようこそ！",
-    text: "運動した分だけ、小瓶にきれいな色がたまっていくアプリだよ。<br>毎日の運動を、瓶に集めていこう！",
+    text: "運動した分だけ、|小瓶に|きれいな色が|たまっていく|アプリだよ。\n毎日の運動を、|瓶に集めていこう！",
   },
   {
     pose: "pointSide",
     art: () => bottleHtml([{ type: "pilates", min: 15, ts: 1 }, { type: "walking", min: 10, ts: 2 }, { type: "stretch", min: 10, ts: 3 }], BOTTLES[1], 0, SMALL_FULL_MIN),
     title: "運動を記録しよう",
-    text: "ホームの「どの運動をした？」から、運動と時間を選んでね。<br>運動ごとの色が、今日の小瓶にたまるよ。<b>35分で満タン！</b>",
+    text: "ホームの|「どの運動をした？」から、|運動と時間を|選んでね。\n運動ごとの色が、|今日の小瓶に|たまるよ。|**35分で満タン！**",
+    note: "WHO（世界保健機関）は、|大人に|1週間で150〜300分の|運動をすすめているよ。|35分×7日＝245分で、|ちょうどその中なんだ。",
   },
   {
     pose: "jump",
     art: () => bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[2], 0, SMALL_FULL_MIN, guideMixHex()),
     title: "一日の終わりにシェイク",
-    text: "運動が終わったら「今日はおしまい」を押して、小瓶をふってね。<br>色がまざって、その日だけの1色になるよ。出た色は「色図鑑」に集まるよ。",
+    text: "運動が終わったら|「今日はおしまい」を押して、|小瓶をふってね。\n色がまざって、|その日だけの|1色になるよ。\n出た色は|「色図鑑」に|集まるよ。",
   },
   {
     pose: "guts",
@@ -93,25 +94,31 @@ const GUIDE_STEPS = [
       ? bigBottleHtml({ bottle: "heart", layers: [{ type: "pilates", min: 90 }, { type: "stretch", min: 60 }, { type: "walking", min: 100 }] })
       : bottleHtml([], BOTTLES[0], 0, SMALL_FULL_MIN)),
     title: "大瓶に合成しよう",
-    text: "小瓶が合計<b>250分</b>たまったら、「瓶の棚」で合成してね。<br>ごほうびの大瓶に進化して、ショーケースに飾られるよ。",
+    text: "小瓶が合計|**250分**たまったら、|「瓶の棚」で|合成してね。\nごほうびの大瓶に|進化して、|ショーケースに|飾られるよ。",
+    note: "250分は、|WHOのおすすめの|ちょうどまん中くらい。|35分を7日続けた|1週間分だよ。",
   },
   {
     pose: "wink",
     art: () => `<div class="guide-charms">${["c04", "c01", "b02"].map((id) => { const c = typeof charmById === "function" && charmById(id); return c ? `<img src="${charmSrc(c)}" alt="">` : ""; }).join("")}</div>`,
     title: "コインでガチャ",
-    text: "運動・ごはん・からだの記録や、ピラティスクイズでコインがもらえるよ。<br>左上の「ガチャ」でチャームやリボンを集めて、大瓶をかざろう。",
+    text: "運動・ごはん・|からだの記録や、|ピラティスクイズで|コインがもらえるよ。\n左上の「ガチャ」で|チャームやリボンを|集めて、|大瓶をかざろう。",
   },
   {
     pose: "hands",
     art: () => `<div class="guide-tabs"><span>🍚<i>ごはん</i></span><span>♡<i>からだ</i></span><span>👗<i>服</i></span><span>💰<i>貯金</i></span></div>`,
     title: "ほかにもあるよ",
-    text: "下のボタンで、ごはん・からだ（体調・生理）・服・貯金も記録できるよ。<br>記録はこのスマホの中だけに保存されるよ。ときどき設定から「バックアップを保存」してね。",
+    text: "下のボタンで、|ごはん・|からだ（体調・生理）・|服・貯金も|記録できるよ。\n記録は|このスマホの中だけに|保存されるよ。\nときどき設定から|「バックアップを保存」|してね。",
   },
 ];
 
 function guideMixHex() {
   const c = typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === "サクラピンク");
   return c ? c.hex : "#f6c1cf";
+}
+
+// 「|」のところでだけ改行する（ことばの途中で切れないように）。「\n」は必ず改行、**…** は太字
+function guideLines(t) {
+  return t.split("\n").map((line) => `<span class="guide-line">${line.split("|").map((w) => `<span class="nb">${w.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</span>`).join("")}</span>`).join("");
 }
 
 let guideStep = 0;
@@ -121,7 +128,7 @@ function drawGuide(dir = 0) {
   $("guide-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(s.pose) : "";
   $("guide-art").innerHTML = s.art();
   $("guide-title").textContent = s.title;
-  $("guide-text").innerHTML = `<p>${s.text}</p>`;
+  $("guide-text").innerHTML = guideLines(s.text) + (s.note ? `<p class="guide-note">${guideLines(s.note)}</p>` : "");
   $("guide-dots").innerHTML = GUIDE_STEPS.map((_, i) => `<i class="${i === guideStep ? "on" : ""}"></i>`).join("");
   $("guide-back").style.visibility = guideStep === 0 ? "hidden" : "";
   $("guide-next").textContent = last ? "はじめよう！" : "次へ";

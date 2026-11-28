@@ -2019,7 +2019,10 @@ body.gacha-open { overflow: hidden; }
 .guide-art > .bottle, .guide-art > div:not(.guide-charms):not(.guide-tabs) { height: 100%; width: auto; max-width: 100%; }
 .guide-title { margin: 4px 0 6px; font-size: 18px; color: var(--ink); text-align: center; }
 .guide-text { min-height: 96px; }
-.guide-text p { margin: 0; font-size: 13.5px; line-height: 1.75; color: #8d6070; text-align: center; }
+.guide-text { font-size: 13.5px; line-height: 1.75; color: #8d6070; text-align: center; }
+.guide-line { display: block; }
+.guide-line .nb { display: inline-block; } /* ことばのまとまりの途中では改行しない */
+.guide-note { margin: 8px 0 0; padding: 7px 10px; border-radius: 12px; background: #fff; box-shadow: 0 1px 0 #f3d5df; font-size: 11.5px; line-height: 1.6; color: #9a7584; }
 .guide-text b { color: var(--rose); }
 .guide-dots { display: flex; justify-content: center; gap: 7px; margin: 12px 0 10px; }
 .guide-dots i { width: 8px; height: 8px; border-radius: 50%; background: #f3c3d4; transition: width .2s; }
