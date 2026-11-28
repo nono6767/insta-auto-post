@@ -567,6 +567,24 @@ function openDressUp() {
     setTimeout(() => $("savings-deco").click(), 300);
   }
 }
+// バックアップ：だれにでも分かるように、ゆっくり・やさしく
+const hideSettingsForTour = () => { $("settings-modal").hidden = true; };
+const openSettingsNow = () => { if ($("settings-modal").hidden) $("settings-btn").click(); };
+TOURS.backup = [
+  {
+    art: `<div class="ta-backup"><span>📱<i>スマホ</i></span><b>›</b><span>📄<i>ファイル</i></span><b>›</b><span>☁️<i>べつの場所</i></span></div>`,
+    text: "<b>バックアップ</b>は、記録の<b>おまもり</b>だよ。<br>記録は、このスマホの中にしか入っていないの。スマホをなくしたり、<b>機種変更</b>したりすると、記録が<b>消えてしまう</b>ことがあるよ。<br>だから、記録を<b>1つのファイル</b>にして、べつの場所にしまっておこう",
+  },
+  { keep: true, before: hideSettingsForTour, sel: "#settings-btn", text: "やり方はかんたん。<br>まず、右上の<b>歯車のボタン</b>を押すよ" },
+  { keep: true, before: openSettingsNow, sel: "#backup-save", text: "つぎに「<b>バックアップを保存</b>」を押すよ。<br>ボタンの下に、<b>前に保存した日</b>が出ているよ" },
+  {
+    keep: true,
+    art: `<div class="ta-share"><p>iPhoneの画面が、下から出てくるよ</p><span class="on">📁 “ファイル”に保存</span><span>💬 メッセージ</span><span>✉️ メール</span></div>`,
+    text: "押すと、iPhoneの画面が下から出てくるよ。<br>①「<b>“ファイル”に保存</b>」を押す<br>②「<b>iCloud Drive</b>」を選ぶ<br>③ 右上の「<b>保存</b>」を押す<br>これで<b>おしまい</b>！",
+  },
+  { keep: true, sel: "#backup-restore", text: "スマホを<b>新しくしたとき</b>は、こっち。<br>「<b>バックアップから戻す</b>」を押して、保存しておいたファイルを選ぶと、<b>記録がぜんぶ元にもどる</b>よ" },
+  { keep: true, text: "<b>2週間に1回</b>くらい保存しておくと安心だよ。<br>しばらく保存していないと、ホームでキャラが<b>「そろそろバックアップしよう」</b>と教えてくれるよ" },
+];
 TOURS.shelf = TOURS.firstShake.slice(1); // 瓶の棚と大瓶（シェイクのあとの説明の、棚を開くところから）
 const TOUR_MENU = [
   { name: "home", label: "アプリのはじめかた", sub: "ホームのボタン", open: () => {} },
@@ -577,6 +595,7 @@ const TOUR_MENU = [
   { name: "body", label: "からだの記録", sub: "体調・お通じ・生理", open: () => openTab("body") },
   { name: "clothes", label: "服チェック", sub: "写真で見くらべ", open: () => openTab("clothes") },
   { name: "savings", label: "貯金瓶", sub: "目標・着せ替え", open: () => openTab("savings") },
+  { name: "backup", label: "バックアップ", sub: "記録を守る保存のしかた", open: hideSettingsForTour },
 ];
 function openTourMenu() {
   const list = $("tour-menu-list");

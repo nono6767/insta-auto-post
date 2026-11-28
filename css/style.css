@@ -2183,3 +2183,12 @@ body.gacha-open { overflow: hidden; }
 #tour-menu .settings-item { padding: 10px 10px; min-height: 0; }
 #tour-menu .settings-label { font-size: 14px; }
 #tour-menu .settings-sub { font-size: 11px; line-height: 1.4; }
+/* バックアップの説明の絵 */
+.ta-backup { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.ta-backup span { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; border-radius: 12px; background: #fff; box-shadow: 0 1px 0 #f3d5df; font-size: 22px; }
+.ta-backup i { font-style: normal; font-size: 10px; font-weight: 700; color: #a0647c; }
+.ta-backup b { color: #f0a5c0; font-size: 18px; }
+.ta-share { display: grid; gap: 4px; padding: 8px; border-radius: 14px; background: #f4f1f3; }
+.ta-share p { margin: 0 0 2px !important; font-size: 11px; color: #8d6070 !important; text-align: center; }
+.ta-share span { padding: 6px 10px; border-radius: 10px; background: #fff; font-size: 12px; color: #6b5560; }
+.ta-share span.on { box-shadow: 0 0 0 2px var(--rose); font-weight: 700; color: var(--rose); }
