@@ -58,6 +58,34 @@ function usualCycle() {
   return Math.round(gaps.reduce((t, g) => t + g, 0) / gaps.length);
 }
 
+// いつもの生理の日数（始まった日から終わった日まで）の平均。記録がないうちは5日
+const DEFAULT_PERIOD_DAYS = 5;
+// 日付に n 日たす（ほかのファイルを待たずに使えるように、ここにも書く）
+const plusDays = (key, n) => { const d = parseKey(key); d.setDate(d.getDate() + n); return dateKey(d); };
+function usualLength() {
+  const lens = periods().filter((p) => p.end).map((p) => daysBetween(p.start, p.end) + 1).filter((n) => n >= 2 && n <= 10);
+  if (!lens.length) return DEFAULT_PERIOD_DAYS;
+  return Math.round(lens.reduce((t, n) => t + n, 0) / lens.length);
+}
+// 次の生理の予測（目安）：前回の開始日 ＋ いつもの間隔。生理中・記録がないときは null
+// { start, end, left（今日からあと何日。マイナスは予定より遅れている日数） }
+function nextPeriod() {
+  const ps = periods();
+  if (!ps.length || openPeriod()) return null;
+  const last = ps[ps.length - 1];
+  const start = plusDays(last.start, usualCycle());
+  return { start, end: plusDays(start, usualLength() - 1), left: daysBetween(dateKey(), start) };
+}
+// その日が、生理の予定の日か（本当の記録がある日はのぞく）
+function predictedOn(key) {
+  const n = nextPeriod();
+  if (!n || periodOn(key)) return false;
+  // 予定より遅れているときは、今日から予定の日数ぶんを予定として出す
+  const from = n.left < 0 ? dateKey() : n.start;
+  const to = n.left < 0 ? plusDays(from, usualLength() - 1) : n.end;
+  return key >= from && key <= to;
+}
+
 // 前回から間が空いているか（ホームのNの吹き出しでも使う）
 function periodLateInfo() {
   const ps = periods();
@@ -72,6 +100,8 @@ function periodLateInfo() {
 function bodyBubble() {
   const late = periodLateInfo();
   if (late) return `そういえば、前の生理から${late.since}日たったね。からだ冷やさないでね`;
+  const next = nextPeriod();
+  if (next && next.left >= 1 && next.left <= 3) return `そろそろ生理かも（${shortDate(next.start)}ごろ）。からだ冷やさないでね`;
   const open = openPeriod();
   if (open && daysBetween(open.start, dateKey()) <= 7) return "生理中は無理しないでね〜。ストレッチだけでもえらいよ";
   return null;
@@ -79,6 +109,10 @@ function bodyBubble() {
 
 // ---------- 描画 ----------
 
+// 予定の日の、うすいしずく（点線のふち）
+function predictedDropSvg() {
+  return `<svg viewBox="0 0 24 24" class="drop-icon predicted" aria-label="生理の予定"><path d="M12 3c3 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.8 6-11Z" fill="#f48a8a" fill-opacity=".18" stroke="#f48a8a" stroke-width="1.6" stroke-dasharray="2.6 2"/></svg>`;
+}
 function dropSvg() {
   return `<svg viewBox="0 0 24 24" class="drop-icon" aria-label="生理"><path d="M12 3c3 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.8 6-11Z" fill="#f48a8a"/><ellipse cx="9.6" cy="14" rx="1.4" ry="2.2" fill="#fff" opacity=".6"/></svg>`;
 }
@@ -108,7 +142,7 @@ function renderBody() {
       .map((f) => `<i class="gb-dot ${b[f] || "none"}"></i>`)
       .join("") + (b.poop === "yes" ? `<i class="gb-dot poop" title="お通じ"></i>` : "");
     cell.innerHTML = `<span class="wd">${WEEKDAYS[d.getDay()]}</span><span class="dn">${d.getDate()}</span>
-      <span class="mark">${periodOn(key) ? dropSvg() : ""}</span><span class="gb-dots">${dots}</span>`;
+      <span class="mark">${periodOn(key) ? dropSvg() : predictedOn(key) ? predictedDropSvg() : ""}</span><span class="gb-dots">${dots}</span>`;
     cell.addEventListener("click", () => {
       bodyDay = key;
       renderBody();
@@ -181,8 +215,14 @@ function renderPeriod() {
   } else {
     const ps = periods();
     const last = ps[ps.length - 1];
-    status.textContent = last
-      ? `前回は${shortDate(last.start)}から（${daysBetween(last.start, today)}日前）`
+    const next = nextPeriod();
+    const nextText = !next ? ""
+      : next.left > 0 ? `<span>次の生理：<b>${shortDate(next.start)}ごろ</b>（あと${next.left}日）</span>`
+      : next.left === 0 ? `<span>次の生理：<b>今日ごろ</b></span>`
+      : `<span>予定（${shortDate(next.start)}ごろ）より<b>${-next.left}日</b>おそいよ</span>`;
+    status.innerHTML = last
+      ? `<span>前回は${shortDate(last.start)}から（${daysBetween(last.start, today)}日前）</span>` +
+        (next ? `<span class="period-next">${predictedDropSvg()}${nextText}</span><small class="period-guess">予測は目安だよ。記録が増えるほど、<br>あなたに合った予測になるよ</small>` : "")
       : "まだ記録がないよ";
     btn.textContent = `${whenText}、生理がきた`;
     btn.className = "period-btn start";

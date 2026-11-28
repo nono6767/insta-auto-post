@@ -2203,3 +2203,10 @@ body.gacha-open { overflow: hidden; }
 .tour-foot .tour-skip { grid-area: skip; justify-self: start; white-space: nowrap; padding: 2px 4px; }
 .tour-foot .tour-count { grid-area: count; text-align: right; white-space: nowrap; }
 .tour-foot:has(.tour-back[hidden]) { grid-template-areas: "next next" "skip count"; }
+/* 次の生理の予測 */
+.period-status:has(.period-next) { flex-direction: column; align-items: flex-start; gap: 4px; }
+.period-next { display: flex; align-items: center; gap: 4px; color: #d0607a; font-size: 14px; }
+.period-next .drop-icon { width: 18px; height: 18px; flex: none; }
+.period-next b { font-size: 15px; }
+.period-guess { display: block; font-size: 11px; color: var(--muted); }
+.drop-icon.predicted { opacity: .9; }
