@@ -169,7 +169,7 @@ function guideShakeArt() {
       <div class="gs-layer gs-before">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN)}</div>
       <div class="gs-layer gs-after">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN, mix)}</div>
     </div>
-    ${["l", "r"].map((side) => `<svg class="gs-lines ${side}" viewBox="0 0 22 56"><path d="M16 4 Q4 28 16 52"/><path d="M9 14 Q2 28 9 42"/></svg>`).join("")}
+    ${["l", "r"].map((side) => `<svg class="gs-lines ${side}" viewBox="0 0 22 56"><path d="M10 4 Q0 28 10 52"/><path d="M19 15 Q12 28 19 41"/></svg>`).join("")}
     ${sparks}
   </div>`;
 }
@@ -285,11 +285,28 @@ TOURS.body = [
   { sel: "#poop-row", text: "お通じが「出た」日は、<br>その日の小瓶に<b>すっきりの泡</b>がのぼるよ" },
   { sel: "#period-btn", up: ".card", text: "<b>生理</b>の記録はここ。<br>始まった日と終わった日を押してね", last: true },
 ];
+const TA_DRESS = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.5h6l-.8 4.2L19 21H5l4.8-14.3Z" fill="currentColor"/><path d="M9.6 6.7h4.8" stroke="#fff" stroke-width="1.2"/></svg>`;
 TOURS.clothes = [
   { sel: "#page-clothes .lead", text: "お気に入りの服を着て<b>写真</b>を撮って、<br>前回の自分とくらべてみよう" },
-  { sel: "#clothes-list", text: "登録した服はここに並ぶよ。<br>タップして写真を撮ってね" },
-  { sel: "#add-cloth", text: "まずは<b>服を登録</b>してみよう。<br>写真はこのスマホの中にだけ保存されるよ", last: true },
+  {
+    // 光らせるところはなし（まん中に、流れの絵つきで出す）
+    art: `<div class="ta-flow"><span><i>1</i>服を登録</span><b>›</b><span><i>2</i>着て写真</span><b>›</b><span><i>3</i>見くらべる</span></div>`,
+    text: "同じ服を着て、<b>月に1回くらい</b>写真を撮ってね。<br>撮るたびに、写真がたまっていくよ",
+  },
+  {
+    art: `<div class="ta-compare">
+      <figure><span class="ta-photo old">${TA_DRESS}</span><figcaption>前回</figcaption></figure>
+      <span class="ta-vs">⇄</span>
+      <figure><span class="ta-photo new">${TA_DRESS}<i>✦</i></span><figcaption>今回</figcaption></figure></div>`,
+    text: "2枚たまったら「<b>見くらべる</b>」。<br><b>左に前回、右に今回</b>の写真が並ぶよ。<br>写真の上の欄で、くらべる写真も選べるよ",
+  },
+  { sel: '#clothes-list [data-act="shoot"]', text: "服を着たら、ここで<b>写真を撮る</b>よ" },
+  { sel: '#clothes-list [data-act="compare"]', text: "<b>見くらべる</b>はここ！<br>前回と今回が左右に並ぶよ" },
+  { sel: "#add-cloth", text: "服は<b>ここから登録</b>できるよ。<br>写真はこのスマホの中にだけ保存されるよ", last: true },
 ];
+// 内容を作り直したチュートリアルは、名前をかえて、もう一度だけ出す
+const TOUR_SEEN_KEY = { clothes: "clothes2" };
+const tourSeenKey = (name) => TOUR_SEEN_KEY[name] || name;
 TOURS.savings = [
   { sel: "#savings-jar", text: "これが<b>貯金瓶</b>。<br>入れた分だけコインがたまっていくよ" },
   { sel: "#savings-setup-btn", text: "まずは<b>目標の金額</b>を決めよう。<br>毎週いくら入れたらいいか計算するよ" },
@@ -310,6 +327,7 @@ function tourBuild() {
   tourEl.innerHTML = `<div class="tour-hole"></div>
     <div class="tour-bubble" role="dialog" aria-live="polite">
       <div class="tour-char"></div>
+      <div class="tour-art"></div>
       <p class="tour-text"></p>
       <div class="tour-foot"><button class="text-btn tour-skip" type="button">スキップ</button><span class="tour-count"></span><button class="primary-btn tour-next" type="button">次へ</button></div>
     </div>`;
@@ -337,6 +355,7 @@ function startTour_(name = "home") {
   tourShow();
 }
 function tourTarget(st = TOUR_STEPS[tourStep]) {
+  if (!st.sel) return document.body; // 光らせるところがない説明（まん中に出す）
   let el = document.querySelector(st.sel);
   if (el && st.up) el = el.closest(st.up) || el;
   if (!el || el.closest("[hidden]")) return null;
@@ -347,7 +366,10 @@ function tourShow() {
   const st = TOUR_STEPS[tourStep];
   const el = tourTarget();
   if (!el) return tourGo(1); // 見つからないところは、とばす
-  el.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
+  const art = tourEl.querySelector(".tour-art");
+  art.innerHTML = st.art || "";
+  art.hidden = !st.art;
+  if (st.sel) el.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
   tourEl.querySelector(".tour-text").innerHTML = st.text;
   tourEl.querySelector(".tour-count").textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
   tourEl.querySelector(".tour-next").textContent = st.last ? (tourName === "home" ? "はじめる！" : "わかった！") : "次へ";
@@ -358,15 +380,22 @@ function tourShow() {
 function tourPlace() {
   const el = tourTarget();
   if (!el) return;
+  const st = TOUR_STEPS[tourStep];
+  const hole = tourEl.querySelector(".tour-hole");
+  const bub = tourEl.querySelector(".tour-bubble");
+  if (!st.sel) {
+    // まん中に小さな穴（見えない）を置いて、全体を暗くする。ふきだしは画面のまん中
+    Object.assign(hole.style, { left: "50%", top: "50%", width: "0px", height: "0px" });
+    bub.style.top = `${Math.max(8, (innerHeight - bub.offsetHeight) / 2)}px`;
+    return;
+  }
   const r = el.getBoundingClientRect();
   const pad = 8;
-  const hole = tourEl.querySelector(".tour-hole");
   hole.style.left = `${r.left - pad}px`;
   hole.style.top = `${r.top - pad}px`;
   hole.style.width = `${r.width + pad * 2}px`;
   hole.style.height = `${r.height + pad * 2}px`;
   // ふきだしは、光らせたところの下（下に場所がなければ上）
-  const bub = tourEl.querySelector(".tour-bubble");
   const bh = bub.offsetHeight;
   const below = r.bottom + pad + 14;
   const top = below + bh < innerHeight - 8 ? below : Math.max(8, r.top - pad - 14 - bh);
@@ -384,7 +413,7 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
     if (!TOURS[page] || page === "home") return;
-    if (data.toursSeen && data.toursSeen[page]) return;
+    if (data.toursSeen && data.toursSeen[tourSeenKey(page)]) return;
     setTimeout(() => {
       const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
       const shown = document.getElementById(`page-${page}`);
@@ -395,8 +424,8 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
 function tourEnd() {
   if (tourEl) tourEl.hidden = true;
   if (!data.toursSeen) data.toursSeen = {};
-  if (!data.toursSeen[tourName]) {
-    data.toursSeen[tourName] = true;
+  if (!data.toursSeen[tourSeenKey(tourName)]) {
+    data.toursSeen[tourSeenKey(tourName)] = true;
     saveData();
   }
   document.documentElement.classList.remove("touring");

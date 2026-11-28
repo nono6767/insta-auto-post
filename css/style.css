@@ -2115,10 +2115,10 @@ body.gacha-open { overflow: hidden; }
 .gs-layer .bottle { height: 100%; width: auto; }
 .gs-before { animation: gs-out 4s ease-in-out infinite; }
 .gs-after { animation: gs-in 4s ease-in-out infinite; }
-.gs-lines { position: absolute; top: 28%; width: 16px; height: 42px; opacity: 0; overflow: visible; animation: gs-lines 4s ease-in-out infinite; }
+.gs-lines { position: absolute; top: 50%; width: 16px; height: 42px; opacity: 0; overflow: visible; animation: gs-lines 4s ease-in-out infinite; }
 .gs-lines path { fill: none; stroke: #f2a6c2; stroke-width: 3; stroke-linecap: round; }
-.gs-lines path + path { stroke-width: 2.4; opacity: .7; }
-.gs-lines.l { left: -8px; } .gs-lines.r { right: -8px; transform: scaleX(-1); }
+.gs-lines path + path { stroke-width: 2.4; opacity: .75; }
+.gs-lines.l { left: -10px; } .gs-lines.r { right: -10px; transform: scaleX(-1); }
 .gs-spark { position: absolute; z-index: 2; aspect-ratio: 1; translate: -50% -50%; background: #ffe08a; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 3px #fff); opacity: 0; animation: gs-spark 4s ease-out var(--d) infinite; }
 .gs-spark:nth-of-type(even) { background: #fff; }
 /* 0〜45%：シャカシャカ（だんだん強く）→ 50%：まざる → 50〜90%：まざった色で止まる → 最初にもどる */
@@ -2151,3 +2151,21 @@ body.gacha-open { overflow: hidden; }
 .tour-foot .primary-btn { min-height: 40px; padding: 0 18px; font-size: 14px; }
 .tour-skip { font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .tour-hole, .tour-bubble { transition: none; animation: none; } }
+/* チュートリアルの絵（服：流れと、見くらべの見本） */
+.tour-art { margin: 0 0 8px; }
+.tour-art[hidden] { display: none; }
+.ta-flow { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; color: #a0647c; }
+.ta-flow span { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 6px 5px; border-radius: 12px; background: #fff; box-shadow: 0 1px 0 #f3d5df; white-space: nowrap; }
+.ta-flow i { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--rose); color: #fff; font-style: normal; font-size: 11px; }
+.ta-flow b { color: #f0a5c0; font-size: 16px; }
+.ta-compare { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.ta-compare figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ta-compare figcaption { font-size: 11px; font-weight: 700; color: #a0647c; }
+.ta-photo { position: relative; display: grid; place-items: center; width: 62px; height: 78px; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 2px 6px rgb(200 120 150 / .3); }
+.ta-photo svg { width: 40px; height: 40px; }
+.ta-photo.old { background: linear-gradient(#eef1f6, #dfe4ee); color: #b9a3c9; animation: ta-in 3s ease-out infinite; }
+.ta-photo.new { background: linear-gradient(#fff3f8, #fde0ec); color: #f08db0; animation: ta-in 3s ease-out .5s infinite both; }
+.ta-photo i { position: absolute; top: 2px; right: 4px; font-style: normal; font-size: 12px; color: #f5c542; }
+.ta-vs { font-size: 20px; color: var(--rose); }
+@keyframes ta-in { 0% { opacity: 0; transform: translateY(6px) scale(.9); } 15%, 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ta-photo.old, .ta-photo.new { animation: none; } }
