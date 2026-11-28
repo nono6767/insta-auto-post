@@ -492,7 +492,7 @@ function drawSmallShelf() {
   $("pool-count").textContent = remain.length;
   $("pool-min").textContent = total;
   $("pool-left").innerHTML = ready
-    ? `<strong>合成できるよ！</strong> 古い小瓶から${BIG_BOTTLE_MIN}分ぶんが大瓶になるよ`
+    ? `<strong>合成できるよ！</strong>`
     : `大瓶まであと <strong>${BIG_BOTTLE_MIN - total}</strong> 分`;
   const btn = $("merge-btn");
   btn.disabled = !ready;

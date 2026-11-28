@@ -2283,3 +2283,35 @@ body.gacha-open { overflow: hidden; }
 .talk-char { height: 60px; }
 .talk-char .n-char { height: 60px; }
 .talk-strip .talk-bubble { font-size: 13px; padding-top: 7px; padding-bottom: 7px; }
+/* 月で見る：運動の記録は1行に2つ（まとめが見えやすいように） */
+.md-logs { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; padding: 0 0 6px; }
+.md-logs li { grid-template-columns: 10px 1fr auto auto; gap: 4px; padding: 2px 0; font-size: 12px; }
+.md-logs .md-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.md-logs .fix-btn { padding: 2px 7px; font-size: 11px; }
+.md-row { padding: 4px 0; }
+/* 月で見る：からだのマーク */
+.mc-cond, .month-legend i.mc-cond { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5fc39b; }
+.mc-cond.bad { background: #9a8fb5; }
+.mc-mood, .month-legend i.mc-mood { font-style: normal; font-size: 9px; line-height: 1; color: #5fc39b; }
+.mc-mood.bad { color: #9a8fb5; }
+.mc-poop, .month-legend i.mc-poop { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff 0 25%, #8ec5ea 30%); box-shadow: 0 0 0 1px #8ec5ea; }
+.mc-temp, .month-legend i.mc-temp { width: 100%; font-style: normal; font-size: 8.5px; color: #e8668f; text-align: center; letter-spacing: -.02em; }
+.month-legend i.mc-temp { width: auto; }
+.month-legend .lg-note { font-size: 10px; color: #b893a3; }
+/* 月で見る：体温を直す */
+.md-temp-edit { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; padding: 6px 0 8px; border-top: 1px dashed #f3d5df; }
+.md-temp-edit > button { min-width: 36px; height: 34px; padding: 0 6px; border: 2px solid #f3c3d4; border-radius: 999px; background: #fff; color: var(--rose); font-size: 12px; font-weight: 700; }
+.md-temp-edit .mte-v { min-width: 76px; text-align: center; font-size: 18px; }
+.mte-act { width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.md-row .fix-btn { padding: 3px 10px; font-size: 12px; }
+/* 小瓶の棚：合成の枠を小さく（すぐ瓶が見えるように） */
+.pool-card { grid-template-columns: 1fr auto; justify-items: start; align-items: center; text-align: left; gap: 0 10px; padding: 10px 14px; }
+.pool-card .pool-line, .pool-card .pool-left { font-size: 12px; grid-column: 1; }
+.pool-card .pool-line strong, .pool-card .pool-left strong { font-size: 15px; }
+.pool-card .merge-btn { grid-column: 2; grid-row: 1 / span 2; margin: 0; min-width: 0; min-height: 40px; padding: 0 16px; font-size: 14px; }
+.md-logs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.md-logs li { grid-template-columns: 10px minmax(0, 1fr) auto auto; }
+.month-screen { overflow-x: hidden; }
+/* コインのお知らせ：もらった理由が長くても、画面の右からはみ出さない（はみ出すと画面全体が小さくなる） */
+.coin-pop { max-width: calc(100vw - 32px); white-space: normal; }
+.coin-pop small { display: block; line-height: 1.4; }

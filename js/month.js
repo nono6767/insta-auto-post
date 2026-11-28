@@ -133,7 +133,13 @@ function drawMonth() {
         if (isFertileDay(key)) cell.classList.add("fertile");
         if (key === shift) marks += `<span class="mc-shift" title="体温が上がった日">🌡</span>`;
         const b = bodyOf(key);
-        if (!future && (b.condition || b.mood)) marks += `<span class="mc-gb ${b.condition === "bad" || b.mood === "bad" ? "bad" : "good"}"></span>`;
+        // 体調（まる）・気分（ハート）・お通じ（あわ）・体温（数字）を、それぞれ出す
+        if (!future) {
+          if (b.condition) marks += `<span class="mc-cond ${b.condition}" title="体調"></span>`;
+          if (b.mood) marks += `<span class="mc-mood ${b.mood}" title="気分">♥</span>`;
+          if (b.poop === "yes") marks += `<span class="mc-poop" title="お通じ"></span>`;
+          if (tempOf(key) != null) marks += `<span class="mc-temp">${tempOf(key).toFixed(1)}</span>`;
+        }
       }
     }
     cell.innerHTML = `<span class="mc-d">${d}</span>${top || `<span class="mc-jar none"></span>`}<span class="mc-marks">${marks}</span>`;
@@ -153,7 +159,7 @@ function drawMonthLegend() {
   const L = {
     exercise: `<span><i class="mc-jar" style="--c:#f6c1cf"></i>その日の小瓶の色</span><span><i class="mc-jar full" style="--c:#f6c1cf"></i>満タン</span>`,
     meals: `<span class="mc-hana">✿</span>おやつがまん<span><i class="mc-dot"></i>ごはんを記録</span>`,
-    body: `<span>${dropSvg()}生理</span><span>${predictedDropSvg()}予定</span><span class="mc-ov">◎</span>排卵日の目安<span><i class="mc-fertile"></i>妊娠しやすい時期の目安</span>`,
+    body: `<span>${dropSvg()}生理</span><span>${predictedDropSvg()}予定</span><span><i class="mc-cond good"></i>体調</span><span><i class="mc-mood good">♥</i>気分</span><span class="lg-note">（緑＝Good・むらさき＝Bad）</span><span><i class="mc-poop"></i>お通じ</span><span><i class="mc-temp">36.5</i>体温</span><span class="mc-ov">◎</span>排卵日の目安<span><i class="mc-fertile"></i>妊娠しやすい時期の目安</span>`,
   };
   const keys = monthTab === "all" ? ["exercise", "meals"] : [monthTab];
   $("month-legend").innerHTML = keys.map((k) => L[k]).join("") + (monthTab === "all" ? `<span>${dropSvg()}生理</span>` : "");
@@ -198,7 +204,7 @@ function drawMonthDay() {
       rows.push(["body", "お通じ", b.poop === "yes" ? "出た" : b.poop === "no" ? "出なかった" : "—"]);
       const pd = periodOn(key);
       rows.push(["body", "生理", pd ? `生理中（${daysBetween(pd.start, key) + 1}日目）` : ovulationDays().includes(key) ? "排卵日の目安" : isFertileDay(key) ? "妊娠しやすい時期の目安" : "—"]);
-      if (tempOf(key) != null || data.tempOn) rows.push(["body", "体温", tempOf(key) != null ? `${tempOf(key).toFixed(2)}℃` : "—"]);
+      if (tempOf(key) != null || data.tempOn) rows.push(["temp", "体温", tempOf(key) != null ? `${tempOf(key).toFixed(2)}℃` : "—"]);
     }
   } else {
     rows.push(["body", "予定", predictedOn(key) ? "生理の予定（目安）" : ovulationDays().includes(key) ? "排卵日の目安" : "まだ先の日だよ"]);
@@ -207,6 +213,16 @@ function drawMonthDay() {
     `<div class="md-row"><b>${label}</b><span></span>${go ? `<button type="button" class="text-btn small" data-go="${t}">小瓶を見る ›</button>` : ""}</div>`).join("");
   box.querySelectorAll(".md-row span").forEach((s, i) => (s.textContent = rows[i][2]));
   box.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => goDay(btn.dataset.go, key)));
+  // 体温は、ここで直せる・消せる
+  const tRow = [...box.querySelectorAll(".md-row")].find((r, i) => rows[i] && rows[i][0] === "temp");
+  if (tRow) {
+    const fix = document.createElement("button");
+    fix.type = "button";
+    fix.className = "fix-btn";
+    fix.textContent = tempOf(key) != null ? "直す" : "入れる";
+    fix.addEventListener("click", () => openTempEdit(tRow, key));
+    tRow.append(fix);
+  }
   // その日の運動の記録を1つずつ出して、ここで直せる・足せるようにする
   if (!future && (monthTab === "all" || monthTab === "exercise")) {
     const list = document.createElement("ul");
@@ -223,6 +239,34 @@ function drawMonthDay() {
     if (exRow) exRow.after(list);
     return;
   }
+}
+// 月で見るの中で、体温を直す（−0.1 / − / ＋ / ＋0.1 → 保存。記録があれば「消す」も）
+function openTempEdit(row, key) {
+  let v = tempOf(key) ?? lastTemp(key);
+  const ed = document.createElement("div");
+  ed.className = "md-temp-edit";
+  const paint = () => (ed.querySelector(".mte-v").textContent = `${v.toFixed(2)}℃`);
+  ed.innerHTML = `<button type="button" data-s="-0.1">−0.1</button><button type="button" data-s="-0.01">−</button><b class="mte-v"></b><button type="button" data-s="0.01">＋</button><button type="button" data-s="0.1">＋0.1</button>
+    <div class="mte-act">${tempOf(key) != null ? `<button type="button" class="text-btn small danger mte-del">消す</button>` : ""}<button type="button" class="primary-btn small mte-save">保存</button></div>`;
+  paint();
+  ed.querySelectorAll("[data-s]").forEach((b) => b.addEventListener("click", () => { v = Math.min(38.5, Math.max(35, Math.round((v + Number(b.dataset.s)) * 100) / 100)); paint(); }));
+  ed.querySelector(".mte-save").addEventListener("click", () => {
+    setBody(key, "temp", v);
+    drawMonth();
+    if (typeof renderBody === "function") renderBody();
+    showToast(`${v.toFixed(2)}℃ にしたよ`);
+  });
+  const del = ed.querySelector(".mte-del");
+  if (del) del.addEventListener("click", () => {
+    const before = tempOf(key);
+    delete data.body[key].temp;
+    saveData();
+    drawMonth();
+    if (typeof renderBody === "function") renderBody();
+    showToast("体温を消したよ", { label: "取り消す", run: () => { setBody(key, "temp", before); drawMonth(); renderBody(); } });
+  });
+  row.querySelector(".fix-btn").remove();
+  row.after(ed);
 }
 // 記録を直したり消したりしたら、開いている月の画面も描き直す
 function redrawMonth() {
