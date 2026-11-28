@@ -82,9 +82,9 @@ const CHARMS = [
 // clip はもとの瓶の絵をかくす高さ（そこから上は新しい絵）。ar は絵の縦横比
 const GEM_TOPS = {
   round: { left: 28.56, top: -7.02, width: 42.52, clip: 30.38, ar: "101/127" },
-  heart: { left: 28.92, top: -11.86, width: 41.43, clip: 23.38, ar: "101/107" },
+  heart: { left: 17.03, top: -11.86, width: 65.22, clip: 25.36, ar: "159/113", src: "big/heart-gem2.webp" }, // 少し下（肩のはじまり）まで切り取った版
   star: { left: 31.1, top: -1.06, width: 37.69, clip: 33.38, ar: "86/103" },
-  pear: { left: 25.18, top: -9.84, width: 49.25, clip: 23.38, ar: "101/105" },
+  pear: { left: 24.21, top: -9.84, width: 51.2, clip: 29.74, ar: "105/125", src: "big/pear-gem2.webp" }, // 少し下（肩のはじまり）まで切り取った版
   pumpkin: { left: 30.77, top: -4.24, width: 38.97, clip: 30.38, ar: "93/113" },
   tall: { left: 11.7, top: -6.92, width: 77.57, clip: 23.13, ar: "90/107" },
   diamond: { left: 25.65, top: 0.14, width: 48.66, clip: 33.63, ar: "109/123" },

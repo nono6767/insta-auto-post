@@ -131,7 +131,7 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     const gemTop = c.id === "a00" && typeof GEM_TOPS !== "undefined" && GEM_TOPS[bottle.id];
     if (c.place === "top" && gemTop) {
       // 宝石のふた：その瓶用に描いた「宝石＋口＋首」の絵を、首の細いところでつなぐ（もとの瓶の上の部分はかくす）
-      back += `<img class="charm top gem-top" src="big/${bottle.id}-gem.webp" alt="" style="left:${gemTop.left}%;top:${gemTop.top}%;width:${gemTop.width}%;aspect-ratio:${gemTop.ar}">`;
+      back += `<img class="charm top gem-top" src="${gemTop.src || `big/${bottle.id}-gem.webp`}" alt="" style="left:${gemTop.left}%;top:${gemTop.top}%;width:${gemTop.width}%;aspect-ratio:${gemTop.ar}">`;
       topClip = gemTop.clip;
       hasTop = true;
     } else if (c.place === "top") {

@@ -9,7 +9,7 @@
 // ★ プログラムを直したら CODE_VERSION を、今ある画像を描き直したら IMAGE_VERSION を、必ず1つ上げる。
 //   （新しい画像を足しただけなら IMAGE_VERSION はそのまま。足した分だけダウンロードされる）
 importScripts("js/bottles.js", "js/bigbottles.js", "js/series.js");
-const CODE_VERSION = 229;
+const CODE_VERSION = 230;
 const IMAGE_VERSION = 15;
 const CODE_CACHE = `n-app-cache-v${CODE_VERSION}`;
 const IMAGE_CACHE = `n-app-images-v${IMAGE_VERSION}`;
@@ -47,7 +47,7 @@ const IMAGE_FILES = [
   "icons/icon-maskable-512.png",
   "icons/apple-touch-icon.png",
   ...BOTTLES.flatMap((b) => [`bottles/${b.id}.webp`, `bottles/${b.id}-mask.webp`, `bottles/${b.shine || b.id + "-shine"}.webp`]),
-  ...BIG_BOTTLES.flatMap((b) => [`big/${b.id}.webp`, `big/${b.id}-mask.webp`, ...(GEM_TOPS[b.id] ? [`big/${b.id}-gem.webp`] : [])]),
+  ...BIG_BOTTLES.flatMap((b) => [`big/${b.id}.webp`, `big/${b.id}-mask.webp`, ...(GEM_TOPS[b.id] ? [GEM_TOPS[b.id].src || `big/${b.id}-gem.webp`] : [])]),
   ...CHARMS.map((c) => charmSrc(c)),
 ];
 const isImage = (path) => /\.(webp|png|jpe?g|gif|svg)$/i.test(path);
