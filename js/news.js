@@ -487,6 +487,7 @@ function alreadyUsed(name) {
     case "savings": return savingsStarted();
     case "firstLog": return (data.logs || []).length > 1;          // 今の1件より前にも記録がある
     case "firstShake": return Object.keys(data.shakes || {}).length > 1; // 今のシェイクより前にもシェイクしている
+    case "gacha": { const g = data.gacha || {}; return (g.owned || []).length > 0 || (g.shards || 0) > 0 || !!g.freeDay; }
     case "charm": return (data.bigBottles || []).some(decoOn) || decoOn(data.savings && data.savings.deco);
     default: return false;
   }
@@ -505,6 +506,14 @@ function savingsStarted() {
   const d = s.deco || {};
   return !!(s.weekly || s.goal || (s.deposits && s.deposits.length) || (d.charms && d.charms.length) || d.ribbon);
 }
+// はじめてガチャの画面を開いたら（もうガチャをひいたことがある人には出さない）
+$("coin-btn").addEventListener("click", () => {
+  if (data.toursSeen && data.toursSeen.gacha) return;
+  if (alreadyUsed("gacha")) return markTourSeen("gacha");
+  setTimeout(() => {
+    if (!$("gacha-screen").hidden && !(tourEl && !tourEl.hidden)) startTour_("gacha");
+  }, 700);
+});
 // 着せ替えの画面をはじめて開いたら（貯金瓶の「着せ替え」から）、着せ替えの説明
 $("savings-deco").addEventListener("click", () => {
   if (data.toursSeen && data.toursSeen.charm) return;
@@ -585,6 +594,16 @@ TOURS.backup = [
   { keep: true, sel: "#backup-restore", text: "スマホを<b>新しくしたとき</b>は、こっち。<br>「<b>バックアップから戻す</b>」を押して、保存しておいたファイルを選ぶと、<b>記録がぜんぶ元にもどる</b>よ" },
   { keep: true, text: "<b>2週間に1回</b>くらい保存しておくと安心だよ。<br>しばらく保存していないと、ホームでキャラが<b>「そろそろバックアップしよう」</b>と教えてくれるよ" },
 ];
+// ガチャ：はじめてガチャの画面を開いたとき
+TOURS.gacha = [
+  { sel: "#g-cats", text: "ガチャは<b>チャーム</b>と<b>リボン</b>の2種類。<br>ここで切りかえるよ" },
+  { sel: "#g-tabs", text: "開催中のガチャはここ。<br><b>期間限定のシリーズ</b>が来ることもあるよ" },
+  { sel: "#g-banners", text: "出てくるチャームの一覧だよ。<br><b>レア・スーパーレア</b>は出にくくて、<b>ピックアップ</b>は出やすいよ" },
+  { sel: "#g-free", text: "<b>1日1回、無料</b>でひけるよ！<br>まずはここから、ひいてみよう" },
+  { sel: ".gacha-buttons", text: `コイン${GACHA.costOne}枚で<b>1回</b>、コイン${GACHA.costMulti}枚で<b>${GACHA.multiCount}連</b>。<br>${GACHA.multiCount}連はピックアップが1個<b>確定</b>だよ` },
+  { sel: ".g-shard-card", text: `同じものが出たら<b>かけら</b>になるよ。<br>かけら${GACHA.shardsForCharm}個で、<b>好きなチャームやリボン</b>と交換できるよ` },
+  { sel: ".g-info", text: "<b>出る確率</b>と、<b>コインのもらい方</b>は<br>ここでいつでも見られるよ" },
+];
 TOURS.shelf = TOURS.firstShake.slice(1); // 瓶の棚と大瓶（シェイクのあとの説明の、棚を開くところから）
 const TOUR_MENU = [
   { name: "home", label: "アプリのはじめかた", sub: "ホームのボタン", open: () => {} },
@@ -595,6 +614,7 @@ const TOUR_MENU = [
   { name: "body", label: "からだの記録", sub: "体調・お通じ・生理", open: () => openTab("body") },
   { name: "clothes", label: "服チェック", sub: "写真で見くらべ", open: () => openTab("clothes") },
   { name: "savings", label: "貯金瓶", sub: "目標・着せ替え", open: () => openTab("savings") },
+  { name: "gacha", label: "ガチャ", sub: "無料・11連・かけら", open: () => openGacha(), wait: 700 },
   { name: "backup", label: "バックアップ", sub: "記録を守る保存のしかた", open: hideSettingsForTour },
 ];
 function openTourMenu() {
