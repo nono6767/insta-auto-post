@@ -184,14 +184,37 @@ function drawMonthDay() {
     `<div class="md-row"><b>${label}</b><span></span>${future ? "" : `<button type="button" class="text-btn small" data-go="${t}">見る ›</button>`}</div>`).join("");
   box.querySelectorAll(".md-row span").forEach((s, i) => (s.textContent = rows[i][2]));
   box.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => goDay(btn.dataset.go, key)));
+  // その日の運動の記録を1つずつ出して、ここで直せる・足せるようにする
+  if (!future && (monthTab === "all" || monthTab === "exercise")) {
+    const list = document.createElement("ul");
+    list.className = "md-logs";
+    for (const log of [...logs].sort((a, b) => a.ts - b.ts)) {
+      const sp = sportById(log.type) || { name: log.type, color: "#ddd" };
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="dot" style="--c:${sp.color}"></span><span class="md-name"></span><span class="md-min">${log.min}分</span><button class="fix-btn" type="button">直す</button>`;
+      li.querySelector(".md-name").textContent = sp.name;
+      li.querySelector(".fix-btn").addEventListener("click", () => openEditSheet(log));
+      list.append(li);
+    }
+    const exRow = box.querySelector('.md-row [data-go="exercise"]')?.closest(".md-row");
+    if (exRow && logs.length) exRow.after(list);
+  }
+}
+// 記録を直したり消したりしたら、開いている月の画面も描き直す
+function redrawMonth() {
+  if (!$("month-screen").hidden) drawMonth();
 }
 // その日の画面へ
 function goDay(kind, key) {
-  $("month-screen").hidden = true;
   if (kind === "exercise") {
-    if (dayLogs(key).length) openDayDetail(key);
-    else document.querySelector('.tabbar-btn[data-page="home"]').click();
-  } else if (kind === "meals") {
+    // 運動は、月の画面の上に、その日の小瓶を出す（閉じると月の画面にもどる）
+    if (dayLogs(key).length) return openDayDetail(key);
+    $("month-screen").hidden = true;
+    document.querySelector('.tabbar-btn[data-page="home"]').click();
+    return;
+  }
+  $("month-screen").hidden = true;
+  if (kind === "meals") {
     mealDay = key;
     document.querySelector('.tabbar-btn[data-page="meals"]').click();
     renderMeals();
@@ -284,6 +307,7 @@ function renderFertility() {
   $("temp-value").innerHTML = `${Math.floor(tempDraft)}.<span>${String(Math.round((tempDraft % 1) * 100)).padStart(2, "0")}</span><small>℃</small>`;
   $("temp-save").textContent = t != null ? `${dayLabel(bodyDay)}の体温を直す` : `${dayLabel(bodyDay)}の体温を記録`;
   $("temp-saved").textContent = t != null ? `記録ずみ：${t.toFixed(2)}℃` : "";
+  $("temp-delete").hidden = t == null;
 }
 let tempDraft = null, tempDraftDay = null;
 const stepTemp = (d) => {
@@ -296,6 +320,17 @@ $("temp-save").addEventListener("click", () => {
   setBody(bodyDay, "temp", tempDraft);
   renderBody();
   showToast(`${tempDraft.toFixed(2)}℃ を記録したよ`);
+});
+// 体温の記録を消す（取り消しもできる）
+$("temp-delete").addEventListener("click", () => {
+  const key = bodyDay;
+  const before = tempOf(key);
+  if (before == null) return;
+  delete data.body[key].temp;
+  saveData();
+  renderBody();
+  redrawMonth();
+  showToast(`${dayLabel(key)}の体温を消したよ`, { label: "取り消す", run: () => { setBody(key, "temp", before); renderBody(); redrawMonth(); } });
 });
 $("temp-start-btn").addEventListener("click", () => {
   data.tempOn = true;

@@ -73,6 +73,7 @@
       <p class="lead">まちがえたときは「直す」から時間を変えたり消したりできるよ。</p>
       <div class="log-days" id="log-list"></div>
       <p class="empty" id="log-empty">まだ記録がないよ。上の運動をタップしてね。</p>
+      <p class="hint center log-older">1週間より前の記録は「📅 月で見る」から見たり直したりできるよ</p>
     </section>
 
     <!-- ごはん -->
@@ -136,7 +137,7 @@
           <button class="temp-step" type="button" data-temp-step="0.01">＋</button>
           <button class="temp-step" type="button" data-temp-step="0.1">＋0.1</button>
         </div>
-        <p class="temp-saved" id="temp-saved"></p>
+        <p class="temp-saved"><span id="temp-saved"></span> <button class="text-btn small danger" type="button" id="temp-delete" hidden>この日の体温を消す</button></p>
         <button class="primary-btn wide" type="button" id="temp-save">今日の体温を記録</button>
         <p class="hint">朝起きてすぐ、布団の中ではかってね。前の日の数字から始まるので、少し動かすだけでOK</p>
         <div class="temp-links"><button class="text-btn small" type="button" id="temp-graph">📈 グラフを見る</button><button class="text-btn small" type="button" id="temp-stop">はかるのをやめる</button></div>

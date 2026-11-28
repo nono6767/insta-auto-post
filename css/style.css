@@ -2269,3 +2269,17 @@ body.gacha-open { overflow: hidden; }
 .temp-value small { font-size: 15px; }
 .temp-saved { margin: 0 0 6px; text-align: center; font-size: 12px; color: #3fa974; min-height: 1em; }
 .temp-links { display: flex; justify-content: space-between; margin-top: 4px; }
+/* 月で見る：その日の運動の記録（ここで直せる） */
+.md-logs { list-style: none; margin: 0 0 4px; padding: 0 0 0 58px; }
+.md-logs li { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 6px; padding: 4px 0; font-size: 13px; }
+.md-logs .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.md-logs .md-min { font-weight: 700; }
+.md-logs .fix-btn { padding: 3px 10px; font-size: 12px; }
+#month-screen .fix-btn { pointer-events: auto; }
+.temp-saved #temp-delete { margin-left: 4px; font-size: 11px; }
+.log-older { font-size: 11px; margin-top: 6px; }
+/* ホーム以外のキャラを小さくして、上につめる */
+.talk-strip { grid-template-columns: 46px 1fr; margin: 0 0 6px; gap: 4px; }
+.talk-char { height: 60px; }
+.talk-char .n-char { height: 60px; }
+.talk-strip .talk-bubble { font-size: 13px; padding-top: 7px; padding-bottom: 7px; }
