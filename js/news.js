@@ -538,6 +538,13 @@ function savingsStarted() {
   const d = s.deco || {};
   return !!(s.weekly || s.goal || (s.deposits && s.deposits.length) || (d.charms && d.charms.length) || d.ribbon);
 }
+// はじめて「月で見る」を開いたら
+document.querySelectorAll("[data-month-tab]").forEach((b) => b.addEventListener("click", () => {
+  if (data.toursSeen && data.toursSeen.month) return;
+  setTimeout(() => {
+    if (!$("month-screen").hidden && !(tourEl && !tourEl.hidden)) startTour_("month");
+  }, 600);
+}));
 // はじめてガチャの画面を開いたら（もうガチャをひいたことがある人には出さない）
 $("coin-btn").addEventListener("click", () => {
   if (data.toursSeen && data.toursSeen.gacha) return;
@@ -636,6 +643,15 @@ TOURS.gacha = [
   { sel: ".g-shard-card", text: `同じものが出たら<b>かけら</b>になるよ。<br>かけら${GACHA.shardsForCharm}個で、<b>好きなチャームやリボン</b>と交換できるよ` },
   { sel: ".g-info", text: "<b>出る確率</b>と、<b>コインのもらい方</b>は<br>ここでいつでも見られるよ" },
 ];
+// 月で見る：はじめて開いたとき（設定の「使い方を見る」からも）
+TOURS.month = [
+  { sel: "#month-screen .month-head", text: "<b>1か月ぶん</b>の記録が見られるよ。<br>‹ › で、前の月にも行けるよ" },
+  { sel: "#month-screen .month-tabs", text: "「<b>ぜんぶ</b>」と、<b>運動・ごはん・からだ</b>だけの表示を<br>ここで切りかえるよ" },
+  { sel: "#month-grid .month-cell.today", text: "1日のマスに、<b>その日の小瓶の色</b>や<br>✿（おやつがまん）、生理のしずくが出るよ。<br><b>日付をタップ</b>すると、その日の記録が下に出るよ" },
+  { sel: "#month-legend", text: "マークの<b>意味</b>は、ここに書いてあるよ" },
+  { sel: "#month-day", text: "選んだ日の記録だよ。<br>運動は「<b>直す</b>」で、時間を変えたり消したりできるよ。<br>体温も、からだのタブで直せるよ" },
+  { sel: "#month-summary", text: "その月の<b>まとめ</b>だよ。<br>どれだけがんばったか、ひと目でわかるよ！" },
+];
 TOURS.shelf = TOURS.firstShake.slice(1); // 瓶の棚と大瓶（シェイクのあとの説明の、棚を開くところから）
 const TOUR_MENU = [
   { name: "home", label: "アプリのはじめかた", sub: "ホームのボタン", open: () => {} },
@@ -646,6 +662,7 @@ const TOUR_MENU = [
   { name: "body", label: "からだの記録", sub: "体調・お通じ・生理", open: () => openTab("body") },
   { name: "clothes", label: "服チェック", sub: "写真で見くらべ", open: () => openTab("clothes") },
   { name: "savings", label: "貯金瓶", sub: "目標・着せ替え", open: () => openTab("savings") },
+  { name: "month", label: "月の記録", sub: "カレンダー・まとめ", open: () => openMonth("all"), wait: 700 },
   { name: "gacha", label: "ガチャ", sub: "無料・11連・かけら", open: () => openGacha(), wait: 700 },
   { name: "backup", label: "バックアップ", sub: "記録を守る保存のしかた", open: hideSettingsForTour },
 ];
