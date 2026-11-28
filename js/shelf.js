@@ -125,7 +125,7 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
   // 幅 widthPct（瓶の幅の%）の絵の、上から a 割のところを y（瓶の高さの%）にそろえたときの、絵の上のはし
   const topAt = (c, widthPct, a, y) => y - (widthPct / k) * (c.h / c.w) * a;
 
-  let back = "", front = "", neckN = 0, hasTop = false;
+  let back = "", front = "", neckN = 0, hasTop = false, baseDrop = 0;
   const hangs = [];
   for (const c of charms) {
     if (c.place === "top") {
@@ -161,7 +161,10 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     } else if (c.place === "base") {
       // 瓶の下の台：瓶より少し広く、底のところに
       const w = 118;
-      back += img(c, "base", 50, bottle.bottom - (w / k) * (c.h / c.w) * 0.55, w);
+      const hPct = (w / k) * (c.h / c.w); // 台の高さ（瓶の高さの%）
+      const top = bottle.bottom - hPct * 0.55;
+      back += img(c, "base", 50, top, w);
+      baseDrop = Math.max(baseDrop, top + hPct - 100); // 瓶の絵の下からはみ出す分（棚にのせるときに持ち上げる）
     } else if (!hang) {
       hangs.push(c); // 場所の指定がないとき（見本など）は、前と同じ並べ方
     }
@@ -284,7 +287,7 @@ function charmsHtml(bottle, ids, ribbonId = null, hang = null, chainAt = {}) {
     // bigRibbonUp：たっぷりリボンを少し上げる瓶（瓶の高さの%）。結び目が首のチェーンの高さに来るように
     ribbon = img(rc, "neck ribbon", nx + (0.5 - (rc.pc ?? 0.5)) * w, topAt(rc, w, rc.pa ?? 0.2, (bottle.wrap ?? ny) + 2.5) - (rc.big ? bottle.bigRibbonUp || 0 : 0), w);
   }
-  return { html: back + svg + front + ribbon, hasTop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
+  return { html: back + svg + front + ribbon, hasTop, baseDrop }; // 台 → チェーン → チャーム → 首のリボン の順に重ねる
 }
 
 // 大瓶の中のラメ：液体の中で、小さな光がちらちらまたたく（場所と時間は瓶ごとに決まっている）
@@ -382,7 +385,10 @@ function bigBottleHtml(b) {
   const flowers = starsHtml(bottle, b.flowers || 0, bottle.bottom - fillH, 8.5, seedOf(b.id || b.bottle)) + (poopDays ? bubblesHtml(bottle, Math.ceil(poopDays / 2), bottle.bottom - fillH, 4.8, seedOf((b.id || "") + "b")) : "");
   const mask = `url(big/${bottle.id}-mask.webp)`;
   const charms = charmsHtml(bottle, charmsOf(b), ribbonOf(b), hangsOf(b), chainAtOf(b));
-  return `<div class="bottle big-bottle" style="aspect-ratio:${bottle.w}/${bottle.h}">
+  // 台（車輪など）が瓶の下にはみ出すときは、棚の上では瓶ごと持ち上げて、全体が枠におさまるよう少し小さくする
+  const drop = charms.baseDrop || 0;
+  const lift = drop > 0 ? `;--base-scale:${(100 / (100 + drop)).toFixed(3)};--base-lift:${(-drop * 100 / (100 + drop)).toFixed(2)}%` : "";
+  return `<div class="bottle big-bottle${drop > 0 ? " has-base" : ""}" style="aspect-ratio:${bottle.w}/${bottle.h}${lift}">
     <div class="liquid" style="-webkit-mask-image:${mask};mask-image:${mask}">${layers}${flowers}</div>
     <img class="glass" src="big/${bottle.id}.webp" alt="" width="${bottle.w}" height="${bottle.h}"${charms.hasTop ? ` style="clip-path:inset(${bottle.cap}% 0 0 0)"` : ""}>
     <div class="liquid glitter-box" aria-hidden="true" style="-webkit-mask-image:${mask};mask-image:${mask}">${glitter}</div>
@@ -1170,7 +1176,7 @@ function drawPlacePanel() {
   if (otherChoice.length) {
     const row = document.createElement("div");
     row.className = "chain-row other-row";
-    row.innerHTML = `<span class="chain-name">首・ふた</span>`;
+    row.innerHTML = `<span class="chain-name">ふた・台</span>`;
     for (const id of otherChoice) {
       const c = charmById(id);
       const b = document.createElement("button");

@@ -37,7 +37,7 @@ const CHARMS = [
   { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", band: [0.36, 0.06, 0.72] },
   { id: "a03", name: "パールのネックレス", w: 110, h: 68, place: "neck", pw: 56, pa: 0.15 },
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
-  { id: "a07", name: "馬車の車輪", w: 160, h: 54, place: "base" },
+  { id: "a07", name: "馬車の車輪", w: 160, h: 54, place: "base", src: "charms/a07-clear.webp" }, // 車輪のすき間を透明にした絵
   { id: "a09", name: "リボンとガラスのくつ", w: 160, h: 150, place: "neck", band: [0.66, 0.21, 0.37] },
   { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "neck", band: [0.55, 0.07, 0.41] },
   { id: "a10b", name: "月のネックレス", w: 183, h: 109, place: "neck", pw: 70, pa: 0.15 },
@@ -77,6 +77,10 @@ const CHARMS = [
   { id: "k04", name: "ミントの横むすび", w: 134, h: 160, place: "neck", band: [0.31, 0.31, 0.54], kind: "ribbon" },
   { id: "k06", name: "ラベンダーの横むすび", w: 155, h: 157, place: "neck", band: [0.71, 0.23, 0.44], kind: "ribbon" },
 ];
+// 首・ふたにつけるチャームは、チャームの説明（チェーンから下げる）と合わないので、いったん外す（11/28）
+// ピンクの宝石（ふた）と馬車の車輪（台）だけ残す。持っている記録はそのまま残るので、ここから消せば元にもどる
+const RETIRED_CHARM_IDS = new Set(["a02", "a03", "a04", "a09", "a10a", "a10b"]);
+for (let i = CHARMS.length - 1; i >= 0; i--) if (RETIRED_CHARM_IDS.has(CHARMS[i].id)) CHARMS.splice(i, 1);
 
 // チャームの画像の場所（シリーズのチャームは charms/シリーズ名/ の中）
 const charmSrc = (c) => c.src || `charms/${c.id}.webp`;
