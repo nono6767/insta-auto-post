@@ -2016,7 +2016,7 @@ body.gacha-open { overflow: hidden; }
 /* 使い方ガイド */
 .guide-card .news-hero { height: 180px; }
 .guide-art { width: 130px; height: 150px; display: flex; align-items: flex-end; justify-content: center; }
-.guide-art > .bottle, .guide-art > div:not(.guide-charms):not(.guide-tabs):not(.guide-merge) { height: 100%; width: auto; max-width: 100%; }
+.guide-art > .bottle, .guide-art > div:not(.guide-charms):not(.guide-tabs):not(.guide-merge):not(.guide-other) { height: 100%; width: auto; max-width: 100%; }
 .guide-title { margin: 4px 0 6px; font-size: 18px; color: var(--ink); text-align: center; }
 .guide-text { min-height: 96px; }
 .guide-text { font-size: 13.5px; line-height: 1.75; color: #8d6070; text-align: center; }
@@ -2082,3 +2082,29 @@ body.gacha-open { overflow: hidden; }
   100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .gm-rays, .gm-glow, .gm-big, .gm-small { animation: none; } .gm-spark { animation: none; opacity: .9; transform: scale(.8); } }
+/* ガイド「ほかにもあるよ」：女の子が主役。まわりにマークがふわふわうかぶ */
+.guide-art > .guide-other { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.news-hero:has(.guide-other) { background: radial-gradient(ellipse at 50% 60%, #fff 0 22%, transparent 62%), linear-gradient(160deg, #fde3f1, #fbd3ea 55%, #f8e0f4); }
+.go-light { position: absolute; left: 50%; top: 55%; width: 200px; height: 200px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, rgb(255 255 255 / .95) 0 25%, rgb(255 214 234 / .6) 50%, transparent 70%); animation: gm-pulse 3s ease-in-out infinite; }
+.go-girl { position: absolute; left: 50%; bottom: 8px; width: 124px; height: 152px; translate: -50% 0; }
+.go-girl .n-char { height: 100%; width: 100%; display: flex; align-items: flex-end; justify-content: center; animation: go-jump 1.6s cubic-bezier(.3, 0, .4, 1) infinite; transform-origin: 50% 100%; }
+.go-girl .n-char img { width: auto; max-width: 100%; object-fit: contain; }
+.go-shadow { position: absolute; left: 50%; bottom: -2px; width: 70px; height: 10px; translate: -50% 0; border-radius: 50%; background: rgb(214 140 175 / .35); animation: go-shadow 1.6s cubic-bezier(.3, 0, .4, 1) infinite; z-index: -1; }
+/* ぴょんっとはねる（着地でちょっとつぶれる） */
+@keyframes go-jump {
+  0%, 100% { transform: translateY(0) scale(1.04, .96); }
+  15% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-12px) scale(.98, 1.03); }
+  75% { transform: translateY(0) scale(1); }
+}
+@keyframes go-shadow { 45% { scale: .7; opacity: .5; } }
+.go-icon { position: absolute; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: 1px; animation: go-float 3.2s ease-in-out var(--d) infinite; }
+.go-bubble { position: relative; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; color: var(--rose);
+  background: radial-gradient(circle at 40% 35%, #fff 0 45%, rgb(255 255 255 / .75) 60%, rgb(255 220 236 / 0) 72%); filter: drop-shadow(0 2px 6px rgb(232 120 160 / .25)); }
+.go-bubble svg { width: 26px; height: 26px; }
+.go-icon b { font-size: 11px; color: #b0607f; text-shadow: 0 0 4px #fff, 0 0 4px #fff; }
+.go-deco { position: absolute; top: -2px; right: -4px; font-style: normal; font-size: 13px; line-height: 1; animation: twinkle-soft 2s ease-in-out var(--d) infinite; }
+.go-deco.star { color: #f5c542; text-shadow: 0 0 4px #fff6c8; }
+.go-deco.heart { color: #f48fb1; text-shadow: 0 0 4px #fff; }
+@keyframes go-float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-7px) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .go-light, .go-girl .n-char, .go-shadow, .go-icon, .go-deco { animation: none; } }

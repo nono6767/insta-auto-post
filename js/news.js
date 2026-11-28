@@ -105,8 +105,8 @@ const GUIDE_STEPS = [
   },
   {
     pose: "hands",
-    // 下のタブと同じマークを使う
-    art: () => `<div class="guide-tabs">${[["meals", "ごはん"], ["body", "からだ"], ["clothes", "服"], ["savings", "貯金"]].map(([page, label]) => { const svg = document.querySelector(`.tabbar-btn[data-page="${page}"] svg`); return `<span>${svg ? svg.outerHTML : ""}<i>${label}</i></span>`; }).join("")}</div>`,
+    noChar: true, // 女の子を主役にして、まわりにアイコンをうかべる
+    art: guideOtherArt,
     title: "ほかにもあるよ",
     text: "下のボタンで、|ごはん・|からだ（体調・生理）・|服・貯金も|記録できるよ。\n記録は|このスマホの中だけに|保存されるよ。\nときどき設定から|「バックアップを保存」|してね。",
   },
@@ -136,6 +136,21 @@ function guideMergeArt() {
     <div class="gm-big">${big}</div>
     ${sparks}
   </div>`;
+}
+
+// 「ほかにもあるよ」の絵：はねる女の子のまわりに、ごはん・からだ・服・貯金のマークがふわふわ
+function guideOtherArt() {
+  const items = [["meals", "ごはん", 15, 24, "★"], ["body", "からだ", 85, 24, "♥"], ["clothes", "服", 15, 70, "♥"], ["savings", "貯金", 85, 70, "★"]];
+  const icons = items.map(([page, label, x, y, deco], i) => {
+    const svg = document.querySelector(`.tabbar-btn[data-page="${page}"] svg`);
+    return `<span class="go-icon" style="left:${x}%;top:${y}%;--d:${(i * 0.6).toFixed(1)}s">
+      <span class="go-bubble">${svg ? svg.outerHTML : ""}<i class="go-deco ${deco === "♥" ? "heart" : "star"}">${deco}</i></span><b>${label}</b></span>`;
+  }).join("");
+  const sparkCols = ["#ffe08a", "#ffffff", "#ffc4dc"];
+  const sparks = [[34, 12, 12], [66, 10, 15], [6, 46, 10], [94, 46, 13], [40, 90, 10], [60, 92, 12], [28, 52, 9], [72, 50, 9]]
+    .map(([x, y, sz], i) => `<i class="gm-spark" style="left:${x}%;top:${y}%;width:${sz}px;background:${sparkCols[i % 3]};--d:${((i * 0.41) % 2.4).toFixed(2)}s"></i>`).join("");
+  const girl = typeof nCharacterHtml === "function" ? nCharacterHtml("hands") : "";
+  return `<div class="guide-other" aria-hidden="true"><span class="go-light"></span>${sparks}<div class="go-girl">${girl}<span class="go-shadow"></span></div>${icons}</div>`;
 }
 
 function guideMixHex() {
