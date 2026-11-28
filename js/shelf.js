@@ -489,8 +489,7 @@ function drawSmallShelf() {
   if (smallPage === null || smallPage >= pages) smallPage = pages - 1;
   const today = dateKey();
 
-  $("pool-count").textContent = remain.length;
-  $("pool-min").textContent = total;
+  $("pool-count").textContent = smalls.length; // 合成したものもふくめて、これまで作った小瓶ぜんぶ
   $("pool-left").innerHTML = ready
     ? `<strong>合成できるよ！</strong>`
     : `大瓶まであと <strong>${BIG_BOTTLE_MIN - total}</strong> 分`;

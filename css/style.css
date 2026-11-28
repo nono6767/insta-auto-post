@@ -2315,3 +2315,16 @@ body.gacha-open { overflow: hidden; }
 /* コインのお知らせ：もらった理由が長くても、画面の右からはみ出さない（はみ出すと画面全体が小さくなる） */
 .coin-pop { max-width: calc(100vw - 32px); white-space: normal; }
 .coin-pop small { display: block; line-height: 1.4; }
+/* 月で見る：1日のマスを正方形に近く小さく（下のまとめが見えるように） */
+.month-grid { gap: 2px; }
+.month-cell { min-height: 0; aspect-ratio: 1 / 1.08; gap: 0; padding: 2px 0 1px; overflow: hidden; border-radius: 8px; }
+.mc-d { font-size: 10px; line-height: 1.15; }
+.mc-jar { width: 12px; height: 14px; border-radius: 5px 5px 6px 6px; }
+.mc-jar.none { display: none; }
+.mc-marks { min-height: 0; gap: 1px; }
+.mc-min { font-size: 8.5px; line-height: 1.1; }
+.mc-marks .drop-icon { width: 10px; height: 10px; }
+.mc-temp { font-size: 8px; line-height: 1.1; }
+.month-card { padding: 8px; }
+.month-legend { margin-top: 6px; }
+.month-cell .mc-jar { margin-top: 2px; }
