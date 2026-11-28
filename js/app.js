@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-144"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-145"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -550,9 +550,11 @@ function renderHome() {
   const colorLine = shaken ? `<span class="jar-color"><span class="mini-swatch" style="background:${shaken.hex}"></span>${shaken.name}</span>` : "";
   // 小瓶が満タン（ノルマ35分）まであと何分か
   const fillLine = quotaDone ? `<span class="jar-full">満タン！</span>` : `満タンまであと <strong>${DAILY_QUOTA_MIN - todayMin}</strong>分`;
+  // 「今日の小瓶」の文字は出さない（ホームを1画面におさめるため）。シェイクした日は色の名前を1行目に
+  const head = colorLine ? `${colorLine}<br>` : "";
   $("jar-caption").innerHTML = full
-    ? `今日の小瓶${colorLine}<br>${fillLine}<br><strong>合成できるよ！</strong>`
-    : `今日の小瓶${colorLine}<br>${fillLine}<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
+    ? `${head}${fillLine}<br><strong>合成できるよ！</strong>`
+    : `${head}${fillLine}<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
   // 「今日はおしまい」→ シェイク。シェイクしたあとに運動を足したら、もう一度シェイクできる
   const endBtn = $("day-end-btn");
   endBtn.hidden = today.length === 0 || !!shaken;

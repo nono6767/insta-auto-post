@@ -36,7 +36,16 @@
     <section id="page-home" class="page">
       <div class="hero">
         <div class="weather-chip" id="weather" role="img" hidden></div>
-        <div class="n-wrap" id="n-figure"></div>
+        <!-- 左：キャラと、その下にピラティスクイズ（ホームを1画面におさめるため） -->
+        <div class="hero-left">
+          <div class="n-wrap" id="n-figure"></div>
+          <button class="quiz-bar" type="button" id="quiz-card">
+            <span class="quiz-bar-q" aria-hidden="true">Q</span>
+            <span class="quiz-bar-title" id="quiz-card-title">ピラティスクイズ</span>
+            <span class="quiz-bar-sub" id="quiz-card-sub"></span>
+            <span class="quiz-bar-go" aria-hidden="true">›</span>
+          </button>
+        </div>
         <div class="hero-side">
           <p class="bubble" id="n-bubble">今日もいっしょにがんばろ〜</p>
           <div class="jar-wrap">
@@ -59,12 +68,6 @@
         </div>
       </div>
 
-      <button class="quiz-bar" type="button" id="quiz-card">
-        <span class="quiz-bar-q" aria-hidden="true">Q</span>
-        <span class="quiz-bar-title" id="quiz-card-title">ピラティスクイズ</span>
-        <span class="quiz-bar-sub" id="quiz-card-sub"></span>
-        <span class="quiz-bar-go" aria-hidden="true">›</span>
-      </button>
 
       <h2 class="section-title">どの運動をした？</h2>
       <div class="sports" id="sports"></div>

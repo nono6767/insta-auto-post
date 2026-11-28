@@ -883,7 +883,7 @@ main {
 
 /* ---------- シェイク ---------- */
 #jar.tappable { cursor: pointer; }
-.jar-color { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; color: var(--ink); font-weight: 700; }
+.jar-color { display: inline-flex; align-items: center; gap: 4px; margin-left: 0; color: var(--ink); font-weight: 700; }
 .mini-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08); }
 .day-end-btn {
   margin-top: 6px;
@@ -2335,3 +2335,35 @@ body.gacha-open { overflow: hidden; }
 .md-pairs .md-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .md-pairs .md-temp-edit { grid-column: 1 / -1; }
 .md-pairs .md-row span { white-space: normal; overflow: visible; }
+
+/* ---------- ホームを1画面に（11/28 B案）：キャラを少し小さく、その下にクイズ。運動のボタンは4列 ---------- */
+.hero-left { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; }
+#page-home .hero .n-char { height: 132px; }
+#jar .bottle { height: 124px; }
+#page-home .bubble { padding: 7px 11px; font-size: 13px; }
+.hero-left .quiz-bar {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "q t go" "q s go";
+  column-gap: 6px; margin: 0; min-height: 0; padding: 5px 8px; border-radius: 14px;
+}
+.hero-left .quiz-bar-q { grid-area: q; width: 20px; height: 20px; font-size: 11px; }
+.hero-left .quiz-bar-title { grid-area: t; font-size: 11px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-left .quiz-bar-sub { grid-area: s; font-size: 10px; line-height: 1.2; }
+.hero-left .quiz-bar-sub .coin-ico { width: 11px; height: 11px; }
+.hero-left .quiz-bar-go { grid-area: go; font-size: 16px; }
+/* 今日の運動：見出しと数字を1段に */
+#page-home .today.card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 10px; margin-top: 6px; padding: 8px 12px; }
+#page-home .today-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+#page-home .today-head h2 { font-size: 13px; line-height: 1.3; }
+#page-home .today-head .stamp { font-size: 11px; padding: 1px 8px; }
+#page-home .today-stats { margin: 0; gap: 4px; }
+#page-home .today .big { font-size: 22px; }
+/* 運動のボタン：4列（ランニングを足すと4つ×2段でそろう） */
+.sports { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.sport-btn { min-height: 0; height: 56px; padding: 5px 2px; gap: 3px; font-size: 12px; line-height: 1.15; border-radius: 16px; }
+.sport-btn .dot { width: 18px; height: 18px; }
+.sport-btn:last-child:nth-child(3n + 1), .sport-btn:last-child:nth-child(odd) { grid-column: auto; }
+#page-home .section-title { margin-top: 6px; margin-bottom: 4px; }
+#page-home .section-row .month-link { margin-top: 6px; }
+#jar .bottle { height: 118px; }
+#jar .bottle { height: 112px; }
+#page-home .today.card { padding-top: 6px; padding-bottom: 6px; }

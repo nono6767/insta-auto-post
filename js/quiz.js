@@ -200,7 +200,7 @@ function quizSparkle() {
 // ホームのクイズのカード
 function renderQuizCard() {
   if (!$("quiz-card")) return;
-  $("quiz-card-title").textContent = `${charName()}のピラティスクイズ`;
+  $("quiz-card-title").textContent = "ピラティスクイズ"; // ホームのキャラの下に小さく出すので、短く
   $("quiz-card-sub").innerHTML = `<span class="coin-ico" aria-hidden="true"></span>${quizCoinsToday()}/${COIN_RULES.quizDailyMax}`;
   $("quiz-card").setAttribute("aria-label", `${charName()}のピラティスクイズ。今日のクイズコイン ${quizCoinsToday()} / ${COIN_RULES.quizDailyMax}`);
 }
