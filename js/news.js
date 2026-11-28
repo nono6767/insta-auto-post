@@ -123,10 +123,13 @@ function guideMergeArt() {
     return `<span class="gm-small" style="left:${x}%;top:${y}%;--dx:${dx}px;--dy:${dy}px;--d:${(i * 0.45).toFixed(2)}s">${bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[i % BOTTLES.length], 0, SMALL_FULL_MIN, hex(n, fb))}</span>`;
   }).join("");
   const big = typeof bigBottleHtml === "function"
-    ? bigBottleHtml({ id: "guide", bottle: "heart", charms: ["c04"], ribbon: "j01", flowers: 3, layers: cols.map(([n, fb]) => ({ min: 40, color: hex(n, fb) })) })
+    ? bigBottleHtml({ id: "guide", bottle: "heart", charms: ["c04"], ribbon: "j01", flowers: 0, layers: [["フローズンミント", "#c8eedd"], ["ラベンダー", "#d9c8f0"], ["サクラピンク", "#f6c1cf"]].map(([n, fb]) => ({ min: 80, color: hex(n, fb) })) }) // 中身は3色だけ（多いとごちゃごちゃする）
     : "";
-  const sparks = [[30, 18, 0], [70, 14, 0.6], [24, 70, 1.2], [76, 74, 0.3], [50, 6, 0.9], [40, 88, 1.5], [62, 90, 0.4]]
-    .map(([x, y, d]) => `<i class="gm-spark" style="left:${x}%;top:${y}%;--d:${d}s"></i>`).join("");
+  // 大瓶に進化したときと同じ、4つの角のキラキラ（金・白・ピンク）。ぱっと開いて、くるっと回って消える
+  const sparkCols = ["#ffe08a", "#ffffff", "#fff6c8", "#ffc4dc"];
+  const sparks = [[8, 12, 14], [30, 8, 10], [70, 10, 16], [93, 16, 11], [4, 44, 9], [96, 46, 15], [22, 50, 12], [78, 52, 10],
+    [12, 82, 16], [36, 92, 9], [64, 94, 13], [90, 84, 10], [42, 22, 9], [58, 30, 12], [50, 70, 10], [28, 30, 8], [72, 32, 8]]
+    .map(([x, y, sz], i) => `<i class="gm-spark" style="left:${x}%;top:${y}%;width:${Math.round(sz * 1.45)}px;background:${sparkCols[i % sparkCols.length]};--d:${((i * 0.37) % 2.4).toFixed(2)}s"></i>`).join("");
   return `<div class="guide-merge" aria-hidden="true">
     <span class="gm-rays"></span><span class="gm-glow"></span>
     ${smalls}

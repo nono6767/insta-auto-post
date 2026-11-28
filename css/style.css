@@ -2060,7 +2060,16 @@ body.gacha-open { overflow: hidden; }
 .gm-big .bottle { height: 100%; width: auto; }
 .gm-small { position: absolute; height: 40px; translate: -50% -50%; display: flex; justify-content: center; animation: gm-gather 2.7s ease-in var(--d) infinite; }
 .gm-small .bottle { height: 100%; width: auto; }
-.gm-spark { position: absolute; width: 12px; aspect-ratio: 1; background: #fff6c8; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); animation: twinkle-soft 1.8s ease-in-out var(--d) infinite; }
+.news-hero:has(.guide-merge) { background: radial-gradient(ellipse at 50% 55%, #fff6fb 0 25%, transparent 65%), linear-gradient(135deg, #fbd0ea, #fde0f1 50%, #f9cde8); }
+.gm-spark { position: absolute; z-index: 3; aspect-ratio: 1; translate: -50% -50%; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 4px rgb(255 255 255 / .95)) drop-shadow(0 0 2px rgb(255 214 120 / .8)); opacity: 0; animation: gm-pop 2.4s ease-out var(--d) infinite; }
+/* 大瓶に進化したときのキラキラと同じ動き：0 → ぱっと開いて90度回る → 回りながら消える */
+@keyframes gm-pop {
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  20% { transform: scale(1) rotate(90deg); opacity: 1; }
+  40% { transform: scale(.85) rotate(120deg); opacity: 1; }
+  65% { transform: scale(0) rotate(180deg); opacity: 0; }
+  100% { transform: scale(0) rotate(180deg); opacity: 0; }
+}
 @keyframes gm-spin { to { rotate: 360deg; } }
 @keyframes gm-pulse { 50% { scale: 1.12; opacity: .85; } }
 @keyframes gm-float { 50% { translate: -50% -4px; } }
@@ -2072,4 +2081,4 @@ body.gacha-open { overflow: hidden; }
   85% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
   100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .gm-rays, .gm-glow, .gm-big, .gm-small, .gm-spark { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gm-rays, .gm-glow, .gm-big, .gm-small { animation: none; } .gm-spark { animation: none; opacity: .9; transform: scale(.8); } }
