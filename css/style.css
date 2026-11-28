@@ -2328,3 +2328,10 @@ body.gacha-open { overflow: hidden; }
 .month-card { padding: 8px; }
 .month-legend { margin-top: 6px; }
 .month-cell .mc-jar { margin-top: 2px; }
+/* 月で見る：ごはん・からだは1行に2つ */
+.md-pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 10px; }
+.md-pairs .md-row { grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; }
+.md-pairs .md-row b { white-space: nowrap; }
+.md-pairs .md-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.md-pairs .md-temp-edit { grid-column: 1 / -1; }
+.md-pairs .md-row span { white-space: normal; overflow: visible; }

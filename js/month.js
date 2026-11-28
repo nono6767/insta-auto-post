@@ -140,6 +140,11 @@ function drawMonth() {
           if (b.poop === "yes") marks += `<span class="mc-poop" title="お通じ"></span>`;
           if (tempOf(key) != null) marks += `<span class="mc-temp">${tempOf(key).toFixed(1)}</span>`;
         }
+      } else if (!future) {
+        // ぜんぶのタブ：体調とお通じも出す
+        const b = bodyOf(key);
+        if (b.condition) marks += `<span class="mc-cond ${b.condition}" title="体調"></span>`;
+        if (b.poop === "yes") marks += `<span class="mc-poop" title="お通じが出た"></span>`;
       }
     }
     cell.innerHTML = `<span class="mc-d">${d}</span>${top || `<span class="mc-jar none"></span>`}<span class="mc-marks">${marks}</span>`;
@@ -159,10 +164,10 @@ function drawMonthLegend() {
   const L = {
     exercise: `<span><i class="mc-jar" style="--c:#f6c1cf"></i>その日の小瓶の色</span><span><i class="mc-jar full" style="--c:#f6c1cf"></i>満タン</span>`,
     meals: `<span class="mc-hana">✿</span>おやつがまん<span><i class="mc-dot"></i>ごはんを記録</span>`,
-    body: `<span>${dropSvg()}生理</span><span>${predictedDropSvg()}予定</span><span><i class="mc-cond good"></i>体調</span><span><i class="mc-mood good">♥</i>気分</span><span class="lg-note">（緑＝Good・むらさき＝Bad）</span><span><i class="mc-poop"></i>お通じ</span><span><i class="mc-temp">36.5</i>体温</span><span class="mc-ov">◎</span>排卵日の目安<span><i class="mc-fertile"></i>妊娠しやすい時期の目安</span>`,
+    body: `<span>${dropSvg()}生理</span><span>${predictedDropSvg()}予定</span><span><i class="mc-cond good"></i>体調</span><span><i class="mc-mood good">♥</i>気分</span><span class="lg-note">（緑＝Good・むらさき＝Bad）</span><span><i class="mc-poop"></i>お通じが出た日</span><span><i class="mc-temp">36.5</i>体温</span><span class="mc-ov">◎</span>排卵日の目安<span><i class="mc-fertile"></i>妊娠しやすい時期の目安</span>`,
   };
   const keys = monthTab === "all" ? ["exercise", "meals"] : [monthTab];
-  $("month-legend").innerHTML = keys.map((k) => L[k]).join("") + (monthTab === "all" ? `<span>${dropSvg()}生理</span>` : "");
+  $("month-legend").innerHTML = keys.map((k) => L[k]).join("") + (monthTab === "all" ? `<span>${dropSvg()}生理</span><span><i class="mc-cond good"></i>体調（緑＝Good・むらさき＝Bad）</span><span><i class="mc-poop"></i>お通じが出た日</span>` : "");
 }
 
 // 選んだ日の記録
@@ -190,7 +195,7 @@ function drawMonthDay() {
     }
     if (monthTab === "meals") {
       // ごはんのタブ：朝・昼・夜を1つずつ
-      const H = { yes: "腹八分目", no: "食べすぎた" }, R = { less: "お米 少なめ", usual: "お米 いつも通り", more: "お米 おかわり" };
+      const H = { yes: "八分目", no: "食べすぎ" }, R = { less: "少なめ", usual: "ふつう", more: "おかわり" }; // 1行に2つ並べるので短く
       for (const [id, name] of [["breakfast", "朝"], ["lunch", "昼"], ["dinner", "夜"]]) {
         const m = ml[id] || {};
         rows.push(["meals", name, [H[m.hachi], R[m.rice]].filter(Boolean).join("・") || "記録なし"]);
@@ -209,8 +214,10 @@ function drawMonthDay() {
   } else {
     rows.push(["body", "予定", predictedOn(key) ? "生理の予定（目安）" : ovulationDays().includes(key) ? "排卵日の目安" : "まだ先の日だよ"]);
   }
-  box.innerHTML = `<h3>${dayLabel(key)}</h3>` + rows.map(([t, label, text, go]) =>
-    `<div class="md-row"><b>${label}</b><span></span>${go ? `<button type="button" class="text-btn small" data-go="${t}">小瓶を見る ›</button>` : ""}</div>`).join("");
+  // ごはん・からだのタブは、1行に2つずつ並べる（体調・気分／お通じ・生理…）
+  const pairs = !future && (monthTab === "meals" || monthTab === "body");
+  box.innerHTML = `<h3>${dayLabel(key)}</h3>` + `<div class="${pairs ? "md-pairs" : "md-list"}">` + rows.map(([t, label, text, go]) =>
+    `<div class="md-row"><b>${label}</b><span></span>${go ? `<button type="button" class="text-btn small" data-go="${t}">小瓶を見る ›</button>` : ""}</div>`).join("") + `</div>`;
   box.querySelectorAll(".md-row span").forEach((s, i) => (s.textContent = rows[i][2]));
   box.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => goDay(btn.dataset.go, key)));
   // 体温は、ここで直せる・消せる
