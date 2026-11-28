@@ -328,8 +328,8 @@
           <span class="settings-sub" id="settings-savings-sub">毎週の金額・目標金額・期限</span>
         </button>
         <button class="settings-item" type="button" id="settings-news">
-          <span class="settings-label">お知らせを見る</span>
-          <span class="settings-sub">新しくなったこと</span>
+          <span class="settings-label">使い方を見る</span>
+          <span class="settings-sub">アプリの使い方をもう一度見る</span>
         </button>
         <button class="settings-item" type="button" id="backup-save">
           <span class="settings-label">バックアップを保存</span>
@@ -484,6 +484,30 @@
   </div>
 
   <!-- お知らせ（新しくなったこと） -->
+  <!-- 使い方ガイド：はじめて使う人に、ページをめくって説明する -->
+  <div class="modal-backdrop news-backdrop" id="guide-modal" hidden>
+    <div class="news-card guide-card" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="news-ribbon"><h3>つかいかた</h3></div>
+      <div class="news-frame">
+        <div class="guide-track" id="guide-track">
+          <div class="news-hero">
+            <span class="news-spark s1"></span><span class="news-spark s2"></span><span class="news-spark s3"></span>
+            <div class="news-hero-char" id="guide-char"></div>
+            <div class="news-hero-jar guide-art" id="guide-art"></div>
+          </div>
+          <h4 class="guide-title" id="guide-title"></h4>
+          <div class="guide-text" id="guide-text"></div>
+        </div>
+        <div class="guide-dots" id="guide-dots" aria-hidden="true"></div>
+        <div class="guide-actions">
+          <button class="text-btn" type="button" id="guide-back">もどる</button>
+          <button class="primary-btn" type="button" id="guide-next">次へ</button>
+        </div>
+        <button class="text-btn guide-skip" type="button" id="guide-skip">とばす</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop news-backdrop" id="news-modal" hidden>
     <div class="news-card" role="dialog" aria-modal="true" aria-labelledby="news-title">
       <div class="news-ribbon"><h3 id="news-title">新しくなったよ！</h3></div>
