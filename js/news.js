@@ -311,6 +311,30 @@ TOURS.firstLog = [
   { sel: ".today.card", text: "満タンをこえても、運動はちゃんと<b>カウント</b>されるよ。<br>そのあとも30分ごとに<b>おまけコイン+1</b>。目指せ満タン！" },
   { sel: "#day-end-btn", text: "その日の運動が終わったら<br>「<b>今日はおしまい</b>」を押してね。<br>小瓶を<b>シェイク</b>して、1色にまぜられるよ" },
 ];
+// はじめてシェイクしたあと：いっしょに「瓶の棚」へ行って、たまり方と大瓶を説明する
+// （keep：はじめは見えていなくても残す／before：その説明の前にすること）
+const openSmallShelf = () => {
+  const btn = document.querySelector('.tabbar-btn[data-page="shelf"]');
+  if (btn) btn.click();
+  if (typeof showShelfView === "function") showShelfView("small");
+};
+TOURS.firstShake = [
+  { text: "シェイクおつかれさま、<b>がんばったね！</b><br>色がついた小瓶は、<b>瓶の棚</b>にかざられていくよ。<br>いっしょに見にいこう！", nextLabel: "見にいく" },
+  { keep: true, before: openSmallShelf, sel: "#small-shelf .small-slot:last-of-type", text: "シェイクした小瓶は、<b>ここに並んでいく</b>よ。<br>札には、出た色の名前がつくよ" },
+  { keep: true, sel: ".pool-card", text: "小瓶の合計の分数はここ。<br><b>245分</b>たまったら…" },
+  { keep: true, sel: "#merge-btn", text: "ここで<b>大瓶に合成</b>できるよ！<br>小瓶が集まって、ごほうびの大瓶に進化するよ" },
+  { keep: true, sel: '.shelf-switch-btn[data-shelf="big"]', text: "できた大瓶は「<b>大瓶の棚</b>」に飾られるよ。<br>チャームやリボンで着せ替えもできるよ" },
+  { keep: true, sel: '.shelf-switch-btn[data-shelf="color"]', text: `シェイクで出た色は「<b>色図鑑</b>」に集まるよ。<br>ぜんぶで${typeof DAY_COLORS !== "undefined" ? DAY_COLORS.length : 74}色！ 集めてみてね` },
+];
+// はじめて大瓶に合成して「チャームを選ぶ」を押したとき：着せ替えの説明
+TOURS.charm = [
+  { sel: "#charm-preview", up: ".charm-stage", text: "ここに大瓶が出るよ。<br>つけたチャームやリボンが、<b>すぐ見られる</b>よ" },
+  { sel: "#charm-grid", text: "持っているチャームから選んでね。<br><b>タップでつける、もう一度タップではずす</b>よ。<br>ぜんぶで5個までつけられるよ" },
+  { sel: "#chain-rows", text: "チャームは、首のチェーンの<b>左・真ん中・右</b>に下げられるよ。<br>場所を選んでから、チャームを押してね。1か所に3個まで縦につなげて、<b>順番やチェーンの長さ</b>も変えられるよ" },
+  { sel: "#charm-tab-ribbon", text: "「<b>リボン</b>」で、首にリボンを結べるよ。<br>リボンは1つだけ。ガチャで集めてね" },
+  { sel: "#charm-tab-look", text: "「<b>中身</b>」で、見た目を変えられるよ。<br>層のまま・まぜる・色図鑑の色から選べるよ（運動の記録は消えないよ）" },
+  { sel: "#charm-save", text: "決まったら「<b>これにする</b>」。<br>大瓶の棚で大瓶をタップすれば、<b>いつでも付け替え</b>られるよ" },
+];
 // 内容を作り直したチュートリアルは、名前をかえて、もう一度だけ出す
 const TOUR_SEEN_KEY = { clothes: "clothes2" };
 const tourSeenKey = (name) => TOUR_SEEN_KEY[name] || name;
@@ -353,7 +377,7 @@ function startTour_(name = "home") {
   }
   tourBuild();
   // 今の画面で見えているところだけで説明する（数字がとばないように。最後の1つで「わかった！」）
-  const steps = TOURS[name].filter((st) => tourTarget(st));
+  const steps = TOURS[name].filter((st) => st.keep || tourTarget(st));
   if (!steps.length) return;
   TOUR_STEPS = steps.map((st, i) => ({ ...st, last: i === steps.length - 1 }));
   tourStep = 0;
@@ -371,6 +395,13 @@ function tourTarget(st = TOUR_STEPS[tourStep]) {
 }
 function tourShow() {
   const st = TOUR_STEPS[tourStep];
+  if (st.before && !st.beforeDone) {
+    // ページを開くなど、説明の前にすることをして、少し待ってから
+    st.beforeDone = true;
+    st.before();
+    tourEl.querySelector(".tour-hole").style.opacity = "0";
+    return setTimeout(() => { tourEl.querySelector(".tour-hole").style.opacity = ""; tourShow(); }, 600);
+  }
   const el = tourTarget();
   if (!el) return tourGo(1); // 見つからないところは、とばす
   const art = tourEl.querySelector(".tour-art");
@@ -379,7 +410,7 @@ function tourShow() {
   if (st.sel) el.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
   tourEl.querySelector(".tour-text").innerHTML = st.text;
   tourEl.querySelector(".tour-count").textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
-  tourEl.querySelector(".tour-next").textContent = st.last ? (tourName === "home" ? "はじめる！" : "わかった！") : "次へ";
+  tourEl.querySelector(".tour-next").textContent = st.nextLabel || (st.last ? (tourName === "home" ? "はじめる！" : "わかった！") : "次へ");
   tourEl.querySelector(".tour-skip").style.visibility = st.last ? "hidden" : "";
   tourEl.querySelector(".tour-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(st.last ? "jump" : tourStep % 2 ? "pointUp" : "pointSide") : "";
   requestAnimationFrame(tourPlace);
@@ -415,6 +446,21 @@ function tourGo(d) {
   tourStep = n;
   tourShow();
 }
+// はじめてシェイクしたら、いっしょに瓶の棚へ
+$("shake-ok").addEventListener("click", () => {
+  if (data.toursSeen && data.toursSeen.firstShake) return;
+  setTimeout(() => {
+    const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
+    if (!busy) startTour_("firstShake");
+  }, 500);
+});
+// はじめて大瓶に合成して「チャームを選ぶ」を押したら、着せ替えの説明
+$("merge-ok").addEventListener("click", () => {
+  if (data.toursSeen && data.toursSeen.charm) return;
+  setTimeout(() => {
+    if (!$("charm-modal").hidden && !(tourEl && !tourEl.hidden)) startTour_("charm");
+  }, 600);
+});
 // はじめて運動を記録したら、記録のたまり方・満タン・シェイクを説明する
 document.addEventListener("log-recorded", () => {
   if (data.toursSeen && data.toursSeen.firstLog) return;
