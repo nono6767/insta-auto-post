@@ -265,13 +265,12 @@ if (data.weight && !data.guideSeen && !(data.logs || []).length) setTimeout(open
 const TOURS = {};
 TOURS.home = [
   { sel: "#jar", text: "これが<b>今日の小瓶</b>。<br>運動を記録すると、ここに色がたまっていくよ" },
-  { sel: "#weather", text: "今日の<b>天気と気温</b>も、ここで見られるよ。<br>天気の<b>地域</b>は、設定で変えられるよ" },
+  { sel: "#weather", text: `今日の<b>天気と気温</b>も、ここで見られるよ。<br><b>夜${typeof NIGHT_FROM !== "undefined" ? NIGHT_FROM : 21}時から</b>は、<b>明日の天気</b>になるよ。<br>天気の<b>地域</b>は、設定で変えられるよ` },
   { sel: "#n-figure", text: "キャラを<b>タップ</b>すると、<br>いろいろ<b>おしゃべり</b>してくれるよ" },
   { sel: "#sports", text: "今日した運動は<b>ここから選んでね</b>。<br>運動をタップして、時間を入れるだけ！" },
   { sel: ".today.card", text: "今日の運動の時間はここに出るよ。<br><b>35分で小瓶が満タン！</b>" },
   { sel: "#quiz-card", text: "<b>ピラティスクイズ</b>。<br>答えるとコインがもらえるよ" },
   { sel: "#coin-btn", text: "コインはここにたまるよ。<br>タップすると<b>ガチャ</b>がひけるよ" },
-  { sel: '.tabbar-btn[data-page="shelf"]', text: "小瓶や大瓶、色図鑑は<br><b>「瓶の棚」</b>で見られるよ" },
   { sel: "#settings-btn", text: "使い方は<b>設定</b>から<br>いつでも見なおせるよ" },
   { sel: "#sports", text: "準備はばっちり！<br>さっそく<b>今日の運動を記録</b>してみよう", last: true },
 ];
