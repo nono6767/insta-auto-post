@@ -169,7 +169,7 @@ function guideShakeArt() {
       <div class="gs-layer gs-before">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN)}</div>
       <div class="gs-layer gs-after">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN, mix)}</div>
     </div>
-    <span class="gs-lines l"></span><span class="gs-lines r"></span>
+    ${["l", "r"].map((side) => `<svg class="gs-lines ${side}" viewBox="0 0 22 56"><path d="M16 4 Q4 28 16 52"/><path d="M9 14 Q2 28 9 42"/></svg>`).join("")}
     ${sparks}
   </div>`;
 }
@@ -261,7 +261,8 @@ if (data.weight && !data.guideSeen && !(data.logs || []).length) setTimeout(open
 // （まわりを暗くして、説明するところだけ丸く明るくする）
 // =========================================================
 
-const TOUR_STEPS = [
+const TOURS = {};
+TOURS.home = [
   { sel: "#jar", text: "これが<b>今日の小瓶</b>。<br>運動を記録すると、ここに色がたまっていくよ" },
   { sel: "#sports", text: "今日した運動は<b>ここから選んでね</b>。<br>運動をタップして、時間を入れるだけ！" },
   { sel: ".today.card", text: "今日の運動の時間はここに出るよ。<br><b>35分で小瓶が満タン！</b>" },
@@ -271,6 +272,33 @@ const TOUR_STEPS = [
   { sel: "#settings-btn", text: "使い方は<b>設定</b>から<br>いつでも見なおせるよ" },
   { sel: "#sports", text: "準備はばっちり！<br>さっそく<b>今日の運動を記録</b>してみよう", last: true },
 ];
+// ごはん・からだ・服・貯金は、はじめてその画面を開いたときに1回だけ（up：そのまわりのカードごと光らせる）
+TOURS.meals = [
+  { sel: "#meal-week", text: "今週のごはんの記録だよ。<br>おやつをがまんした日には<b>花まる</b>がつくよ" },
+  { sel: "#meal-cards > :first-child", text: "朝・昼・夜のごはんを<b>タップで記録</b>してね。<br>記録すると<b>コイン+1</b>（1日1回）" },
+  { sel: "#snack-row", up: ".card", text: "おやつ・つまみ食いを<b>しなかった日</b>は、<br>その日の小瓶に<b>星</b>がうかぶよ" },
+  { sel: "#page-meals .day-nav", text: "‹ › で、<b>前の日</b>のごはんも<br>あとから記録できるよ", last: true },
+];
+TOURS.body = [
+  { sel: "#body-week", text: "今週のからだの記録だよ。<br>1週間の調子がひと目でわかるよ" },
+  { sel: "#condition-row", up: ".card", text: "<b>体調・気分</b>をタップで記録してね。<br>記録すると<b>コイン+1</b>（1日1回）" },
+  { sel: "#poop-row", text: "お通じが「出た」日は、<br>その日の小瓶に<b>すっきりの泡</b>がのぼるよ" },
+  { sel: "#period-btn", up: ".card", text: "<b>生理</b>の記録はここ。<br>始まった日と終わった日を押してね", last: true },
+];
+TOURS.clothes = [
+  { sel: "#page-clothes .lead", text: "お気に入りの服を着て<b>写真</b>を撮って、<br>前回の自分とくらべてみよう" },
+  { sel: "#clothes-list", text: "登録した服はここに並ぶよ。<br>タップして写真を撮ってね" },
+  { sel: "#add-cloth", text: "まずは<b>服を登録</b>してみよう。<br>写真はこのスマホの中にだけ保存されるよ", last: true },
+];
+TOURS.savings = [
+  { sel: "#savings-jar", text: "これが<b>貯金瓶</b>。<br>入れた分だけコインがたまっていくよ" },
+  { sel: "#savings-setup-btn", text: "まずは<b>目標の金額</b>を決めよう。<br>毎週いくら入れたらいいか計算するよ" },
+  { sel: "#savings-weekly", text: "毎週の分を入れたら押してね。<br><b>コイン+5</b>（1週間に1回）" },
+  { sel: "#savings-extra", text: "追加で入れたときはこっち。<br><b>コイン+3</b>（1日1回）" },
+  { sel: "#savings-deco", text: "<b>着せ替え</b>で、チャームやリボンを<br>貯金瓶につけられるよ", last: true },
+];
+let TOUR_STEPS = TOURS.home;
+let tourName = "home";
 
 let tourStep = 0;
 let tourEl = null;
@@ -291,18 +319,29 @@ function tourBuild() {
   window.addEventListener("resize", () => !tourEl.hidden && tourPlace());
   return tourEl;
 }
-function startTour_() {
-  const home = document.querySelector('.tabbar-btn[data-page="home"]');
-  if (home) home.click(); // ホーム画面で説明する
+function startTour_(name = "home") {
+  tourName = name;
+  TOUR_STEPS = TOURS[name];
+  if (name === "home") {
+    const home = document.querySelector('.tabbar-btn[data-page="home"]');
+    if (home) home.click(); // ホーム画面で説明する
+  }
   tourBuild();
+  // 今の画面で見えているところだけで説明する（数字がとばないように。最後の1つで「わかった！」）
+  const steps = TOURS[name].filter((st) => tourTarget(st));
+  if (!steps.length) return;
+  TOUR_STEPS = steps.map((st, i) => ({ ...st, last: i === steps.length - 1 }));
   tourStep = 0;
   tourEl.hidden = false;
   document.documentElement.classList.add("touring");
   tourShow();
 }
-function tourTarget() {
-  const el = document.querySelector(TOUR_STEPS[tourStep].sel);
-  return el && el.getClientRects().length ? el : null;
+function tourTarget(st = TOUR_STEPS[tourStep]) {
+  let el = document.querySelector(st.sel);
+  if (el && st.up) el = el.closest(st.up) || el;
+  if (!el || el.closest("[hidden]")) return null;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.height > 0 ? el : null; // 見えていないところ（まだ服がない、など）はとばす
 }
 function tourShow() {
   const st = TOUR_STEPS[tourStep];
@@ -311,7 +350,7 @@ function tourShow() {
   el.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
   tourEl.querySelector(".tour-text").innerHTML = st.text;
   tourEl.querySelector(".tour-count").textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
-  tourEl.querySelector(".tour-next").textContent = st.last ? "はじめる！" : "次へ";
+  tourEl.querySelector(".tour-next").textContent = st.last ? (tourName === "home" ? "はじめる！" : "わかった！") : "次へ";
   tourEl.querySelector(".tour-skip").style.visibility = st.last ? "hidden" : "";
   tourEl.querySelector(".tour-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(st.last ? "jump" : tourStep % 2 ? "pointUp" : "pointSide") : "";
   requestAnimationFrame(tourPlace);
@@ -340,8 +379,26 @@ function tourGo(d) {
   tourStep = n;
   tourShow();
 }
+// ごはん・からだ・服・貯金：はじめて開いたときにチュートリアル
+document.querySelectorAll(".tabbar-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const page = btn.dataset.page;
+    if (!TOURS[page] || page === "home") return;
+    if (data.toursSeen && data.toursSeen[page]) return;
+    setTimeout(() => {
+      const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
+      const shown = document.getElementById(`page-${page}`);
+      if (!busy && shown && !shown.hidden) startTour_(page);
+    }, 450);
+  });
+});
 function tourEnd() {
   if (tourEl) tourEl.hidden = true;
+  if (!data.toursSeen) data.toursSeen = {};
+  if (!data.toursSeen[tourName]) {
+    data.toursSeen[tourName] = true;
+    saveData();
+  }
   document.documentElement.classList.remove("touring");
   window.scrollTo({ top: 0 });
 }

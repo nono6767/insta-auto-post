@@ -2115,9 +2115,10 @@ body.gacha-open { overflow: hidden; }
 .gs-layer .bottle { height: 100%; width: auto; }
 .gs-before { animation: gs-out 4s ease-in-out infinite; }
 .gs-after { animation: gs-in 4s ease-in-out infinite; }
-.gs-lines { position: absolute; top: 30%; width: 14px; height: 40px; opacity: 0; animation: gs-lines 4s ease-in-out infinite;
-  background: linear-gradient(#f2a6c2, #f2a6c2) 0 0 / 3px 100% no-repeat, linear-gradient(#f2a6c2, #f2a6c2) 6px 8px / 3px 70% no-repeat, linear-gradient(#f2a6c2, #f2a6c2) 12px 16px / 2px 45% no-repeat; border-radius: 2px; }
-.gs-lines.l { left: -6px; } .gs-lines.r { right: -6px; transform: scaleX(-1); }
+.gs-lines { position: absolute; top: 28%; width: 16px; height: 42px; opacity: 0; overflow: visible; animation: gs-lines 4s ease-in-out infinite; }
+.gs-lines path { fill: none; stroke: #f2a6c2; stroke-width: 3; stroke-linecap: round; }
+.gs-lines path + path { stroke-width: 2.4; opacity: .7; }
+.gs-lines.l { left: -8px; } .gs-lines.r { right: -8px; transform: scaleX(-1); }
 .gs-spark { position: absolute; z-index: 2; aspect-ratio: 1; translate: -50% -50%; background: #ffe08a; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 3px #fff); opacity: 0; animation: gs-spark 4s ease-out var(--d) infinite; }
 .gs-spark:nth-of-type(even) { background: #fff; }
 /* 0〜45%：シャカシャカ（だんだん強く）→ 50%：まざる → 50〜90%：まざった色で止まる → 最初にもどる */
