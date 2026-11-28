@@ -2016,7 +2016,7 @@ body.gacha-open { overflow: hidden; }
 /* 使い方ガイド */
 .guide-card .news-hero { height: 180px; }
 .guide-art { width: 130px; height: 150px; display: flex; align-items: flex-end; justify-content: center; }
-.guide-art > .bottle, .guide-art > div:not(.guide-charms):not(.guide-tabs):not(.guide-merge):not(.guide-other) { height: 100%; width: auto; max-width: 100%; }
+.guide-art > .bottle, .guide-art > div:not(.guide-charms):not(.guide-tabs):not(.guide-merge):not(.guide-other):not(.guide-shake) { height: 100%; width: auto; max-width: 100%; }
 .guide-title { margin: 4px 0 6px; font-size: 18px; color: var(--ink); text-align: center; }
 .guide-text { min-height: 96px; }
 .guide-text { font-size: 13.5px; line-height: 1.75; color: #8d6070; text-align: center; }
@@ -2108,3 +2108,45 @@ body.gacha-open { overflow: hidden; }
 .go-deco.heart { color: #f48fb1; text-shadow: 0 0 4px #fff; }
 @keyframes go-float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-7px) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) { .go-light, .go-girl .n-char, .go-shadow, .go-icon, .go-deco { animation: none; } }
+/* ガイド「一日の終わりにシェイク」：小瓶がシャカシャカ → ぱっと光って1色に（4秒でくり返し） */
+.guide-art > .guide-shake { position: relative; width: 140px; height: 150px; max-width: none; }
+.gs-jar { position: absolute; inset: 0; animation: gs-shake 4s ease-in-out infinite; transform-origin: 50% 80%; }
+.gs-layer { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-end; }
+.gs-layer .bottle { height: 100%; width: auto; }
+.gs-before { animation: gs-out 4s ease-in-out infinite; }
+.gs-after { animation: gs-in 4s ease-in-out infinite; }
+.gs-lines { position: absolute; top: 30%; width: 14px; height: 40px; opacity: 0; animation: gs-lines 4s ease-in-out infinite;
+  background: linear-gradient(#f2a6c2, #f2a6c2) 0 0 / 3px 100% no-repeat, linear-gradient(#f2a6c2, #f2a6c2) 6px 8px / 3px 70% no-repeat, linear-gradient(#f2a6c2, #f2a6c2) 12px 16px / 2px 45% no-repeat; border-radius: 2px; }
+.gs-lines.l { left: -6px; } .gs-lines.r { right: -6px; transform: scaleX(-1); }
+.gs-spark { position: absolute; z-index: 2; aspect-ratio: 1; translate: -50% -50%; background: #ffe08a; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 3px #fff); opacity: 0; animation: gs-spark 4s ease-out var(--d) infinite; }
+.gs-spark:nth-of-type(even) { background: #fff; }
+/* 0〜45%：シャカシャカ（だんだん強く）→ 50%：まざる → 50〜90%：まざった色で止まる → 最初にもどる */
+@keyframes gs-shake {
+  0%, 4% { transform: none; }
+  8% { transform: rotate(-10deg) translateX(-4px); } 12% { transform: rotate(10deg) translateX(4px); }
+  16% { transform: rotate(-14deg) translateX(-5px); } 20% { transform: rotate(14deg) translateX(5px); }
+  24% { transform: rotate(-16deg) translateX(-6px); } 28% { transform: rotate(16deg) translateX(6px); }
+  32% { transform: rotate(-16deg) translateX(-6px); } 36% { transform: rotate(16deg) translateX(6px); }
+  40% { transform: rotate(-8deg); } 46% { transform: rotate(0) scale(1.06); } 52%, 100% { transform: none; }
+}
+@keyframes gs-out { 0%, 38% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes gs-in { 0%, 38% { opacity: 0; } 50%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes gs-lines { 0%, 6% { opacity: 0; } 10%, 38% { opacity: .9; } 44%, 100% { opacity: 0; } }
+@keyframes gs-spark { 0%, 44% { transform: scale(0) rotate(0); opacity: 0; } 52% { transform: scale(1) rotate(90deg); opacity: 1; } 66%, 100% { transform: scale(0) rotate(180deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .gs-jar, .gs-before, .gs-after, .gs-lines, .gs-spark { animation: none; } .gs-before { opacity: 0; } }
+/* チュートリアル：説明するところだけ明るく丸くぬいて、まわりを暗くする */
+.tour { position: fixed; inset: 0; z-index: 80; }
+.tour[hidden] { display: none; }
+.tour-hole { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px rgb(60 30 50 / .62), 0 0 0 3px #fff inset, 0 0 18px 4px rgb(255 214 234 / .9); pointer-events: none; transition: all .35s ease; animation: tour-glow 1.6s ease-in-out infinite; }
+@keyframes tour-glow { 50% { box-shadow: 0 0 0 9999px rgb(60 30 50 / .62), 0 0 0 3px #fff inset, 0 0 28px 8px rgb(255 190 220 / 1); } }
+.tour-bubble { position: fixed; left: 50%; translate: -50% 0; width: min(92vw, 360px); padding: 12px 14px 10px 84px; border-radius: 20px; background: linear-gradient(#fffafc, #fff1f6); border: 3px solid #f3c3d4; box-shadow: 0 10px 26px rgb(80 30 60 / .3); transition: top .35s ease; }
+.tour-char { position: absolute; left: 6px; bottom: 6px; width: 72px; height: 92px; }
+.tour-char .n-char { height: 100%; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.tour-char .n-char img { width: auto; max-width: 100%; object-fit: contain; }
+.tour-text { margin: 0 0 8px; min-height: 44px; font-size: 14px; line-height: 1.65; color: #7d5566; }
+.tour-text b { color: var(--rose); }
+.tour-foot { display: flex; align-items: center; gap: 8px; }
+.tour-foot .tour-count { flex: 1; text-align: center; font-size: 11px; color: #b893a3; }
+.tour-foot .primary-btn { min-height: 40px; padding: 0 18px; font-size: 14px; }
+.tour-skip { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .tour-hole, .tour-bubble { transition: none; animation: none; } }

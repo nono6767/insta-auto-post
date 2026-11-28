@@ -84,7 +84,7 @@ const GUIDE_STEPS = [
   },
   {
     pose: "jump",
-    art: () => bottleHtml([{ type: "pilates", min: 35, ts: 1 }], BOTTLES[2], 0, SMALL_FULL_MIN, guideMixHex()),
+    art: guideShakeArt, // 層になった小瓶がシャカシャカゆれて、1色にまざる
     title: "一日の終わりにシェイク",
     text: "運動が終わったら|「今日はおしまい」を押して、|小瓶をふってね。\n色がまざって、|その日だけの|1色になるよ。\n出た色は|「色図鑑」に|集まるよ。",
   },
@@ -153,6 +153,27 @@ function guideOtherArt() {
   return `<div class="guide-other" aria-hidden="true"><span class="go-light"></span>${sparks}<div class="go-girl">${girl}<span class="go-shadow"></span></div>${icons}</div>`;
 }
 
+// 「一日の終わりにシェイク」の絵：3色の層の小瓶がゆれて → ぱっと光って → まざった1色になる（くり返し）
+function guideShakeArt() {
+  // ピラティス・ダンス・筋トレ → まざると「コーラルピンク」（かわいい色になる組み合わせ）
+  const logs = [{ type: "pilates", min: 10, ts: 1 }, { type: "dance", min: 15, ts: 2 }, { type: "strength", min: 10, ts: 3 }];
+  let mix = guideMixHex();
+  try {
+    if (typeof mixDayColor === "function") mix = mixDayColor({ pilates: 10, dance: 15, strength: 10 }, (t) => (sportById(t) || { color: "#ddd" }).color, (t) => (sportById(t) || {}).deep || 1).hex;
+  } catch (e) { /* 計算できないときは見本の色 */ }
+  const shape = BOTTLES[2];
+  const sparks = [[18, 20, 12], [82, 24, 14], [12, 70, 10], [88, 68, 12], [50, 6, 10]]
+    .map(([x, y, sz], i) => `<i class="gs-spark" style="left:${x}%;top:${y}%;width:${sz}px;--d:${(i * 0.05).toFixed(2)}s"></i>`).join("");
+  return `<div class="guide-shake" aria-hidden="true">
+    <div class="gs-jar">
+      <div class="gs-layer gs-before">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN)}</div>
+      <div class="gs-layer gs-after">${bottleHtml(logs, shape, 0, SMALL_FULL_MIN, mix)}</div>
+    </div>
+    <span class="gs-lines l"></span><span class="gs-lines r"></span>
+    ${sparks}
+  </div>`;
+}
+
 function guideMixHex() {
   const c = typeof DAY_COLORS !== "undefined" && DAY_COLORS.find((x) => x.name === "サクラピンク");
   return c ? c.hex : "#f6c1cf";
@@ -193,8 +214,9 @@ function openGuide() {
   drawGuide();
   $("guide-modal").hidden = false;
 }
-function closeGuide() {
+function closeGuide(startTour = false) {
   $("guide-modal").hidden = true;
+  if (startTour) setTimeout(startTour_, 350); // 「はじめよう！」で閉じたら、画面の上でのチュートリアルへ
   if (!data.guideSeen) {
     data.guideSeen = true;
     saveData();
@@ -203,13 +225,13 @@ function closeGuide() {
 const guideGo = (d) => {
   const n = guideStep + d;
   if (n < 0) return;
-  if (n >= GUIDE_STEPS.length) return closeGuide();
+  if (n >= GUIDE_STEPS.length) return closeGuide(true);
   guideStep = n;
   drawGuide(d);
 };
 $("guide-next").addEventListener("click", () => guideGo(1));
 $("guide-back").addEventListener("click", () => guideGo(-1));
-$("guide-skip").addEventListener("click", closeGuide);
+$("guide-skip").addEventListener("click", () => closeGuide());
 // 指で左右にめくることもできる
 (() => {
   let sx = 0, sy = 0;
@@ -233,3 +255,93 @@ $("weight-form").addEventListener("submit", () => {
 });
 // 体重は入れたけど、まだ記録がない人にも出す（もう使っている人には出さない）
 if (data.weight && !data.guideSeen && !(data.logs || []).length) setTimeout(openGuide, 800);
+
+// =========================================================
+// チュートリアル：使い方ガイドのあと、本物の画面のボタンを1つずつ光らせて説明する
+// （まわりを暗くして、説明するところだけ丸く明るくする）
+// =========================================================
+
+const TOUR_STEPS = [
+  { sel: "#jar", text: "これが<b>今日の小瓶</b>。<br>運動を記録すると、ここに色がたまっていくよ" },
+  { sel: "#sports", text: "今日した運動は<b>ここから選んでね</b>。<br>運動をタップして、時間を入れるだけ！" },
+  { sel: ".today.card", text: "今日の運動の時間はここに出るよ。<br><b>35分で小瓶が満タン！</b>" },
+  { sel: "#quiz-card", text: "<b>ピラティスクイズ</b>。<br>答えるとコインがもらえるよ" },
+  { sel: "#coin-btn", text: "コインはここにたまるよ。<br>タップすると<b>ガチャ</b>がひけるよ" },
+  { sel: '.tabbar-btn[data-page="shelf"]', text: "小瓶や大瓶、色図鑑は<br><b>「瓶の棚」</b>で見られるよ" },
+  { sel: "#settings-btn", text: "使い方は<b>設定</b>から<br>いつでも見なおせるよ" },
+  { sel: "#sports", text: "準備はばっちり！<br>さっそく<b>今日の運動を記録</b>してみよう", last: true },
+];
+
+let tourStep = 0;
+let tourEl = null;
+function tourBuild() {
+  if (tourEl) return tourEl;
+  tourEl = document.createElement("div");
+  tourEl.className = "tour";
+  tourEl.hidden = true;
+  tourEl.innerHTML = `<div class="tour-hole"></div>
+    <div class="tour-bubble" role="dialog" aria-live="polite">
+      <div class="tour-char"></div>
+      <p class="tour-text"></p>
+      <div class="tour-foot"><button class="text-btn tour-skip" type="button">スキップ</button><span class="tour-count"></span><button class="primary-btn tour-next" type="button">次へ</button></div>
+    </div>`;
+  document.body.append(tourEl);
+  tourEl.querySelector(".tour-next").addEventListener("click", () => tourGo(1));
+  tourEl.querySelector(".tour-skip").addEventListener("click", tourEnd);
+  window.addEventListener("resize", () => !tourEl.hidden && tourPlace());
+  return tourEl;
+}
+function startTour_() {
+  const home = document.querySelector('.tabbar-btn[data-page="home"]');
+  if (home) home.click(); // ホーム画面で説明する
+  tourBuild();
+  tourStep = 0;
+  tourEl.hidden = false;
+  document.documentElement.classList.add("touring");
+  tourShow();
+}
+function tourTarget() {
+  const el = document.querySelector(TOUR_STEPS[tourStep].sel);
+  return el && el.getClientRects().length ? el : null;
+}
+function tourShow() {
+  const st = TOUR_STEPS[tourStep];
+  const el = tourTarget();
+  if (!el) return tourGo(1); // 見つからないところは、とばす
+  el.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
+  tourEl.querySelector(".tour-text").innerHTML = st.text;
+  tourEl.querySelector(".tour-count").textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
+  tourEl.querySelector(".tour-next").textContent = st.last ? "はじめる！" : "次へ";
+  tourEl.querySelector(".tour-skip").style.visibility = st.last ? "hidden" : "";
+  tourEl.querySelector(".tour-char").innerHTML = typeof nCharacterHtml === "function" ? nCharacterHtml(st.last ? "jump" : tourStep % 2 ? "pointUp" : "pointSide") : "";
+  requestAnimationFrame(tourPlace);
+}
+function tourPlace() {
+  const el = tourTarget();
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const pad = 8;
+  const hole = tourEl.querySelector(".tour-hole");
+  hole.style.left = `${r.left - pad}px`;
+  hole.style.top = `${r.top - pad}px`;
+  hole.style.width = `${r.width + pad * 2}px`;
+  hole.style.height = `${r.height + pad * 2}px`;
+  // ふきだしは、光らせたところの下（下に場所がなければ上）
+  const bub = tourEl.querySelector(".tour-bubble");
+  const bh = bub.offsetHeight;
+  const below = r.bottom + pad + 14;
+  const top = below + bh < innerHeight - 8 ? below : Math.max(8, r.top - pad - 14 - bh);
+  bub.style.top = `${top}px`;
+  bub.classList.toggle("up", top < r.top);
+}
+function tourGo(d) {
+  const n = tourStep + d;
+  if (n >= TOUR_STEPS.length) return tourEnd();
+  tourStep = n;
+  tourShow();
+}
+function tourEnd() {
+  if (tourEl) tourEl.hidden = true;
+  document.documentElement.classList.remove("touring");
+  window.scrollTo({ top: 0 });
+}
