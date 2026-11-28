@@ -243,9 +243,10 @@ $("guide-skip").addEventListener("click", () => closeGuide());
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) guideGo(dx < 0 ? 1 : -1);
   });
 })();
+// 設定の「使い方を見る」：スライドではなく、見たいチュートリアルを選んで始める（js/news.js の下のほう）
 $("settings-news").addEventListener("click", () => {
   $("settings-modal").hidden = true;
-  openGuide();
+  openTourMenu();
 });
 // はじめての人：最初の設定（体重）が終わったら出す
 $("weight-form").addEventListener("submit", () => {
@@ -461,6 +462,7 @@ function tourGo(d) {
 // はじめてシェイクしたら、いっしょに瓶の棚へ
 $("shake-ok").addEventListener("click", () => {
   if (data.toursSeen && data.toursSeen.firstShake) return;
+  if (alreadyUsed("firstShake")) return markTourSeen("firstShake");
   setTimeout(() => {
     const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
     if (!busy) startTour_("firstShake");
@@ -469,10 +471,33 @@ $("shake-ok").addEventListener("click", () => {
 // はじめて大瓶に合成して「チャームを選ぶ」を押したら、着せ替えの説明
 $("merge-ok").addEventListener("click", () => {
   if (data.toursSeen && data.toursSeen.charm) return;
+  if (alreadyUsed("charm")) return markTourSeen("charm");
   setTimeout(() => {
     if (!$("charm-modal").hidden && !(tourEl && !tourEl.hidden)) startTour_("charm");
   }, 600);
 });
+// もうその機能を使っている人か（使っている人には、チュートリアルを自動では出さない）
+function alreadyUsed(name) {
+  const has = (o) => !!o && Object.keys(o).length > 0;
+  const decoOn = (b) => !!b && ((Array.isArray(b.charms) && b.charms.length) || b.charm || b.ribbon);
+  switch (name) {
+    case "meals": return has(data.meals);
+    case "body": return has(data.body) || (data.periods || []).length > 0;
+    case "clothes": return (data.clothes || []).length > 0;
+    case "savings": return savingsStarted();
+    case "firstLog": return (data.logs || []).length > 1;          // 今の1件より前にも記録がある
+    case "firstShake": return Object.keys(data.shakes || {}).length > 1; // 今のシェイクより前にもシェイクしている
+    case "charm": return (data.bigBottles || []).some(decoOn) || decoOn(data.savings && data.savings.deco);
+    default: return false;
+  }
+}
+function markTourSeen(name) {
+  if (!data.toursSeen) data.toursSeen = {};
+  if (!data.toursSeen[tourSeenKey(name)]) {
+    data.toursSeen[tourSeenKey(name)] = true;
+    saveData();
+  }
+}
 // 貯金瓶をもう使いはじめているか（金額・入れた記録・チャームのどれかがある）
 function savingsStarted() {
   const s = data.savings;
@@ -483,6 +508,7 @@ function savingsStarted() {
 // 着せ替えの画面をはじめて開いたら（貯金瓶の「着せ替え」から）、着せ替えの説明
 $("savings-deco").addEventListener("click", () => {
   if (data.toursSeen && data.toursSeen.charm) return;
+  if (alreadyUsed("charm")) return markTourSeen("charm");
   setTimeout(() => {
     if (!$("charm-modal").hidden && !(tourEl && !tourEl.hidden)) startTour_("charm");
   }, 600);
@@ -490,6 +516,7 @@ $("savings-deco").addEventListener("click", () => {
 // はじめて運動を記録したら、記録のたまり方・満タン・シェイクを説明する
 document.addEventListener("log-recorded", () => {
   if (data.toursSeen && data.toursSeen.firstLog) return;
+  if (alreadyUsed("firstLog")) return markTourSeen("firstLog");
   setTimeout(() => {
     const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
     const home = document.getElementById("page-home");
@@ -502,12 +529,8 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
     const page = btn.dataset.page;
     if (!TOURS[page] || page === "home") return;
     // 貯金：もう金額やチャームを設定している人には出さない（何度も出ないように「見た」にしておく）
-    if (page === "savings" && savingsStarted() && !(data.toursSeen && data.toursSeen.savings)) {
-      if (!data.toursSeen) data.toursSeen = {};
-      data.toursSeen.savings = true;
-      saveData();
-      return;
-    }
+    // もう記録がある人には出さない（何度も出ないように「見た」にしておく）
+    if (alreadyUsed(page)) return markTourSeen(page);
     if (data.toursSeen && data.toursSeen[tourSeenKey(page)]) return;
     setTimeout(() => {
       const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
@@ -526,3 +549,53 @@ function tourEnd() {
   document.documentElement.classList.remove("touring");
   window.scrollTo({ top: 0 });
 }
+
+// ---------- 使い方を見る：チュートリアルを選んで始める ----------
+const openTab = (page) => {
+  const btn = document.querySelector(`.tabbar-btn[data-page="${page}"]`);
+  if (btn) btn.click();
+};
+// 着せ替えの説明は、いちばん新しい大瓶（なければ貯金瓶）の着せ替え画面で
+function openDressUp() {
+  const bigs = typeof bigBottlesOldestFirst === "function" ? bigBottlesOldestFirst() : [];
+  if (bigs.length) {
+    openTab("shelf");
+    if (typeof showShelfView === "function") showShelfView("big");
+    openCharmPicker(bigs[bigs.length - 1]);
+  } else {
+    openTab("savings");
+    setTimeout(() => $("savings-deco").click(), 300);
+  }
+}
+TOURS.shelf = TOURS.firstShake.slice(1); // 瓶の棚と大瓶（シェイクのあとの説明の、棚を開くところから）
+const TOUR_MENU = [
+  { name: "home", label: "アプリのはじめかた", sub: "ホームのボタン", open: () => {} },
+  { name: "firstLog", label: "運動の記録と満タン", sub: "記録・満タン・シェイク", open: () => openTab("home") },
+  { name: "shelf", label: "瓶の棚と大瓶", sub: "合成・色図鑑", open: () => {} },
+  { name: "charm", label: "着せ替え", sub: "チャーム・リボン", open: openDressUp, wait: 900 },
+  { name: "meals", label: "ごはんの記録", sub: "花まる・おやつの星", open: () => openTab("meals") },
+  { name: "body", label: "からだの記録", sub: "体調・お通じ・生理", open: () => openTab("body") },
+  { name: "clothes", label: "服チェック", sub: "写真で見くらべ", open: () => openTab("clothes") },
+  { name: "savings", label: "貯金瓶", sub: "目標・着せ替え", open: () => openTab("savings") },
+];
+function openTourMenu() {
+  const list = $("tour-menu-list");
+  list.replaceChildren();
+  for (const m of TOUR_MENU) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "settings-item";
+    b.innerHTML = `<span class="settings-label"></span><span class="settings-sub"></span>`;
+    b.querySelector(".settings-label").textContent = m.label;
+    b.querySelector(".settings-sub").textContent = m.sub;
+    b.addEventListener("click", () => {
+      $("tour-menu").hidden = true;
+      markTourSeen(m.name); // 画面を開いたときの自動の説明と、二重にならないように
+      m.open();
+      setTimeout(() => startTour_(m.name), m.wait || 600);
+    });
+    list.append(b);
+  }
+  $("tour-menu").hidden = false;
+}
+$("tour-menu-close").addEventListener("click", () => ($("tour-menu").hidden = true));

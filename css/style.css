@@ -2176,3 +2176,10 @@ body.gacha-open { overflow: hidden; }
 .case-bottle .big-bottle.has-base { transform-origin: 50% 100%; transform: translateY(var(--base-lift)) scale(var(--base-scale)); }
 /* 宝石のふた（瓶ごとの絵）：左上の位置そのままで置く。影はつけない（首のつなぎ目に影が出ないように） */
 .big-bottle .charm.gem-top { translate: none; filter: none; animation: none; }
+.tour-menu-lead { margin: -2px 0 10px !important; text-align: center; font-size: 13px; }
+/* 使い方を見る：2列にして、1画面におさめる（はみ出すときはスクロール） */
+#tour-menu .modal { max-height: calc(100dvh - 32px); overflow-y: auto; }
+#tour-menu .settings-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#tour-menu .settings-item { padding: 10px 10px; min-height: 0; }
+#tour-menu .settings-label { font-size: 14px; }
+#tour-menu .settings-sub { font-size: 11px; line-height: 1.4; }
