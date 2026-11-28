@@ -32,18 +32,18 @@ const BIG_BOTTLE_ALIAS = { heart2: "heart", star2: "star", gem: "diamond" };
 // ここにあるのは「ベーシックライン」（最初から持っている）。ガチャのシリーズのチャームは js/series.js
 // 1本の瓶に3個までつけられる
 const CHARMS = [
-  { id: "a00", name: "ピンクの宝石", w: 76, h: 96, place: "top", pw: 13, pa: 1, pc: 0.5, fit: 1.25 },
+  { id: "a00", name: "ピンクの宝石", w: 76, h: 96, place: "top", pw: 13, pa: 1, pc: 0.5, fit: 1.25, grade: "rare" }, // ふたは特別なのでレア
   { id: "a01", name: "パールリボン", w: 160, h: 154, place: "neck", pw: 66, pa: 0.22, kind: "ribbon" },
   { id: "a02", name: "ティアラとハート", w: 131, h: 114, place: "neck", band: [0.36, 0.06, 0.72] },
   { id: "a03", name: "パールのネックレス", w: 110, h: 68, place: "neck", pw: 56, pa: 0.15 },
   { id: "a04", name: "バラとかぎ", w: 151, h: 165, place: "neck", pw: 64, pa: 0.15 },
-  { id: "a07", name: "馬車の車輪", w: 160, h: 54, place: "base", src: "charms/a07-clear.webp" }, // 車輪のすき間を透明にした絵
+  { id: "a07", name: "馬車の車輪", w: 160, h: 54, place: "base", src: "charms/a07-clear.webp", grade: "rare" }, // 台も特別なのでレア。 // 車輪のすき間を透明にした絵
   { id: "a09", name: "リボンとガラスのくつ", w: 160, h: 150, place: "neck", band: [0.66, 0.21, 0.37] },
   { id: "a10a", name: "羽根とリボン", w: 181, h: 151, place: "neck", band: [0.55, 0.07, 0.41] },
   { id: "a10b", name: "月のネックレス", w: 183, h: 109, place: "neck", pw: 70, pa: 0.15 },
-  { id: "b01", name: "銀の星", w: 62, h: 91, place: "hang", scale: 0.62 },
+  { id: "b01", name: "銀の星", w: 62, h: 91, place: "hang", scale: 0.4 }, // マルカン（輪っか）がほかのチャームと同じ大きさになるように
   { id: "b02", name: "月と星", w: 106, h: 149, place: "hang", scale: 0.72 },
-  { id: "b03", name: "しずくの宝石", w: 68, h: 145, place: "hang" },
+  { id: "b03", name: "しずくの宝石", w: 68, h: 145, place: "hang", scale: 0.55 }, // マルカンの大きさをそろえる
   { id: "b04", name: "羽根のチャーム", w: 37, h: 160, place: "hang" },
   { id: "b05", name: "金のかぎ", w: 46, h: 142, place: "hang", scale: 0.72 },
   { id: "b06", name: "ハートのかぎ", w: 56, h: 141, place: "hang", scale: 0.72 },

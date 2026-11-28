@@ -328,12 +328,12 @@ TOURS.firstShake = [
 ];
 // はじめて大瓶に合成して「チャームを選ぶ」を押したとき：着せ替えの説明
 TOURS.charm = [
-  { sel: "#charm-preview", up: ".charm-stage", text: "ここに大瓶が出るよ。<br>つけたチャームやリボンが、<b>すぐ見られる</b>よ" },
+  { sel: "#charm-preview", up: ".charm-stage", text: "ここに瓶が出るよ。<br>つけたチャームやリボンが、<b>すぐ見られる</b>よ" },
   { sel: "#charm-grid", text: "持っているチャームから選んでね。<br><b>タップでつける、もう一度タップではずす</b>よ。<br>ぜんぶで5個までつけられるよ" },
   { sel: "#chain-rows", text: "チャームは、首のチェーンの<b>左・真ん中・右</b>に下げられるよ。<br>場所を選んでから、チャームを押してね。1か所に3個まで縦につなげて、<b>順番やチェーンの長さ</b>も変えられるよ" },
   { sel: "#charm-tab-ribbon", text: "「<b>リボン</b>」で、首にリボンを結べるよ。<br>リボンは1つだけ。ガチャで集めてね" },
   { sel: "#charm-tab-look", text: "「<b>中身</b>」で、見た目を変えられるよ。<br>層のまま・まぜる・色図鑑の色から選べるよ（運動の記録は消えないよ）" },
-  { sel: "#charm-save", text: "決まったら「<b>これにする</b>」。<br>大瓶の棚で大瓶をタップすれば、<b>いつでも付け替え</b>られるよ" },
+  { sel: "#charm-save", text: "決まったら「<b>これにする</b>」。<br>あとから<b>何度でも付け替え</b>られるよ" },
 ];
 // 内容を作り直したチュートリアルは、名前をかえて、もう一度だけ出す
 const TOUR_SEEN_KEY = { clothes: "clothes2" };
@@ -343,7 +343,12 @@ TOURS.savings = [
   { sel: "#savings-setup-btn", text: "まずは<b>目標の金額</b>を決めよう。<br>毎週いくら入れたらいいか計算するよ" },
   { sel: "#savings-weekly", text: "毎週の分を入れたら押してね。<br><b>コイン+5</b>（1週間に1回）" },
   { sel: "#savings-extra", text: "追加で入れたときはこっち。<br><b>コイン+3</b>（1日1回）" },
-  { sel: "#savings-deco", text: "<b>着せ替え</b>で、チャームやリボンを<br>貯金瓶につけられるよ", last: true },
+  {
+    sel: "#savings-deco", nextLabel: "着せ替えてみる",
+    text: "大瓶がまだなくても、ここで<b>チャームやリボン</b>が使えるよ！<br>ガチャで集めたら、貯金瓶を<b>着せ替え</b>してみよう",
+    // 押したら着せ替えの画面を開いて、そのまま着せ替えの説明へ
+    after: () => { $("savings-deco").click(); },
+  },
 ];
 let TOUR_STEPS = TOURS.home;
 let tourName = "home";
@@ -441,6 +446,13 @@ function tourPlace() {
   bub.classList.toggle("up", top < r.top);
 }
 function tourGo(d) {
+  const cur = TOUR_STEPS[tourStep];
+  if (d > 0 && cur && cur.after) {
+    // このあとに別の画面を開く説明：ここで終わりにして、開いたあとの説明につなぐ
+    tourEnd();
+    cur.after();
+    return;
+  }
   const n = tourStep + d;
   if (n >= TOUR_STEPS.length) return tourEnd();
   tourStep = n;
@@ -461,6 +473,20 @@ $("merge-ok").addEventListener("click", () => {
     if (!$("charm-modal").hidden && !(tourEl && !tourEl.hidden)) startTour_("charm");
   }, 600);
 });
+// 貯金瓶をもう使いはじめているか（金額・入れた記録・チャームのどれかがある）
+function savingsStarted() {
+  const s = data.savings;
+  if (!s) return false;
+  const d = s.deco || {};
+  return !!(s.weekly || s.goal || (s.deposits && s.deposits.length) || (d.charms && d.charms.length) || d.ribbon);
+}
+// 着せ替えの画面をはじめて開いたら（貯金瓶の「着せ替え」から）、着せ替えの説明
+$("savings-deco").addEventListener("click", () => {
+  if (data.toursSeen && data.toursSeen.charm) return;
+  setTimeout(() => {
+    if (!$("charm-modal").hidden && !(tourEl && !tourEl.hidden)) startTour_("charm");
+  }, 600);
+});
 // はじめて運動を記録したら、記録のたまり方・満タン・シェイクを説明する
 document.addEventListener("log-recorded", () => {
   if (data.toursSeen && data.toursSeen.firstLog) return;
@@ -475,6 +501,13 @@ document.querySelectorAll(".tabbar-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
     if (!TOURS[page] || page === "home") return;
+    // 貯金：もう金額やチャームを設定している人には出さない（何度も出ないように「見た」にしておく）
+    if (page === "savings" && savingsStarted() && !(data.toursSeen && data.toursSeen.savings)) {
+      if (!data.toursSeen) data.toursSeen = {};
+      data.toursSeen.savings = true;
+      saveData();
+      return;
+    }
     if (data.toursSeen && data.toursSeen[tourSeenKey(page)]) return;
     setTimeout(() => {
       const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
