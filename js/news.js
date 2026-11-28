@@ -304,6 +304,13 @@ TOURS.clothes = [
   { sel: '#clothes-list [data-act="compare"]', text: "<b>見くらべる</b>はここ！<br>前回と今回が左右に並ぶよ" },
   { sel: "#add-cloth", text: "服は<b>ここから登録</b>できるよ。<br>写真はこのスマホの中にだけ保存されるよ", last: true },
 ];
+// はじめて運動を記録したあと（ホーム）
+TOURS.firstLog = [
+  { sel: "#log-list > :first-child", text: "記録は<b>ここにたまっていく</b>よ。<br>まちがえたら「直す」で、時間を変えたり<b>取り消し</b>たりできるよ" },
+  { sel: "#jar", text: "今日の小瓶に色が入ったよ！<br><b>35分で満タン</b>。満タンになると<b>コイン+3</b>" },
+  { sel: ".today.card", text: "満タンをこえても、運動はちゃんと<b>カウント</b>されるよ。<br>そのあとも30分ごとに<b>おまけコイン+1</b>。目指せ満タン！" },
+  { sel: "#day-end-btn", text: "その日の運動が終わったら<br>「<b>今日はおしまい</b>」を押してね。<br>小瓶を<b>シェイク</b>して、1色にまぜられるよ" },
+];
 // 内容を作り直したチュートリアルは、名前をかえて、もう一度だけ出す
 const TOUR_SEEN_KEY = { clothes: "clothes2" };
 const tourSeenKey = (name) => TOUR_SEEN_KEY[name] || name;
@@ -408,6 +415,15 @@ function tourGo(d) {
   tourStep = n;
   tourShow();
 }
+// はじめて運動を記録したら、記録のたまり方・満タン・シェイクを説明する
+document.addEventListener("log-recorded", () => {
+  if (data.toursSeen && data.toursSeen.firstLog) return;
+  setTimeout(() => {
+    const busy = (tourEl && !tourEl.hidden) || document.querySelector(".modal-backdrop:not([hidden])");
+    const home = document.getElementById("page-home");
+    if (!busy && home && !home.hidden) startTour_("firstLog");
+  }, 900);
+});
 // ごはん・からだ・服・貯金：はじめて開いたときにチュートリアル
 document.querySelectorAll(".tabbar-btn").forEach((btn) => {
   btn.addEventListener("click", () => {

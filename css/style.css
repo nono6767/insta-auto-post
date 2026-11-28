@@ -2169,3 +2169,6 @@ body.gacha-open { overflow: hidden; }
 .ta-vs { font-size: 20px; color: var(--rose); }
 @keyframes ta-in { 0% { opacity: 0; transform: translateY(6px) scale(.9); } 15%, 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ta-photo.old, .ta-photo.new { animation: none; } }
+.jar-full { color: var(--rose); font-weight: 700; }
+/* チュートリアル中は、下のお知らせ（トースト）を出さない（光らせたところにかぶるので） */
+.touring .toast { visibility: hidden; }

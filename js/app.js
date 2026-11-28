@@ -24,7 +24,7 @@ const KCAL_PER_FAT_G = 7.2;  // 体脂肪1gあたりのカロリー
 // 保存名はすべて「n-app-」で始める（同じサイト上のほかのアプリとまざらないように）
 const STORAGE_KEY = "n-app-data";
 const LEGACY_STORAGE_KEY = "n-undou-bin.v1"; // 前の保存名（自動で引っ越す）
-const APP_VERSION = "11/30-122"; // 更新するたびに変える（設定画面に表示）
+const APP_VERSION = "11/30-123"; // 更新するたびに変える（設定画面に表示）
 
 // ---------- データの読み書き ----------
 
@@ -548,9 +548,11 @@ function renderHome() {
   $("jar").innerHTML = bottleHtml([...today].sort((a, b) => a.ts - b.ts), bottle, daySnackFree(todayKey) ? 1 : 0, SMALL_FULL_MIN, shaken && shaken.hex, dayPoop(todayKey));
   $("jar").classList.toggle("tappable", today.length > 0);
   const colorLine = shaken ? `<span class="jar-color"><span class="mini-swatch" style="background:${shaken.hex}"></span>${shaken.name}</span>` : "";
+  // 小瓶が満タン（ノルマ35分）まであと何分か
+  const fillLine = quotaDone ? `<span class="jar-full">満タン！</span>` : `満タンまであと <strong>${DAILY_QUOTA_MIN - todayMin}</strong>分`;
   $("jar-caption").innerHTML = full
-    ? `今日の小瓶${colorLine}<br><strong>合成できるよ！</strong>`
-    : `今日の小瓶${colorLine}<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
+    ? `今日の小瓶${colorLine}<br>${fillLine}<br><strong>合成できるよ！</strong>`
+    : `今日の小瓶${colorLine}<br>${fillLine}<br>大瓶まであと <strong>${BIG_BOTTLE_MIN - pool}</strong>分`;
   // 「今日はおしまい」→ シェイク。シェイクしたあとに運動を足したら、もう一度シェイクできる
   const endBtn = $("day-end-btn");
   endBtn.hidden = today.length === 0 || !!shaken;
@@ -848,6 +850,7 @@ function closeSheet() {
   // 記録した直後は、しばらく「取り消す」を出しておく
   if (justRecorded) {
     const dayText = justRecorded.date === dateKey() ? "" : `${dayLabel(justRecorded.date)}の`;
+    document.dispatchEvent(new CustomEvent("log-recorded")); // はじめての記録のあとのチュートリアル（js/news.js）
     showToast(cheer || `${dayText}${sheet.sport.name} ${justRecorded.min}分 記録したよ`, {
       label: "取り消す",
       run: async () => {
