@@ -1306,6 +1306,8 @@ body.gacha-open { overflow: hidden; }
 .g-info h3 { margin: 4px 0; font-size: 14px; }
 .g-info ul { margin: 0 0 8px; padding-left: 18px; font-size: 13px; color: var(--ink); line-height: 1.7; }
 .trade-backdrop { z-index: 30; }
+/* 交換画面は段が5つ（見出し・説明・名前・一覧・ボタン）。一覧だけをスクロールさせて、ボタンが一覧の下に隠れないようにする */
+#trade-modal .charm-modal { grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
 
 /* ---------- ガチャの演出 ---------- */
 .gacha-anim {
