@@ -1243,3 +1243,53 @@ function removeTrialCharms() {
 removeTrialCharms();
 migrateRibbons();
 drawShelf();
+
+// ---------- 棚を指でめくる（左右にスワイプすると、前の棚・次の棚へ） ----------
+// 指についてきて、離したところで次の棚がすっと入ってくる。矢印ボタンもそのまま使える
+function addShelfSwipe(area, target, prevBtn, nextBtn) {
+  let sx = 0, sy = 0, dx = 0, mode = null; // mode: null=まだ決めていない / "x"=横にめくる / "y"=たてスクロール
+  const reduce = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  area.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = 0; mode = null;
+    target.style.transition = "none";
+  }, { passive: true });
+  area.addEventListener("touchmove", (e) => {
+    if (e.touches.length !== 1) return;
+    const mx = e.touches[0].clientX - sx, my = e.touches[0].clientY - sy;
+    if (!mode && Math.abs(mx) + Math.abs(my) > 8) mode = Math.abs(mx) > Math.abs(my) ? "x" : "y";
+    if (mode !== "x") return;
+    e.preventDefault();
+    dx = mx;
+    const edge = (dx > 0 && prevBtn.disabled) || (dx < 0 && nextBtn.disabled); // 端の棚は、少しだけ動いて止まる
+    target.style.transform = `translateX(${edge ? dx * 0.25 : dx}px)`;
+  }, { passive: false });
+  const end = () => {
+    if (mode !== "x") return;
+    mode = null;
+    const btn = dx < 0 ? nextBtn : prevBtn;
+    const go = Math.abs(dx) > Math.min(80, area.clientWidth * 0.18) && !btn.disabled;
+    if (!go || reduce()) {
+      target.style.transition = "transform .25s ease";
+      target.style.transform = "";
+      if (go) btn.click();
+      return;
+    }
+    const w = area.clientWidth;
+    const dir = dx < 0 ? -1 : 1;
+    target.style.transition = "transform .18s ease-in";
+    target.style.transform = `translateX(${dir * w}px)`;
+    setTimeout(() => {
+      btn.click(); // 棚を描きかえる
+      target.style.transition = "none";
+      target.style.transform = `translateX(${-dir * w}px)`;
+      target.getBoundingClientRect();
+      target.style.transition = "transform .25s ease-out";
+      target.style.transform = "";
+    }, 180);
+  };
+  area.addEventListener("touchend", end);
+  area.addEventListener("touchcancel", end);
+}
+addShelfSwipe($("small-shelf"), $("small-shelf"), $("small-prev"), $("small-next"));
+addShelfSwipe(document.querySelector("#big-view .showcase"), $("shelf"), $("shelf-prev"), $("shelf-next"));

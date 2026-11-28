@@ -2010,3 +2010,6 @@ body.gacha-open { overflow: hidden; }
 .g-card.r-super .g-card-name { color: #8a5a10; }
 .g-card.r-rare .g-card-name { color: #5b4699; }
 @media (prefers-reduced-motion: reduce) { .g-card.r-super, .g-card.r-super::after { animation: none; } }
+/* 棚を指でめくるとき：横にはみ出した棚で、画面が横にゆれないように */
+#small-view, #big-view .showcase { overflow-x: clip; }
+#small-shelf, #big-view .showcase { touch-action: pan-y; }
